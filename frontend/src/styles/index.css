@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* CSS custom properties — add your design tokens here */
+:root {
+  --color-primary: #6366f1;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --min-width: 375px; /* iPhone SE minimum */
+}
+
+/* Base reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: var(--min-width);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
