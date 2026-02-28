@@ -5,6 +5,8 @@ import { TransactionsService } from './application/transactions.service';
 import { CreateTransactionUseCase } from './application/use-cases/create-transaction.use-case';
 import { ITransactionsRepository } from './domain/repositories/transactions.repository';
 import { PrismaTransactionsRepository } from './infrastructure/repositories/prisma-transactions.repository';
+import { INotificationPort } from './domain/ports/notification.port';
+import { EmailNotificationAdapter } from './infrastructure/adapters/email-notification.adapter';
 import { ProductsModule } from '../products/products.module';
 import { CustomersModule } from '../customers/customers.module';
 import { DeliveriesModule } from '../deliveries/deliveries.module';
@@ -19,6 +21,10 @@ import { PaymentModule } from '../payment/payment.module';
     {
       provide: ITransactionsRepository,
       useClass: PrismaTransactionsRepository,
+    },
+    {
+      provide: INotificationPort,
+      useClass: EmailNotificationAdapter,
     },
   ],
 })

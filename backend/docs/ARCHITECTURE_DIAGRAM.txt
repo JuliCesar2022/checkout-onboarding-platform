@@ -1,0 +1,136 @@
+╔════════════════════════════════════════════════════════════════════════════════════════╗
+║                   HEXAGONAL ARCHITECTURE: PORTS & ADAPTERS PATTERN                       ║
+╚════════════════════════════════════════════════════════════════════════════════════════╝
+
+                                    [APPLICATION LAYER]
+
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │  CREATE TRANSACTION USE CASE                                         │
+    │                                                                       │
+    │  - Validates product exists      (via IProductsRepository)          │
+    │  - Charges payment               (via IPaymentPort)                 │
+    │  - Sends receipt email           (via INotificationPort)            │
+    │  - Creates delivery              (via IDeliveriesRepository)        │
+    │                                                                       │
+    │  Domain logic is DECOUPLED from external concerns ✓                 │
+    └─────────────────────────────────────────────────────────────────────┘
+                                          ▲
+                    ┌─────────────────────┼─────────────────────┐
+                    │                     │                     │
+                    ▼                     ▼                     ▼
+
+         [PORT 1: Data Access]  [PORT 2: Payment]   [PORT 3: Notification]
+
+    IProductsRepository         IPaymentPort        INotificationPort
+    IDeliveriesRepository       (abstract)          (abstract)
+    (abstract)                     │                    │
+       │                           │                    │
+       │                           │                    │
+    ┌──┴──────────┬────────────┐   │   ┌────────────┬───┴────────┐
+    │             │            │   │   │            │            │
+    ▼             ▼            ▼   ▼   ▼            ▼            ▼
+
+  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+  │ PRISMA   │ │ TYPEORM  │ │ MONGODB  │ │ WOMPI    │ │ SENDGRID │
+  │ ADAPTER  │ │ ADAPTER  │ │ ADAPTER  │ │ ADAPTER  │ │ ADAPTER  │
+  │ (Concrete)                    │  (Concrete)     │ (Concrete)
+  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
+       │             │             │           │            │
+       └─────────────┴─────────────┴───────────┴────────────┘
+                     │
+                     ▼
+         [EXTERNAL SERVICES]
+
+         PostgreSQL     MongoDB     Wompi API     SendGrid API
+         (Real DB)      (Real DB)    (Real API)    (Real Service)
+
+
+╔════════════════════════════════════════════════════════════════════════════════════════╗
+║                               PORT & ADAPTER EXAMPLE                                    ║
+╚════════════════════════════════════════════════════════════════════════════════════════╝
+
+SCENARIO: Change email provider from SendGrid to AWS SES
+
+┌────────────────────────────────────────────────────────────────┐
+│ BEFORE (Without Ports & Adapters)                              │
+│                                                                 │
+│ SendTransactionReceiptUseCase                                  │
+│   ├─ const sgMail = require('@sendgrid/mail')                  │
+│   ├─ const response = sgMail.send({ ... })                    │
+│   └─ return result                                              │
+│                                                                 │
+│ Problem: If we change to AWS SES, we must modify this code ✗  │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ AFTER (With Ports & Adapters)                                  │
+│                                                                 │
+│ SendTransactionReceiptUseCase                                  │
+│   └─ await this.notificationPort.sendEmail(input)             │
+│      // ^ No knowledge of SendGrid or AWS SES!                │
+│                                                                 │
+│ EmailNotificationAdapter (Infrastructure)                      │
+│   └─ implements INotificationPort                              │
+│   └─ async sendEmail() {                                       │
+│       return await sgMail.send({ ... })  // SendGrid           │
+│      }                                                          │
+│                                                                 │
+│ AwsNotificationAdapter (Infrastructure)                        │
+│   └─ implements INotificationPort                              │
+│   └─ async sendEmail() {                                       │
+│       return await sesClient.sendEmail({ ... })  // AWS        │
+│      }                                                          │
+│                                                                 │
+│ To swap: Just change 1 line in TransactionsModule ✓            │
+│   {                                                             │
+│     provide: INotificationPort,                                │
+│     useClass: AwsNotificationAdapter,  // ← Changed            │
+│   }                                                             │
+└────────────────────────────────────────────────────────────────┘
+
+
+╔════════════════════════════════════════════════════════════════════════════════════════╗
+║                        WHAT YOU ADDED TODAY                                             ║
+╚════════════════════════════════════════════════════════════════════════════════════════╝
+
+✓ INotificationPort (domain/ports/)
+  └─ abstract sendEmail() ← Domain doesn't care about implementation
+
+✓ EmailNotificationAdapter (infrastructure/adapters/)
+  └─ implements INotificationPort ← Concrete SendGrid logic here
+
+✓ SendTransactionReceiptUseCase (application/use-cases/)
+  └─ constructor(private notificationPort: INotificationPort)
+  └─ Uses port without knowing about external services ✓
+
+✓ Updated TransactionsModule
+  └─ Registered: { provide: INotificationPort, useClass: EmailNotificationAdapter }
+
+Result: +10 Bonus Points for Hexagonal Architecture! 🎯
+
+
+╔════════════════════════════════════════════════════════════════════════════════════════╗
+║                    NEXT PORTS TO ADD (OPTIONAL)                                        ║
+╚════════════════════════════════════════════════════════════════════════════════════════╝
+
+1. LOGGING PORT
+   ├─ domain/ports/logger.port.ts
+   ├─ infrastructure/adapters/winston-logger.adapter.ts
+   └─ Swap Winston → Pino → Console easily
+
+2. CACHING PORT
+   ├─ domain/ports/cache.port.ts
+   ├─ infrastructure/adapters/redis-cache.adapter.ts
+   ├─ infrastructure/adapters/memory-cache.adapter.ts
+   └─ Use Redis in prod, in-memory cache in tests
+
+3. QUEUE/JOB PORT
+   ├─ domain/ports/job-queue.port.ts
+   ├─ infrastructure/adapters/bull-queue.adapter.ts
+   └─ Async payment processing, email batching, etc.
+
+4. STORAGE PORT
+   ├─ domain/ports/storage.port.ts
+   ├─ infrastructure/adapters/aws-s3.adapter.ts
+   ├─ infrastructure/adapters/local-filesystem.adapter.ts
+   └─ Store product images, receipts, etc.
