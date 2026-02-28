@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IProductsRepository } from '../domain/repositories/products.repository';
 import { ProductResponseDto } from './dto/product-response.dto';
+import { PaginatedProductsDto } from './dto/paginated-products.dto';
+import { FindProductsQueryDto } from './dto/find-products-query.dto';
 import { Result } from '../../../common/result/result';
 
 @Injectable()
@@ -10,6 +12,22 @@ export class ProductsService {
   async findAll(): Promise<ProductResponseDto[]> {
     const products = await this.productsRepository.findAll();
     return products.map(ProductResponseDto.fromEntity);
+  }
+
+  async findPaginated(
+    query: FindProductsQueryDto,
+  ): Promise<PaginatedProductsDto> {
+    const { items, nextCursor } = await this.productsRepository.findPaginated({
+      search: query.search,
+      limit: query.limit,
+      cursor: query.cursor,
+    });
+
+    return {
+      data: items.map(ProductResponseDto.fromEntity),
+      nextCursor,
+      hasMore: nextCursor !== null,
+    };
   }
 
   async findById(id: string): Promise<Result<ProductResponseDto>> {
