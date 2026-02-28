@@ -1,15 +1,9 @@
-import {
-  Controller,
-  Get,
-  Param,
-  NotFoundException,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DeliveriesService } from '../../application/deliveries.service';
 import { DeliveryResponseDto } from '../../application/dto/delivery-response.dto';
 import { PublicEndpoint } from '../../../../common/decorators/throttle.decorators';
+import { unwrap } from '../../../../common/helpers/result-to-http.helper';
 
 @ApiTags('deliveries')
 @Controller('deliveries')
@@ -25,11 +19,9 @@ export class DeliveriesController {
   async findByTransactionId(
     @Param('transactionId') transactionId: string,
   ): Promise<DeliveryResponseDto> {
-    const result =
-      await this.deliveriesService.findByTransactionId(transactionId);
-    if (result.isFailure) {
-      throw new NotFoundException(result.getError());
-    }
-    return result.getValue();
+    return unwrap(
+      await this.deliveriesService.findByTransactionId(transactionId),
+      'not_found',
+    );
   }
 }

@@ -1,15 +1,9 @@
-import {
-  Controller,
-  Get,
-  Param,
-  NotFoundException,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CustomersService } from '../../application/customers.service';
 import { CustomerResponseDto } from '../../application/dto/customer-response.dto';
 import { PublicEndpoint } from '../../../../common/decorators/throttle.decorators';
+import { unwrap } from '../../../../common/helpers/result-to-http.helper';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -23,10 +17,6 @@ export class CustomersController {
   @ApiResponse({ status: 200, type: CustomerResponseDto })
   @ApiResponse({ status: 404, description: 'Customer not found' })
   async findById(@Param('id') id: string): Promise<CustomerResponseDto> {
-    const result = await this.customersService.findById(id);
-    if (result.isFailure) {
-      throw new NotFoundException(result.getError());
-    }
-    return result.getValue();
+    return unwrap(await this.customersService.findById(id), 'not_found');
   }
 }

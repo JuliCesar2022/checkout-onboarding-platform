@@ -1,7 +1,11 @@
+export type ProductCategory = 'AUDIO' | 'PERIPHERALS' | 'NETWORKING';
+
 export class ProductEntity {
   id: string;
+  sku: string;
   name: string;
   description: string;
+  category: ProductCategory;
   imageUrl: string | null;
   priceInCents: number;
   stock: number;

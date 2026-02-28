@@ -1,19 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  NotFoundException,
-  BadRequestException,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TransactionsService } from '../../application/transactions.service';
 import { CreateTransactionDto } from '../../application/dto/create-transaction.dto';
 import { TransactionResponseDto } from '../../application/dto/transaction-response.dto';
 import { StrictEndpoint, PublicEndpoint } from '../../../../common/decorators/throttle.decorators';
+import { unwrap } from '../../../../common/helpers/result-to-http.helper';
 
 @ApiTags('transactions')
 @Controller('transactions')
@@ -26,14 +17,8 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Create and process a new payment transaction' })
   @ApiResponse({ status: 201, type: TransactionResponseDto })
   @ApiResponse({ status: 400, description: 'Validation error or payment failed' })
-  async create(
-    @Body() dto: CreateTransactionDto,
-  ): Promise<TransactionResponseDto> {
-    const result = await this.transactionsService.create(dto);
-    if (result.isFailure) {
-      throw new BadRequestException(result.getError());
-    }
-    return result.getValue();
+  async create(@Body() dto: CreateTransactionDto): Promise<TransactionResponseDto> {
+    return unwrap(await this.transactionsService.create(dto));
   }
 
   @Get(':id')
@@ -43,11 +28,7 @@ export class TransactionsController {
   @ApiResponse({ status: 200, type: TransactionResponseDto })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
   async findById(@Param('id') id: string): Promise<TransactionResponseDto> {
-    const result = await this.transactionsService.findById(id);
-    if (result.isFailure) {
-      throw new NotFoundException(result.getError());
-    }
-    return result.getValue();
+    return unwrap(await this.transactionsService.findById(id), 'not_found');
   }
 
   @Get('reference/:reference')
@@ -55,13 +36,8 @@ export class TransactionsController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get transaction by Wompi reference' })
   @ApiResponse({ status: 200, type: TransactionResponseDto })
-  async findByReference(
-    @Param('reference') reference: string,
-  ): Promise<TransactionResponseDto> {
-    const result = await this.transactionsService.findByReference(reference);
-    if (result.isFailure) {
-      throw new NotFoundException(result.getError());
-    }
-    return result.getValue();
+  @ApiResponse({ status: 404, description: 'Transaction not found' })
+  async findByReference(@Param('reference') reference: string): Promise<TransactionResponseDto> {
+    return unwrap(await this.transactionsService.findByReference(reference), 'not_found');
   }
 }

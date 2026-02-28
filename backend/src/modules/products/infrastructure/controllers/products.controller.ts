@@ -1,19 +1,13 @@
-import {
-  Controller,
-  Get,
-  Param,
-  NotFoundException,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from '../../application/products.service';
 import { ProductResponseDto } from '../../application/dto/product-response.dto';
 import { PublicEndpoint } from '../../../../common/decorators/throttle.decorators';
+import { unwrap } from '../../../../common/helpers/result-to-http.helper';
 
 @ApiTags('products')
 @Controller('products')
-@PublicEndpoint()  // GET endpoints: 100 req/min per IP
+@PublicEndpoint()  // Read-only: 100 req/min per IP
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
@@ -31,10 +25,6 @@ export class ProductsController {
   @ApiResponse({ status: 200, type: ProductResponseDto })
   @ApiResponse({ status: 404, description: 'Product not found' })
   async findById(@Param('id') id: string): Promise<ProductResponseDto> {
-    const result = await this.productsService.findById(id);
-    if (result.isFailure) {
-      throw new NotFoundException(result.getError());
-    }
-    return result.getValue();
+    return unwrap(await this.productsService.findById(id), 'not_found');
   }
 }
