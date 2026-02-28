@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TransactionsService } from '../../application/transactions.service';
 import { CreateTransactionDto } from '../../application/dto/create-transaction.dto';
 import { TransactionResponseDto } from '../../application/dto/transaction-response.dto';
+import { StrictEndpoint, PublicEndpoint } from '../../../../common/decorators/throttle.decorators';
 
 @ApiTags('transactions')
 @Controller('transactions')
@@ -20,6 +21,7 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post()
+  @StrictEndpoint()  // Sensitive: 10 req/min per IP
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create and process a new payment transaction' })
   @ApiResponse({ status: 201, type: TransactionResponseDto })
@@ -35,6 +37,7 @@ export class TransactionsController {
   }
 
   @Get(':id')
+  @PublicEndpoint()  // Read-only: 100 req/min per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get transaction by ID (for polling status)' })
   @ApiResponse({ status: 200, type: TransactionResponseDto })
@@ -48,6 +51,7 @@ export class TransactionsController {
   }
 
   @Get('reference/:reference')
+  @PublicEndpoint()  // Read-only: 100 req/min per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get transaction by Wompi reference' })
   @ApiResponse({ status: 200, type: TransactionResponseDto })

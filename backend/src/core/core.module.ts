@@ -18,7 +18,13 @@ import { PrismaModule } from '../prisma/prisma.module';
       validate: validateEnv,
     }),
 
-    // Rate limiting — 60 req / 60s per IP (OWASP A05)
+    // Rate limiting — default 60 req / 60s per IP (OWASP A05)
+    // Override per endpoint using decorators:
+    //   @PublicEndpoint() → 100 req/min (GET operations)
+    //   @ApiEndpoint() → 60 req/min (default CRUD)
+    //   @StrictEndpoint() → 10 req/min (payment, auth, sensitive)
+    //   @NoThrottle() → bypass (health checks, webhooks)
+    // See: src/common/decorators/throttle.decorators.ts
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

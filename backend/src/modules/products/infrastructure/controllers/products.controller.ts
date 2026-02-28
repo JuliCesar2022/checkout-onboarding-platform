@@ -9,9 +9,11 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from '../../application/products.service';
 import { ProductResponseDto } from '../../application/dto/product-response.dto';
+import { PublicEndpoint } from '../../../../common/decorators/throttle.decorators';
 
 @ApiTags('products')
 @Controller('products')
+@PublicEndpoint()  // GET endpoints: 100 req/min per IP
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
