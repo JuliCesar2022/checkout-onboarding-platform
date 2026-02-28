@@ -13,6 +13,6 @@ import { PrismaCustomersRepository } from './infrastructure/repositories/prisma-
       useClass: PrismaCustomersRepository,
     },
   ],
-  exports: [CustomersService],
+  exports: [CustomersService, ICustomersRepository],
 })
 export class CustomersModule {}
