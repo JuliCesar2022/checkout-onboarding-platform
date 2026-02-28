@@ -75,33 +75,24 @@ const data = [
   },
 ];
 
-export async function seedProducts(prisma: PrismaClient): Promise<void> {
+export async function seedProducts(
+  prisma: PrismaClient,
+  categoriesMap: Map<string, any>,
+): Promise<void> {
   await prisma.product.deleteMany();
-  await prisma.category.deleteMany();
-
-  // Create standard categories
-  const categoriesMap = new Map<string, string>();
-  for (const name of ['Audio', 'Peripherals', 'Networking']) {
-    const slug = name.toUpperCase();
-    const created = await prisma.category.create({
-      data: { name, slug, description: `${name} products` },
-    });
-    categoriesMap.set(slug, created.id);
-    console.log(`  [categories] Created: ${name}`);
-  }
 
   for (const productData of data) {
     const { category, ...rest } = productData;
-    const categoryId = categoriesMap.get(category);
+    const categoryModel = categoriesMap.get(category);
 
-    if (!categoryId) {
+    if (!categoryModel) {
       throw new Error(`Category ${category} not found during seeding`);
     }
 
     await prisma.product.create({
       data: {
         ...rest,
-        category: { connect: { id: categoryId } },
+        category: { connect: { id: categoryModel.id } },
       },
     });
     console.log(`  [products] Created: ${rest.sku} — ${rest.name}`);

@@ -12,17 +12,12 @@ import { seedProducts } from './products.seed';
  *   3. Import it here and add it to the `seeds` array below
  */
 
-type SeedFn = (prisma: PrismaClient) => Promise<void>;
-
-const seeds: { name: string; fn: SeedFn }[] = [
-  { name: 'products', fn: seedProducts },
-  // { name: 'customers', fn: seedCustomers }, // Add when needed
-  // { name: 'transactions', fn: seedTransactions }, // Only for dev fixtures
-];
+import { seedCategories } from './categories.seed';
 
 export async function runAllSeeds(prisma: PrismaClient): Promise<void> {
-  for (const seed of seeds) {
-    console.log(`\nRunning seed: ${seed.name}`);
-    await seed.fn(prisma);
-  }
+  console.log(`\nRunning seed: categories`);
+  const categoriesMap = await seedCategories(prisma);
+
+  console.log(`\nRunning seed: products`);
+  await seedProducts(prisma, categoriesMap);
 }
