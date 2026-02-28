@@ -42,5 +42,8 @@ node_modules/
 dist/
 build/
 
+# PDF files (documentation, test specs)
+*.pdf
+
 # Note: backend/ and frontend/ have their own .gitignore files
 # which handle their specific node_modules, dist, .env files, etc.
