@@ -1,0 +1,122 @@
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
+import { Result } from '../../../../common/result/result';
+import { ITransactionsRepository } from '../../domain/repositories/transactions.repository';
+import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
+import { ICustomersRepository } from '../../../customers/domain/repositories/customers.repository';
+import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
+import { IDeliveriesRepository } from '../../../deliveries/domain/repositories/deliveries.repository';
+import { CreateTransactionDto } from '../dto/create-transaction.dto';
+import { TransactionResponseDto } from '../dto/transaction-response.dto';
+import type { Env } from '../../../../config/env.validation';
+
+/**
+ * ProcessPayment Use Case — Railway Oriented Programming
+ *
+ * Steps (each returns Result, stops on failure):
+ *   1. Validate product exists and has stock
+ *   2. Upsert customer
+ *   3. Calculate fees
+ *   4. Create PENDING transaction in DB
+ *   5. Call Wompi to charge card
+ *   6. Update transaction with Wompi result
+ *   7. If APPROVED: decrement stock + create delivery record
+ */
+@Injectable()
+export class CreateTransactionUseCase {
+  constructor(
+    private readonly transactionsRepo: ITransactionsRepository,
+    private readonly productsRepo: IProductsRepository,
+    private readonly customersRepo: ICustomersRepository,
+    private readonly deliveriesRepo: IDeliveriesRepository,
+    private readonly paymentPort: IPaymentPort,
+    private readonly config: ConfigService<Env>,
+  ) {}
+
+  async execute(dto: CreateTransactionDto): Promise<Result<TransactionResponseDto>> {
+    // Step 1: Validate product
+    const product = await this.productsRepo.findById(dto.productId);
+    if (!product) {
+      return Result.fail('Product not found');
+    }
+    if (product.stock < dto.quantity) {
+      return Result.fail(
+        `Insufficient stock. Available: ${product.stock}, requested: ${dto.quantity}`,
+      );
+    }
+
+    // Step 2: Upsert customer
+    const customer = await this.customersRepo.upsertByEmail({
+      email: dto.customerData.email,
+      name: dto.customerData.name,
+      phone: dto.customerData.phone,
+    });
+
+    // Step 3: Calculate fees
+    const baseFeeInCents = this.config.get<number>('BASE_FEE_IN_CENTS', { infer: true }) ?? 150000;
+    const deliveryFeeInCents = this.config.get<number>('DELIVERY_FEE_IN_CENTS', { infer: true }) ?? 1000000;
+    const productAmountInCents = product.priceInCents * dto.quantity;
+    const totalAmountInCents = productAmountInCents + baseFeeInCents + deliveryFeeInCents;
+
+    // Step 4: Create PENDING transaction
+    const reference = `TXN-${uuidv4()}`;
+    const transaction = await this.transactionsRepo.create({
+      reference,
+      amountInCents: totalAmountInCents,
+      productAmountInCents,
+      baseFeeInCents,
+      deliveryFeeInCents,
+      productId: dto.productId,
+      quantity: dto.quantity,
+      customerId: customer.id,
+      cardBrand: dto.cardData.brand,
+      cardLastFour: dto.cardData.lastFour,
+    });
+
+    // Step 5: Call Wompi
+    const paymentResult = await this.paymentPort.charge({
+      amountInCents: totalAmountInCents,
+      currency: 'COP',
+      reference,
+      cardToken: dto.cardData.token,
+      installments: dto.cardData.installments ?? 1,
+      customerEmail: dto.customerData.email,
+      acceptanceToken: dto.acceptanceToken,
+      acceptPersonalAuth: dto.acceptPersonalAuth,
+    });
+
+    if (paymentResult.isFailure) {
+      // Update transaction to ERROR so frontend knows
+      await this.transactionsRepo.updateStatus(transaction.id, 'ERROR');
+      return Result.fail(`Payment failed: ${paymentResult.getError()}`);
+    }
+
+    const wompiResult = paymentResult.getValue();
+    const finalStatus = wompiResult.status; // APPROVED | DECLINED | ERROR
+
+    // Step 6: Update transaction with Wompi result
+    const updatedTransaction = await this.transactionsRepo.updateStatus(
+      transaction.id,
+      finalStatus,
+      wompiResult.wompiId,
+      wompiResult.rawResponse,
+    );
+
+    // Step 7: If approved → decrement stock + create delivery
+    if (finalStatus === 'APPROVED') {
+      await this.productsRepo.decrementStock(dto.productId, dto.quantity);
+      await this.deliveriesRepo.create({
+        transactionId: transaction.id,
+        productId: dto.productId,
+        customerId: customer.id,
+        address: dto.deliveryData.address,
+        city: dto.deliveryData.city,
+        state: dto.deliveryData.state,
+        postalCode: dto.deliveryData.postalCode,
+      });
+    }
+
+    return Result.ok(TransactionResponseDto.fromEntity(updatedTransaction));
+  }
+}

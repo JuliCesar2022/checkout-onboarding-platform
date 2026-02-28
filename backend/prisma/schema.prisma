@@ -1,0 +1,109 @@
+// Prisma Schema — Checkout Onboarding Platform
+// DB: PostgreSQL | ORM: Prisma
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  ERROR
+  VOIDED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  imageUrl    String?
+  priceInCents Int     // Price in COP cents
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions Transaction[]
+  deliveries   Delivery[]
+
+  @@map("products")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  deliveries   Delivery[]
+
+  @@map("customers")
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  reference     String            @unique  // Internal reference
+  wompiId       String?           @unique  // Wompi transaction ID
+  status        TransactionStatus @default(PENDING)
+  amountInCents Int
+  currency      String            @default("COP")
+
+  // Card info (no CVV ever stored)
+  cardBrand     String?           // VISA | MASTERCARD
+  cardLastFour  String?
+
+  // Fees breakdown
+  productAmountInCents  Int
+  baseFeeInCents        Int
+  deliveryFeeInCents    Int
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int      @default(1)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  wompiResponse Json?  // Raw Wompi response for audit
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  delivery Delivery?
+
+  @@map("transactions")
+}
+
+model Delivery {
+  id         String   @id @default(uuid())
+  address    String
+  city       String
+  state      String
+  postalCode String?
+  country    String   @default("CO")
+
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("deliveries")
+}
