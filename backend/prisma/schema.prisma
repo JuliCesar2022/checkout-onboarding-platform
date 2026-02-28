@@ -11,12 +11,6 @@ generator client {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-enum ProductCategory {
-  AUDIO       // Headphones, speakers, microphones
-  PERIPHERALS // Keyboards, mice, webcams
-  NETWORKING  // Hubs, adapters, cables
-}
-
 enum TransactionStatus {
   PENDING
   APPROVED
@@ -28,21 +22,37 @@ enum TransactionStatus {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model Product {
-  id          String            @id @default(uuid())
-  sku         String            @unique                // Internal tracking code
+  id          String @id @default(uuid())
+  sku         String @unique // Internal tracking code
   name        String
   description String
-  category    ProductCategory                         // NEW: Product category
-  imageUrl    String?
-  priceInCents Int               // Price in COP cents
-  stock       Int               @default(0)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  imageUrl     String?
+  priceInCents Int // Price in COP cents
+  stock        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   transactions Transaction[]
   deliveries   Delivery[]
 
   @@map("products")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
 }
 
 model Customer {
@@ -61,29 +71,29 @@ model Customer {
 
 model Transaction {
   id            String            @id @default(uuid())
-  reference     String            @unique  // Internal reference
-  wompiId       String?           @unique  // Wompi transaction ID
+  reference     String            @unique // Internal reference
+  wompiId       String?           @unique // Wompi transaction ID
   status        TransactionStatus @default(PENDING)
   amountInCents Int
   currency      String            @default("COP")
 
   // Card info (no CVV ever stored)
-  cardBrand     String?           // VISA | MASTERCARD
-  cardLastFour  String?
+  cardBrand    String? // VISA | MASTERCARD
+  cardLastFour String?
 
   // Fees breakdown
-  productAmountInCents  Int
-  baseFeeInCents        Int
-  deliveryFeeInCents    Int
+  productAmountInCents Int
+  baseFeeInCents       Int
+  deliveryFeeInCents   Int
 
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
-  quantity   Int      @default(1)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
 
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
 
-  wompiResponse Json?  // Raw Wompi response for audit
+  wompiResponse Json? // Raw Wompi response for audit
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,12 +104,12 @@ model Transaction {
 }
 
 model Delivery {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   address    String
   city       String
   state      String
   postalCode String?
-  country    String   @default("CO")
+  country    String  @default("CO")
 
   transactionId String      @unique
   transaction   Transaction @relation(fields: [transactionId], references: [id])

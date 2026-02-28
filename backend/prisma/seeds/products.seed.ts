@@ -8,7 +8,8 @@ const data = [
     category: 'AUDIO' as const,
     description:
       'Premium noise-cancelling wireless headphones with 30-hour battery life. Active noise cancellation with 10 levels.',
-    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+    imageUrl:
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
     priceInCents: 29900000, // 299,000 COP
     stock: 2,
   },
@@ -19,7 +20,8 @@ const data = [
     category: 'PERIPHERALS' as const,
     description:
       'Compact 75% mechanical keyboard with Cherry MX switches and per-key RGB lighting. Hot-swappable switches.',
-    imageUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400',
+    imageUrl:
+      'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400',
     priceInCents: 18500000, // 185,000 COP
     stock: 8,
   },
@@ -30,7 +32,8 @@ const data = [
     category: 'NETWORKING' as const,
     description:
       'Multiport adapter with 4K HDMI, 3x USB-A, SD card reader, and 100W PD charging. Aluminum construction.',
-    imageUrl: 'https://images.unsplash.com/photo-1593640408182-31c228b42b8c?w=400',
+    imageUrl:
+      'https://images.unsplash.com/photo-1593640408182-31c228b42b8c?w=400',
     priceInCents: 8900000, // 89,000 COP
     stock: 50,
   },
@@ -41,7 +44,8 @@ const data = [
     category: 'PERIPHERALS' as const,
     description:
       'Vertical ergonomic mouse designed to reduce wrist strain. Silent clicks, 6 programmable buttons, wireless.',
-    imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400',
+    imageUrl:
+      'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400',
     priceInCents: 12500000, // 125,000 COP
     stock: 1,
   },
@@ -52,7 +56,8 @@ const data = [
     category: 'PERIPHERALS' as const,
     description:
       'Ultra HD 4K webcam with auto-focus, built-in noise-cancelling mic, and privacy shutter. USB 3.0.',
-    imageUrl: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400',
+    imageUrl:
+      'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400',
     priceInCents: 22000000, // 220,000 COP
     stock: 0,
   },
@@ -63,7 +68,8 @@ const data = [
     category: 'NETWORKING' as const,
     description:
       '100W USB-C to USB-C cable with fast charging and data transfer. Nylon braided, durable.',
-    imageUrl: 'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400',
+    imageUrl:
+      'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400',
     priceInCents: 2500000, // 25,000 COP
     stock: 100,
   },
@@ -71,9 +77,33 @@ const data = [
 
 export async function seedProducts(prisma: PrismaClient): Promise<void> {
   await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
 
-  for (const product of data) {
-    await prisma.product.create({ data: product });
-    console.log(`  [products] Created: ${product.sku} — ${product.name}`);
+  // Create standard categories
+  const categoriesMap = new Map<string, string>();
+  for (const name of ['Audio', 'Peripherals', 'Networking']) {
+    const slug = name.toUpperCase();
+    const created = await prisma.category.create({
+      data: { name, slug, description: `${name} products` },
+    });
+    categoriesMap.set(slug, created.id);
+    console.log(`  [categories] Created: ${name}`);
+  }
+
+  for (const productData of data) {
+    const { category, ...rest } = productData;
+    const categoryId = categoriesMap.get(category);
+
+    if (!categoryId) {
+      throw new Error(`Category ${category} not found during seeding`);
+    }
+
+    await prisma.product.create({
+      data: {
+        ...rest,
+        category: { connect: { id: categoryId } },
+      },
+    });
+    console.log(`  [products] Created: ${rest.sku} — ${rest.name}`);
   }
 }
