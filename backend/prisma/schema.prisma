@@ -11,6 +11,12 @@ generator client {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
+enum ProductCategory {
+  AUDIO       // Headphones, speakers, microphones
+  PERIPHERALS // Keyboards, mice, webcams
+  NETWORKING  // Hubs, adapters, cables
+}
+
 enum TransactionStatus {
   PENDING
   APPROVED
@@ -22,14 +28,16 @@ enum TransactionStatus {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String            @id @default(uuid())
+  sku         String            @unique                // Internal tracking code
   name        String
   description String
+  category    ProductCategory                         // NEW: Product category
   imageUrl    String?
-  priceInCents Int     // Price in COP cents
-  stock       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  priceInCents Int               // Price in COP cents
+  stock       Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   transactions Transaction[]
   deliveries   Delivery[]
