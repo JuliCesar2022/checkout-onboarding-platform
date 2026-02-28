@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { PAGINATION_CONSTANTS } from '../constants/pagination.constants';
 
 /**
  * Reusable base DTO for cursor-based pagination query params.
@@ -8,16 +9,16 @@ import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
  */
 export class PaginationQueryDto {
   @ApiPropertyOptional({
-    description: 'Number of items per page (default 12, max 50)',
-    example: 12,
-    default: 12,
+    description: `Number of items per page (default ${PAGINATION_CONSTANTS.DEFAULT_LIMIT}, max ${PAGINATION_CONSTANTS.MAX_LIMIT})`,
+    example: PAGINATION_CONSTANTS.DEFAULT_LIMIT,
+    default: PAGINATION_CONSTANTS.DEFAULT_LIMIT,
   })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
-  @Min(1)
-  @Max(50)
-  limit: number = 12;
+  @Min(PAGINATION_CONSTANTS.MIN_LIMIT)
+  @Max(PAGINATION_CONSTANTS.MAX_LIMIT)
+  limit: number = PAGINATION_CONSTANTS.DEFAULT_LIMIT;
 
   @ApiPropertyOptional({
     description:

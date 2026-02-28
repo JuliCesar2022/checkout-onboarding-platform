@@ -4,6 +4,7 @@ import { ProductResponseDto } from './dto/product-response.dto';
 import { PaginatedProductsDto } from './dto/paginated-products.dto';
 import { FindProductsQueryDto } from './dto/find-products-query.dto';
 import { Result } from '../../../common/result/result';
+import { PRODUCTS_ERRORS } from '../domain/constants/products.constants';
 
 @Injectable()
 export class ProductsService {
@@ -33,7 +34,7 @@ export class ProductsService {
   async findById(id: string): Promise<Result<ProductResponseDto>> {
     const product = await this.productsRepository.findById(id);
     if (!product) {
-      return Result.fail(`Product with id "${id}" not found`);
+      return Result.fail(PRODUCTS_ERRORS.NOT_FOUND(id));
     }
     return Result.ok(ProductResponseDto.fromEntity(product));
   }
@@ -44,11 +45,11 @@ export class ProductsService {
   ): Promise<Result<ProductResponseDto>> {
     const product = await this.productsRepository.findById(id);
     if (!product) {
-      return Result.fail(`Product with id "${id}" not found`);
+      return Result.fail(PRODUCTS_ERRORS.NOT_FOUND(id));
     }
     if (product.stock < quantity) {
       return Result.fail(
-        `Insufficient stock. Available: ${product.stock}, requested: ${quantity}`,
+        PRODUCTS_ERRORS.INSUFFICIENT_STOCK(product.stock, quantity),
       );
     }
     const updated = await this.productsRepository.decrementStock(id, quantity);
