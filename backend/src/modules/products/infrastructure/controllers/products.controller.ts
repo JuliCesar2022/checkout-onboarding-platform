@@ -6,7 +6,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from '../../application/products.service';
 import { ProductResponseDto } from '../../application/dto/product-response.dto';
 import { PaginatedProductsDto } from '../../application/dto/paginated-products.dto';

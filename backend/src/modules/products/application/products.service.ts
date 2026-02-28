@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IProductsRepository } from '../domain/repositories/products.repository';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { PaginatedProductsDto } from './dto/paginated-products.dto';
