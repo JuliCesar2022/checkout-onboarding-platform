@@ -11,7 +11,7 @@ export function SectionHeader({ title, actionLabel, onAction }: SectionHeaderPro
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
+          className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors cursor-pointer"
         >
           {actionLabel} &gt;
         </button>

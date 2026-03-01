@@ -21,7 +21,7 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-900">{title}</h2>
-        <button className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors">
+        <button className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors cursor-pointer">
           Ver todos &gt;
         </button>
       </div>
@@ -36,7 +36,7 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
             <article
               key={product.id}
               onClick={() => navigate(productDetailPath(product.id))}
-              className="flex-shrink-0 w-52 cursor-pointer group"
+              className="shrink-0 w-52 cursor-pointer group"
             >
               <div className="w-full h-48 rounded-xl bg-gray-50 overflow-hidden border border-gray-100 group-hover:shadow-md transition-shadow">
                 {product.imageUrl ? (
@@ -66,7 +66,7 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
                       dispatch(addToCart({ productId: product.id, name: product.name, imageUrl: product.imageUrl, priceInCents: product.priceInCents }));
                     }}
                     disabled={isOutOfStock}
-                    className="flex-shrink-0 rounded-lg border border-gray-200 p-2 text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="shrink-0 cursor-pointer rounded-lg border border-gray-200 p-2 text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Agregar al carrito"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -80,7 +80,7 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
                         onPay(product);
                       }}
                       disabled={isOutOfStock}
-                      className="flex-1 rounded-lg bg-[#222] py-1.5 px-2 text-xs font-semibold text-white hover:bg-[#333] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex-1 cursor-pointer rounded-lg bg-[#222] py-1.5 px-2 text-xs font-semibold text-white hover:bg-[#333] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       Comprar
                     </button>

@@ -23,7 +23,7 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
       className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
       onClick={() => navigate(productDetailPath(product.id))}
     >
-      <div className="relative h-48 bg-gray-50 flex-shrink-0">
+      <div className="relative h-48 bg-gray-50 shrink-0">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
@@ -54,7 +54,7 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
               dispatch(addToCart({ productId: product.id, name: product.name, imageUrl: product.imageUrl, priceInCents: product.priceInCents }));
             }}
             disabled={isOutOfStock}
-            className="flex-shrink-0 rounded-xl border border-gray-200 p-3 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="shrink-0 cursor-pointer rounded-xl border border-gray-200 p-3 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Agregar al carrito"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
