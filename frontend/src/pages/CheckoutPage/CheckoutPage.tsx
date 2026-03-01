@@ -1,8 +1,8 @@
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
 import { useEffect } from 'react';
-import { 
-  proceedToSummary, 
+import {
+  proceedToSummary,
   startProcessing,
   saveCardData,
   saveDeliveryAddress,
@@ -19,56 +19,54 @@ import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
 
-// Mirror the fee constants from backend .env (in COP cents)
-const BASE_FEE_IN_CENTS = 150_000;   // 1,500 COP
-const DELIVERY_FEE_IN_CENTS = 1_000_000; // 10,000 COP
+const BASE_FEE_IN_CENTS = 150_000;
+const DELIVERY_FEE_IN_CENTS = 1_000_000;
+
+const STEPS = [
+  { number: 1, label: 'Delivery' },
+  { number: 2, label: 'Payment' },
+];
 
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
-  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity } = useAppSelector((state) => state.checkout);
+  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity } =
+    useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
-  // Load product and compute fee breakdown when productId is available
+  // Which UI step are we on: 1 = delivery, 2 = payment
+  const currentStep = !deliveryAddress ? 1 : 2;
+
   useEffect(() => {
     if (!productId) return;
     productsApi.fetchProductById(productId).then((product) => {
       const productAmountInCents = product.priceInCents * quantity;
-      dispatch(setFees({
-        productAmount: productAmountInCents / 100,
-        baseFee: BASE_FEE_IN_CENTS / 100,
-        deliveryFee: DELIVERY_FEE_IN_CENTS / 100,
-        totalAmount: (productAmountInCents + BASE_FEE_IN_CENTS + DELIVERY_FEE_IN_CENTS) / 100,
-      }));
+      dispatch(
+        setFees({
+          productAmount: productAmountInCents / 100,
+          baseFee: BASE_FEE_IN_CENTS / 100,
+          deliveryFee: DELIVERY_FEE_IN_CENTS / 100,
+          totalAmount: (productAmountInCents + BASE_FEE_IN_CENTS + DELIVERY_FEE_IN_CENTS) / 100,
+        })
+      );
     }).catch(console.error);
   }, [productId, quantity, dispatch]);
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CO', {
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
     }).format(amount);
-  };
 
   const handlePay = async () => {
-    if (!cardData || !deliveryAddress) return;
-    if (!cardData.token) {
-      console.error('❌ No hay token de tarjeta. Tokeniza primero.');
-      return;
-    }
-    if (!productId) {
-      console.error('❌ No hay producto seleccionado.');
-      return;
-    }
+    if (!cardData || !deliveryAddress || !productId) return;
+    if (!cardData.token) return;
 
     dispatch(startProcessing());
 
     try {
-      // Step 1: Get Wompi acceptance tokens from our backend
-      console.log('📜 Obteniendo acceptance tokens de Wompi...');
       const { acceptanceToken, personalAuthToken } = await checkoutApi.fetchAcceptanceToken();
-      console.log('✅ Acceptance tokens obtenidos');
 
-      // Step 2: Submit transaction to our backend
       const result = await checkoutApi.submitTransaction({
         productId,
         quantity,
@@ -92,24 +90,14 @@ export function CheckoutPage() {
         acceptPersonalAuth: personalAuthToken,
       });
 
-      console.log('🎉 Transacción procesada:', result);
-      console.log(`   Status: ${result.status}`);
-      console.log(`   ID: ${result.id}`);
-      console.log(`   Referencia: ${result.reference}`);
-
       let finalResult = result;
-
-      // Si Wompi lo deja PENDING (muy común), hacemos polling cada 3s al backend
       if (finalResult.status === 'PENDING') {
-        console.log('⏳ Transacción PENDING. Iniciando polling cada 3s...');
-        
         while (finalResult.status === 'PENDING') {
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
           try {
             finalResult = await checkoutApi.syncTransactionStatus(finalResult.id);
-            console.log(`🔄 Estado actual: ${finalResult.status}`);
-          } catch (syncError) {
-            console.error('⚠️ Error consultando estado, reintentando...', syncError);
+          } catch {
+            // retry
           }
         }
       }
@@ -119,75 +107,127 @@ export function CheckoutPage() {
       } else {
         dispatch(setCheckoutError(`Pago ${finalResult.status.toLowerCase()}: la transacción no fue aprobada.`));
       }
-
     } catch (err: any) {
-      console.error('❌ Error al procesar el pago:', err.message);
       dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
     }
   };
-
 
   const isFormComplete = deliveryAddress && cardData;
   const isLoading = loadingState === 'submitting' || loadingState === 'polling';
 
   return (
     <PageWrapper>
-      <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8 lg:pt-12">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Checkout</h1>
+      <div className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6">
 
-        <div className="mt-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
-          {/* Left Column: Forms */}
-          <section aria-labelledby="forms-heading" className="lg:col-span-7">
-            <h2 id="forms-heading" className="sr-only">Checkout details</h2>
-
-            <div className="space-y-12">
-              {/* Delivery Section */}
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-                <div className="mb-6 flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">1. Delivery Information</h3>
-                  {deliveryAddress && (
-                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                      Completed
-                    </span>
-                  )}
-                </div>
-                {!deliveryAddress ? (
-                  <DeliveryForm 
-                    onSubmit={(data) => {
-                      dispatch(saveDeliveryAddress(data));
-                    }} 
-                  />
-                ) : (
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p className="font-medium text-gray-900">{deliveryAddress.recipientName}</p>
-                    <p>{deliveryAddress.addressLine1} {deliveryAddress.addressLine2}</p>
-                    <p>{deliveryAddress.city}, {deliveryAddress.department}</p>
-                    <p>{deliveryAddress.phoneNumber}</p>
-                    <button 
-                      onClick={() => dispatch(saveDeliveryAddress(null as any))}
-                      className="mt-2 text-gray-900 hover:text-gray-600 font-medium"
+        {/* ── Stepper ── */}
+        <div className="mb-10">
+          <div className="flex items-center">
+            {STEPS.map((s, idx) => {
+              const isDone = s.number < currentStep;
+              const isActive = s.number === currentStep;
+              return (
+                <div key={s.number} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div
+                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                        isDone
+                          ? 'bg-[#222] text-white'
+                          : isActive
+                          ? 'bg-[#222] text-white ring-4 ring-gray-200'
+                          : 'bg-gray-100 text-gray-400'
+                      }`}
                     >
-                      Edit
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Payment Section */}
-              <div className={`rounded-2xl border bg-white p-6 shadow-sm sm:p-8 transition-opacity ${!deliveryAddress ? 'opacity-50 pointer-events-none border-gray-100' : 'border-gray-200'}`}>
-                <div className="mb-6 flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">2. Payment Information</h3>
-                  {cardData && (
-                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                      Completed
+                      {isDone ? (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        s.number
+                      )}
+                    </div>
+                    <span className={`text-xs font-medium whitespace-nowrap ${isActive ? 'text-gray-900' : isDone ? 'text-gray-500' : 'text-gray-400'}`}>
+                      {s.label}
                     </span>
+                  </div>
+                  {idx < STEPS.length - 1 && (
+                    <div className="flex-1 mx-3 mb-5">
+                      <div className={`h-0.5 w-full transition-all ${isDone ? 'bg-[#222]' : 'bg-gray-200'}`} />
+                    </div>
                   )}
                 </div>
-                {!cardData ? (
-                  <CardForm 
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-8">
+
+          {/* ── Left column: forms ── */}
+          <section className="lg:col-span-7 space-y-4">
+
+            {/* Step 1 — Delivery */}
+            {currentStep === 1 ? (
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Delivery information</h2>
+                <DeliveryForm onSubmit={(data) => dispatch(saveDeliveryAddress(data))} />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 w-8 h-8 rounded-full bg-[#222] flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{deliveryAddress!.recipientName}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {deliveryAddress!.addressLine1}{deliveryAddress!.addressLine2 ? `, ${deliveryAddress!.addressLine2}` : ''} — {deliveryAddress!.city}, {deliveryAddress!.department}
+                    </p>
+                    <p className="text-sm text-gray-500">{deliveryAddress!.phoneNumber}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => dispatch(saveDeliveryAddress(null as any))}
+                  className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+
+            {/* Step 2 — Payment */}
+            {deliveryAddress && (
+              cardData ? (
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 w-8 h-8 rounded-full bg-[#222] flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {cardData.brand || 'Card'} •••• {cardData.number?.slice(-4)}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {cardData.holderName} · Expires {cardData.expiryMonth}/{cardData.expiryYear}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => dispatch(saveCardData(null as any))}
+                    className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2"
+                  >
+                    Edit
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Payment information</h2>
+                  <CardForm
                     onSubmit={async (data) => {
                       try {
-                        // 1. Tokenize card directly with Wompi
                         const tokenResult = await checkoutApi.tokenizeCard({
                           number: data.cardNumber,
                           cvc: data.cvv,
@@ -195,95 +235,64 @@ export function CheckoutPage() {
                           expYear: data.expiryYear,
                           cardHolder: data.holderName,
                         });
-
-                        console.log('✅ Wompi Tokenization Success!');
-                        console.log('Token generated:', tokenResult.token);
-                        console.log('Brand detected:', tokenResult.brand);
-
-                        // 2. Save safe data + token to Redux (never save CVV or full card number)
-                        const { cvv, cardNumber, ...restData } = data;
-                        dispatch(saveCardData({ 
-                          ...restData, 
-                          number: cardNumber, 
-                          brand: tokenResult.brand, // Use Wompi's confirmed brand
-                          token: tokenResult.token 
-                        }));
-                        
+                        const { cvv: _cvv, cardNumber, ...restData } = data;
+                        dispatch(saveCardData({ ...restData, number: cardNumber, brand: tokenResult.brand, token: tokenResult.token }));
                         dispatch(proceedToSummary());
                       } catch (err: any) {
                         alert(err.message || 'Error tokenizing card');
                       }
-                    }} 
+                    }}
                   />
-                ) : (
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium text-gray-900 mb-1">{cardData.brand || 'Card'} ending in {cardData.number?.slice(-4)}</p>
-                    <p>Holder: {cardData.holderName}</p>
-                    <p>Expires: {cardData.expiryMonth}/{cardData.expiryYear}</p>
-                    <button 
-                      onClick={() => dispatch(saveCardData(null as any))}
-                      className="mt-2 text-gray-900 hover:text-gray-600 font-medium"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )
+            )}
           </section>
 
-          {/* Right Column: Order Summary (Desktop) */}
-          <section
-            aria-labelledby="summary-heading"
-            className="mt-16 rounded-2xl bg-gray-50 px-6 py-8 sm:p-8 lg:col-span-5 lg:mt-0 lg:sticky lg:top-8 hidden lg:block border border-gray-200 shadow-sm"
-          >
-            <h2 id="summary-heading" className="text-lg font-medium text-gray-900 mb-6">
-              Order Summary
-            </h2>
+          {/* ── Right column: Order Summary (always visible) ── */}
+          <section className="mt-8 lg:col-span-5 lg:mt-0 lg:sticky lg:top-8">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-5">Order Summary</h2>
 
-            {fees ? (
-              <div>
-                <dl className="space-y-4 text-sm text-gray-600">
-                  <div className="flex items-center justify-between">
-                    <dt>Product amount</dt>
-                    <dd className="font-medium text-gray-900">{formatCurrency(fees.productAmount)}</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt>Base fee (Wompi)</dt>
-                    <dd className="font-medium text-gray-900">{formatCurrency(fees.baseFee)}</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt>Delivery fee</dt>
-                    <dd className="font-medium text-gray-900">{formatCurrency(fees.deliveryFee)}</dd>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                    <dt className="text-base font-semibold text-gray-900">Total</dt>
-                    <dd className="text-xl font-bold text-gray-900">{formatCurrency(fees.totalAmount)}</dd>
-                  </div>
-                </dl>
+              {fees ? (
+                <>
+                  <dl className="space-y-3 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <dt>Product amount</dt>
+                      <dd className="font-medium text-gray-900">{formatCurrency(fees.productAmount)}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Base fee (Wompi)</dt>
+                      <dd className="font-medium text-gray-900">{formatCurrency(fees.baseFee)}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Delivery fee</dt>
+                      <dd className="font-medium text-gray-900">{formatCurrency(fees.deliveryFee)}</dd>
+                    </div>
+                    <div className="flex justify-between border-t border-gray-200 pt-3">
+                      <dt className="text-base font-semibold text-gray-900">Total</dt>
+                      <dd className="text-xl font-bold text-gray-900">{formatCurrency(fees.totalAmount)}</dd>
+                    </div>
+                  </dl>
 
-                {error && (
+                  {error && <div className="mt-4"><ErrorBanner message={error} /></div>}
+
                   <div className="mt-6">
-                    <ErrorBanner message={error} />
+                    <Button
+                      onClick={handlePay}
+                      isLoading={isLoading}
+                      disabled={!isFormComplete || isLoading}
+                      className="w-full"
+                    >
+                      {!isFormComplete ? 'Complete details to pay' : isLoading ? 'Processing...' : 'Pay now'}
+                    </Button>
                   </div>
-                )}
-
-                <div className="mt-8">
-                  <Button 
-                    onClick={handlePay} 
-                    isLoading={isLoading}
-                    disabled={!isFormComplete || !fees || isLoading}
-                    className="w-full"
-                  >
-                    {!isFormComplete ? 'Complete details to pay' : isLoading ? 'Processing...' : 'Pay now'}
-                  </Button>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-10 text-sm text-gray-400">
+                  Calculating fees...
                 </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center py-12 text-sm text-gray-500">
-                Calculating fees...
-              </div>
-            )}
+              )}
+            </div>
           </section>
         </div>
       </div>

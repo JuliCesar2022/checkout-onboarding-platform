@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-credit-cards-2/dist/lib/styles-compiled.css";
 
 /* CSS custom properties — add your design tokens here */
 :root {
