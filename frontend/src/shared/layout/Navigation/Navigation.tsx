@@ -9,7 +9,7 @@ export function Navigation() {
   return (
     <nav className="bg-slate-100 border-b border-slate-300 px-4 py-3">
       <div className="max-w-6xl mx-auto flex gap-6 items-center">
-        <h1 className="font-bold text-lg text-slate-800">Wompi Checkout</h1>
+        <h1 className="font-bold text-lg text-slate-800">Checkout</h1>
 
         <div className="flex gap-4 ml-auto">
           <Link

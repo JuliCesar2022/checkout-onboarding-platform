@@ -1,20 +1,22 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { Product } from '../types';
+import type { Product, Category } from '../types';
 import { productsApi } from '../api';
 
 interface ProductsState {
   items: Product[];
+  categories: Category[];
   selectedProductId: string | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
-  lastFetchedAt: number | null; // unix ms, for cache invalidation
+  lastFetchedAt: number | null;
   nextCursor: string | null;
   hasMore: boolean;
 }
 
 const initialState: ProductsState = {
   items: [],
+  categories: [],
   selectedProductId: null,
   status: 'idle',
   error: null,
@@ -33,6 +35,10 @@ export const fetchMoreProducts = createAsyncThunk(
     return productsApi.fetchProducts(cursor);
   },
 );
+
+export const fetchCategories = createAsyncThunk('products/fetchCategories', async () => {
+  return productsApi.fetchCategories();
+});
 
 const productsSlice = createSlice({
   name: 'products',
@@ -76,6 +82,9 @@ const productsSlice = createSlice({
       .addCase(fetchMoreProducts.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message ?? 'Failed to load more products';
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.categories = action.payload;
       });
   },
 });
