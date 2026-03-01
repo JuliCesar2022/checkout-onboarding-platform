@@ -10,4 +10,12 @@ export class FindProductsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by category ID',
+    example: 'uuid-string',
+  })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
 }

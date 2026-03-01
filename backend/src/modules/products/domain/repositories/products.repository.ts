@@ -7,6 +7,7 @@ import type {
 /** Products-specific pagination params: adds `search` on top of the common base. */
 export interface FindProductsPaginatedParams extends FindPaginatedParams {
   search?: string;
+  categoryId?: string;
 }
 
 /** Port — abstract interface. Prisma implementation lives in infrastructure. */

@@ -3,6 +3,7 @@ import type { Category } from '../../types';
 
 interface CategoryListProps {
   categories: Category[];
+  activeCategoryId?: string | null;
   onSelect?: (category: Category) => void;
 }
 
@@ -24,7 +25,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 const DEFAULT_ICON = '📦';
 
-export function CategoryList({ categories, onSelect }: CategoryListProps) {
+export function CategoryList({ categories, activeCategoryId, onSelect }: CategoryListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activePage, setActivePage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -95,6 +96,7 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
             <CategoryItem
               key={cat.id}
               cat={cat}
+              isActive={activeCategoryId === cat.id}
               icon={CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON}
               onSelect={onSelect}
             />
@@ -137,11 +139,16 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
 interface CategoryItemProps {
   cat: import('../../types').Category;
   icon: string;
+  isActive?: boolean;
   onSelect?: (cat: import('../../types').Category) => void;
 }
 
-function CategoryItem({ cat, icon, onSelect }: CategoryItemProps) {
+function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
   const [hovered, setHovered] = useState(false);
+  const bgColor = isActive ? '#dbeafe' : (hovered ? '#e5e7eb' : '#f3f4f6');
+  const outlineColor = isActive ? '#3b82f6' : (hovered ? '#d1d5db' : 'transparent');
+  const textColor = isActive ? '#1d4ed8' : (hovered ? '#111827' : '#374151');
+
   return (
     <button
       key={cat.id}
@@ -158,7 +165,7 @@ function CategoryItem({ cat, icon, onSelect }: CategoryItemProps) {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
+        transform: hovered || isActive ? 'translateY(-3px)' : 'translateY(0)',
         transition: 'transform 0.2s ease',
       }}
     >
@@ -167,16 +174,16 @@ function CategoryItem({ cat, icon, onSelect }: CategoryItemProps) {
           width: '7rem',
           height: '7rem',
           borderRadius: '9999px',
-          backgroundColor: hovered ? '#e5e7eb' : '#f3f4f6',
+          backgroundColor: bgColor,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: cat.imageUrl ? undefined : '3rem',
-          boxShadow: hovered
+          boxShadow: hovered || isActive
             ? '0 6px 20px rgba(0, 0, 0, 0.13)'
             : '0 1px 3px rgba(0, 0, 0, 0.05)',
-          outline: hovered ? '2px solid #d1d5db' : '2px solid transparent',
-          outlineOffset: '3px',
+          outline: `2px solid ${outlineColor}`,
+          outlineOffset: '2px', // slightly tighter outline
           overflow: 'hidden',
           transition: 'background-color 0.2s ease, box-shadow 0.2s ease, outline-color 0.2s ease',
         }}
@@ -199,9 +206,9 @@ function CategoryItem({ cat, icon, onSelect }: CategoryItemProps) {
       <span
         style={{
           fontSize: '0.875rem',
-          fontWeight: 500,
-          color: hovered ? '#111827' : '#374151',
-          transition: 'color 0.2s ease',
+          fontWeight: isActive ? 600 : 500,
+          color: textColor,
+          transition: 'color 0.2s ease, font-weight 0.2s ease',
         }}
       >
         {cat.name}

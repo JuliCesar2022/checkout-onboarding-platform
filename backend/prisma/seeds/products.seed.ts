@@ -78,24 +78,63 @@ const data = [
   },
 ];
 
+const EXTRA_PRODUCTS_PER_CATEGORY = 30;
+
 export async function seedProducts(
   prisma: PrismaClient,
   categoriesMap: Map<string, any>,
 ): Promise<void> {
-  for (const productData of data) {
+  const generatedData: any[] = [];
+
+  const categoryKeys = Array.from(categoriesMap.keys());
+
+  for (const category of categoryKeys) {
+    for (let i = 1; i <= EXTRA_PRODUCTS_PER_CATEGORY; i++) {
+      generatedData.push({
+        sku: `${category.replace(/\s+/g, '').substring(0, 4).toUpperCase()}-GEN-${i.toString().padStart(3, '0')}`,
+        name: `Producto Genérico ${category} #${i}`,
+        category: category,
+        description: `Este es un producto generado automáticamente para la categoría ${category}, ideal para complementar tu compra.`,
+        imageUrl: `https://picsum.photos/seed/${category.replace(/\s+/g, '')}${i}/400/400`,
+        priceInCents: Math.floor(Math.random() * 900000) * 100 + 5000000, // random price between 50k and 95m cop approx, nicely rounded
+        stock: Math.floor(Math.random() * 50) + 5,
+      });
+    }
+  }
+
+  const allProducts = [...data, ...generatedData];
+
+  for (const productData of allProducts) {
     const { category, ...rest } = productData;
     const categoryModel = categoriesMap.get(category);
 
     if (!categoryModel) {
-      throw new Error(`Category ${category} not found during seeding`);
+      console.warn(
+        `Category ${category} not found during seeding for product ${rest.sku}`,
+      );
+      continue;
     }
 
-    await prisma.product.create({
-      data: {
-        ...rest,
+    await prisma.product.upsert({
+      where: { sku: rest.sku },
+      update: {
+        name: rest.name,
+        description: rest.description,
+        imageUrl: rest.imageUrl,
+        priceInCents: rest.priceInCents,
+        stock: rest.stock,
+        category: { connect: { id: categoryModel.id } },
+      },
+      create: {
+        sku: rest.sku,
+        name: rest.name,
+        description: rest.description,
+        imageUrl: rest.imageUrl,
+        priceInCents: rest.priceInCents,
+        stock: rest.stock,
         category: { connect: { id: categoryModel.id } },
       },
     });
-    console.log(`  [products] Created: ${rest.sku} — ${rest.name}`);
   }
+  console.log(`  [products] Seeded ${allProducts.length} successfully.`);
 }

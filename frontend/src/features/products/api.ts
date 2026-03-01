@@ -1,11 +1,18 @@
-import client from '../../lib/axios';
-import type { Product, PaginatedProducts, Category } from './types';
+import client from "../../lib/axios";
+import type { Product, PaginatedProducts, Category } from "./types";
 
 export const productsApi = {
-  fetchProducts: async (cursor?: string, limit = 20): Promise<PaginatedProducts> => {
-    const params: Record<string, string | number> = { limit };
-    if (cursor) params.cursor = cursor;
-    const response = await client.get<PaginatedProducts>('/products', { params });
+  fetchProducts: async (
+    params: { cursor?: string; limit?: number; categoryId?: string } = {},
+  ): Promise<PaginatedProducts> => {
+    const queryParams: Record<string, string | number> = {
+      limit: params.limit ?? 20,
+    };
+    if (params.cursor) queryParams.cursor = params.cursor;
+    if (params.categoryId) queryParams.categoryId = params.categoryId;
+    const response = await client.get<PaginatedProducts>("/products", {
+      params: queryParams,
+    });
     return response.data;
   },
 
@@ -15,7 +22,7 @@ export const productsApi = {
   },
 
   fetchCategories: async (): Promise<Category[]> => {
-    const response = await client.get<Category[]>('/categories');
+    const response = await client.get<Category[]>("/categories");
     return response.data;
   },
 };

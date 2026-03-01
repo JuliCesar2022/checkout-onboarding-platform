@@ -1,13 +1,14 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { Product, Category } from '../types';
-import { productsApi } from '../api';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { Product, Category } from "../types";
+import { productsApi } from "../api";
 
 interface ProductsState {
   items: Product[];
   categories: Category[];
   selectedProductId: string | null;
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  activeCategoryId: string | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   lastFetchedAt: number | null;
   nextCursor: string | null;
@@ -18,70 +19,89 @@ const initialState: ProductsState = {
   items: [],
   categories: [],
   selectedProductId: null,
-  status: 'idle',
+  activeCategoryId: null,
+  status: "idle",
   error: null,
   lastFetchedAt: null,
   nextCursor: null,
   hasMore: false,
 };
 
-export const fetchProducts = createAsyncThunk('products/fetchAll', async () => {
-  return productsApi.fetchProducts();
-});
-
-export const fetchMoreProducts = createAsyncThunk(
-  'products/fetchMore',
-  async (cursor: string) => {
-    return productsApi.fetchProducts(cursor);
+export const fetchProducts = createAsyncThunk(
+  "products/fetchAll",
+  async (_, { getState }) => {
+    const state = getState() as any;
+    const categoryId = state.products.activeCategoryId || undefined;
+    return productsApi.fetchProducts({ categoryId });
   },
 );
 
-export const fetchCategories = createAsyncThunk('products/fetchCategories', async () => {
-  return productsApi.fetchCategories();
-});
+export const fetchMoreProducts = createAsyncThunk(
+  "products/fetchMore",
+  async (cursor: string, { getState }) => {
+    const state = getState() as any;
+    const categoryId = state.products.activeCategoryId || undefined;
+    return productsApi.fetchProducts({ cursor, categoryId });
+  },
+);
+
+export const fetchCategories = createAsyncThunk(
+  "products/fetchCategories",
+  async () => {
+    return productsApi.fetchCategories();
+  },
+);
 
 const productsSlice = createSlice({
-  name: 'products',
+  name: "products",
   initialState,
   reducers: {
     selectProduct(state, action: PayloadAction<string>) {
       state.selectedProductId = action.payload;
     },
-    updateProductStock(state, action: PayloadAction<{ productId: string; newStock: number }>) {
-      const product = state.items.find((p) => p.id === action.payload.productId);
+    setActiveCategory(state, action: PayloadAction<string | null>) {
+      state.activeCategoryId = action.payload;
+    },
+    updateProductStock(
+      state,
+      action: PayloadAction<{ productId: string; newStock: number }>,
+    ) {
+      const product = state.items.find(
+        (p) => p.id === action.payload.productId,
+      );
       if (product) product.stock = action.payload.newStock;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
         state.error = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.items = action.payload.data;
         state.nextCursor = action.payload.nextCursor;
         state.hasMore = action.payload.hasMore;
         state.lastFetchedAt = Date.now();
       })
       .addCase(fetchProducts.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message ?? 'Failed to fetch products';
+        state.status = "failed";
+        state.error = action.error.message ?? "Failed to fetch products";
       })
       .addCase(fetchMoreProducts.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(fetchMoreProducts.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.items.push(...action.payload.data);
         state.nextCursor = action.payload.nextCursor;
         state.hasMore = action.payload.hasMore;
         state.lastFetchedAt = Date.now();
       })
       .addCase(fetchMoreProducts.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message ?? 'Failed to load more products';
+        state.status = "failed";
+        state.error = action.error.message ?? "Failed to load more products";
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.categories = action.payload;
@@ -89,5 +109,6 @@ const productsSlice = createSlice({
   },
 });
 
-export const { selectProduct, updateProductStock } = productsSlice.actions;
+export const { selectProduct, setActiveCategory, updateProductStock } =
+  productsSlice.actions;
 export default productsSlice.reducer;

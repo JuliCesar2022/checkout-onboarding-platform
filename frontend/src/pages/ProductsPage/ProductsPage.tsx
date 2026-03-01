@@ -6,6 +6,7 @@ import {
   fetchProducts,
   fetchCategories,
   selectProduct,
+  setActiveCategory,
 } from '../../features/products/store/productsSlice';
 import { openCheckoutForm, resetCheckout } from '../../features/checkout/store/checkoutSlice';
 import { productsApi } from '../../features/products/api';
@@ -14,12 +15,13 @@ import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { HeroBanner } from '../../features/products/components/HeroBanner';
 import { CategoryList } from '../../features/products/components/CategoryList';
 import { SectionHeader } from '../../features/products/components/SectionHeader';
-import type { Product } from '../../features/products/types';
+import type { Product, Category } from '../../features/products/types';
 import { FeaturedRow } from '../../features/products/components/FeaturedRow';
 import { PromoBannersRow } from '../../features/products/components/PromoBannersRow';
 import { CategoryShowcase } from '../../features/products/components/CategoryShowcase';
 import { GamingShowcase } from '../../features/products/components/GamingShowcase';
 import { SmartphoneShowcase } from '../../features/products/components/SmartphoneShowcase';
+import { ProductGrid } from '../../features/products/components/ProductGrid';
 import { ROUTES } from '../../constants/routes';
 import { useScrollReveal } from '../../shared/hooks/useScrollReveal';
 
@@ -31,18 +33,18 @@ export function ProductsPage() {
   const {
     items: products,
     categories,
+    activeCategoryId,
     lastFetchedAt,
+    status,
   } = useAppSelector((state) => state.products);
   const { step, selectedProductId, quantity } = useAppSelector((state) => state.checkout);
 
-  // Show pending session modal after page loads — delay so the page renders first.
-  // Only show for FORM or SUMMARY — never for PROCESSING/COMPLETE/IDLE.
+  // Show pending session modal after page loads
   const hasPending = (step === 'FORM' || step === 'SUMMARY') && !!selectedProductId;
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [pendingProduct, setPendingProduct] = useState<{ name: string; imageUrl: string | null; priceInCents: number } | null>(null);
 
   useEffect(() => {
-    // If we just came from a completed/discarded checkout, skip the modal
     if (sessionStorage.getItem('checkout_just_reset') === '1') {
       sessionStorage.removeItem('checkout_just_reset');
       return;
@@ -61,8 +63,8 @@ export function ProductsPage() {
   useEffect(() => {
     const isStale = !lastFetchedAt || Date.now() - lastFetchedAt > CACHE_TTL_MS;
     if (isStale) dispatch(fetchProducts());
-    dispatch(fetchCategories());
-  }, [dispatch, lastFetchedAt]);
+    if (categories.length === 0) dispatch(fetchCategories());
+  }, [dispatch, lastFetchedAt, categories.length]);
 
   useScrollReveal([products.length, categories.length]);
 
@@ -83,14 +85,25 @@ export function ProductsPage() {
     setShowPendingModal(false);
   };
 
+  const handleCategorySelect = (category: Category) => {
+    if (activeCategoryId === category.id) {
+      // Toggle off
+      dispatch(setActiveCategory(null));
+      dispatch(fetchProducts());
+    } else {
+      // Toggle on
+      dispatch(setActiveCategory(category.id));
+      dispatch(fetchProducts());
+    }
+  };
+
  return (
     <PageWrapper>
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10 pb-16">
 
-        {/* Pending checkout modal */}
+        {/* Pending checkout modal omitted for brevity as it's the same, copying original... */}
         <Modal isOpen={showPendingModal} onClose={handleDiscardPending} title="Compra pendiente">
           <div className="flex flex-col items-center text-center gap-5 py-2">
-            {/* Product image */}
             <div className="w-full rounded-2xl bg-gray-50 overflow-hidden" style={{ height: '220px' }}>
               {pendingProduct?.imageUrl ? (
                 <img src={pendingProduct.imageUrl} alt={pendingProduct.name} className="w-full h-full object-cover" />
@@ -100,8 +113,6 @@ export function ProductsPage() {
                 </svg>
               )}
             </div>
-
-            {/* Info */}
             <div>
               {pendingProduct ? (
                 <>
@@ -120,8 +131,6 @@ export function ProductsPage() {
                 Dejaste un proceso de pago sin completar. ¿Quieres retomarlo donde lo dejaste?
               </p>
             </div>
-
-            {/* Actions */}
             <div className="flex gap-3 w-full">
               <button
                 onClick={handleDiscardPending}
@@ -139,14 +148,15 @@ export function ProductsPage() {
           </div>
         </Modal>
 
-        {/* Hero Banner */}
-        <div className="reveal">
-          <HeroBanner />
-        </div>
+        {!activeCategoryId && (
+          <div className="reveal">
+            <HeroBanner />
+          </div>
+        )}
 
-        {/* Explore Popular Categories */}
+        {/* Categories Section */}
         <section
-          className="reveal delay-100"
+          className={`reveal ${activeCategoryId ? '' : 'delay-100'}`}
           style={{
             backgroundColor: '#ffffff',
             borderRadius: '1rem',
@@ -155,50 +165,85 @@ export function ProductsPage() {
             border: '1px solid #f0f0f0',
           }}
         >
-          <SectionHeader title="Explore Popular Categories" actionLabel="View All" onAction={() => {}} />
-          <CategoryList categories={categories} />
+          <SectionHeader 
+            title="Explore Popular Categories" 
+            actionLabel={activeCategoryId ? 'Ver todas' : 'View All'} 
+            onAction={() => { 
+               if (activeCategoryId) {
+                 dispatch(setActiveCategory(null));
+                 dispatch(fetchProducts());
+               }
+            }} 
+          />
+          <CategoryList 
+            categories={categories} 
+            activeCategoryId={activeCategoryId} 
+            onSelect={handleCategorySelect} 
+          />
         </section>
 
-        {/* Featured products row */}
-        {products.length > 0 && (
+        {/* Dynamic Content based on Selection */}
+        {activeCategoryId ? (
           <div className="reveal">
-            <FeaturedRow
-              title="⚡ Más vendidos"
-              products={products.slice(0, 8)}
-              onPay={handlePay}
-            />
+             <div className="mb-6">
+               <h2 className="text-2xl font-bold text-gray-900">
+                 {categories.find(c => c.id === activeCategoryId)?.name || 'Productos'}
+               </h2>
+               <p className="text-gray-500 text-sm mt-1">
+                 Mostrando {products.length} {products.length === 1 ? 'producto' : 'productos'} encontrados
+               </p>
+             </div>
+             
+             {status === 'loading' ? (
+                <div className="py-20 text-center text-gray-500">Cargando productos...</div>
+             ) : (
+                <ProductGrid products={products} onPay={handlePay} />
+             )}
           </div>
-        )}
+        ) : (
+          <>
+            {/* Featured products row */}
+            {products.length > 0 && (
+              <div className="reveal">
+                <FeaturedRow
+                  title="⚡ Más vendidos"
+                  products={products.slice(0, 8)}
+                  onPay={handlePay}
+                />
+              </div>
+            )}
 
-        {/* Promo Banners Row */}
-        <div className="reveal">
-          <PromoBannersRow />
-        </div>
+            {/* Promo Banners Row */}
+            <div className="reveal">
+              <PromoBannersRow />
+            </div>
 
-        {/* Category Showcase */}
-        <div className="reveal">
-          <CategoryShowcase />
-        </div>
+            {/* Category Showcase */}
+            <div className="reveal">
+              <CategoryShowcase />
+            </div>
 
-        {/* Gaming Showcase */}
-        <div className="reveal">
-          <GamingShowcase />
-        </div>
+            {/* Gaming Showcase */}
+            <div className="reveal">
+              <GamingShowcase />
+            </div>
 
-        {/* Smartphone Showcase */}
-        <div className="reveal">
-          <SmartphoneShowcase />
-        </div>
+            {/* Smartphone Showcase */}
+            <div className="reveal">
+              <SmartphoneShowcase />
+            </div>
 
-        {/* Second featured row */}
-        {products.length > 0 && (
-          <div className="reveal">
-            <FeaturedRow
-              title="🔥 Ofertas del día"
-              products={products.slice(3, 11)}
-              onPay={handlePay}
-            />
-          </div>
+            {/* Second featured row */}
+            {products.length > 0 && (
+              <div className="reveal">
+                <FeaturedRow
+                  title="🔥 Ofertas del día"
+                  products={products.slice(3, 11)}
+                  onPay={handlePay}
+                />
+              </div>
+            )}
+          </>
         )}
 
       </div>

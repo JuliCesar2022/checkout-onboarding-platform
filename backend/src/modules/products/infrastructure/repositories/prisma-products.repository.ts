@@ -36,19 +36,25 @@ export class PrismaProductsRepository implements IProductsRepository {
     search,
     limit,
     cursor,
+    categoryId,
   }: FindProductsPaginatedParams): Promise<PaginatedResult<ProductEntity>> {
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { description: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : undefined;
+    const whereCondition: any = {};
+
+    if (search) {
+      whereCondition.OR = [
+        { name: { contains: search, mode: 'insensitive' as const } },
+        { description: { contains: search, mode: 'insensitive' as const } },
+      ];
+    }
+
+    if (categoryId) {
+      whereCondition.categoryId = categoryId;
+    }
 
     // Fetch one extra to determine if there is a next page
     const rows = await this.prisma.product.findMany({
-      where,
+      where:
+        Object.keys(whereCondition).length > 0 ? whereCondition : undefined,
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'asc' },

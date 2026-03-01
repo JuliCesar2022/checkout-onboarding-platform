@@ -22,6 +22,7 @@ export class ProductsService {
       search: query.search,
       limit: query.limit,
       cursor: query.cursor,
+      categoryId: query.categoryId,
     });
 
     return {
