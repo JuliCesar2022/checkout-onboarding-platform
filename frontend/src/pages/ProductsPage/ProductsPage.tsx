@@ -14,11 +14,11 @@ import { ProductGrid } from '../../features/products/components/ProductGrid';
 import { HeroBanner } from '../../features/products/components/HeroBanner';
 import { CategoryList } from '../../features/products/components/CategoryList';
 import { SectionHeader } from '../../features/products/components/SectionHeader';
-import { PromoBanners } from '../../features/products/components/PromoBanners';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
 import { Spinner } from '../../shared/ui/Spinner';
 import { Button } from '../../shared/ui/Button';
 import type { Product } from '../../features/products/types';
+import { FeaturedRow } from '../../features/products/components/FeaturedRow';
 import { ROUTES } from '../../constants/routes';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -56,9 +56,18 @@ export function ProductsPage() {
 
   return (
     <PageWrapper>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-10">
+      <div className="flex flex-col gap-10">
         {/* Hero Banner */}
         <HeroBanner />
+
+        {/* Featured products row */}
+        {products.length > 0 && (
+          <FeaturedRow
+            title="⚡ Más vendidos"
+            products={products.slice(0, 8)}
+            onPay={handlePay}
+          />
+        )}
 
         {/* Explore Popular Categories */}
         <section>
@@ -66,11 +75,8 @@ export function ProductsPage() {
           <CategoryList categories={categories} />
         </section>
 
-        {/* Promo Banners */}
-        <PromoBanners />
-
         {/* Products Grid */}
-        <section>
+        <section className="bg-white rounded-2xl p-6 shadow-sm">
           <SectionHeader title="Today's Best Deals For You!" />
           <ErrorBanner message={error} />
           {isFirstLoad ? (
