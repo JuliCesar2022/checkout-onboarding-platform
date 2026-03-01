@@ -3,9 +3,11 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 
 declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'model-viewer': any;
+  namespace React {
+    namespace JSX {
+      interface IntrinsicElements {
+        'model-viewer': any;
+      }
     }
   }
 }
@@ -126,7 +128,7 @@ function BannerPanel({ p }: { p: Panel }) {
               <span className="text-5xl font-light opacity-30 leading-none">01</span>
               <div className="pt-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-gray-200 h-[1px] w-12" />
+                  <span className="bg-gray-200 h-px w-12" />
                   <span className="text-[10px] uppercase tracking-widest font-bold text-gray-900">Clear Sounds</span>
                 </div>
                 <p className="text-[11px] text-gray-500 max-w-[200px] leading-relaxed">
@@ -164,7 +166,7 @@ function BannerPanel({ p }: { p: Panel }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${p.bg} flex flex-col justify-between p-6`}
+      className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${p.bg} flex flex-col justify-between p-6`}
       style={{ gridArea: p.area }}
     >
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/5 pointer-events-none" />
@@ -233,7 +235,7 @@ function BannerPanel({ p }: { p: Panel }) {
 function SlideGrid({ slide }: { slide: Slide }) {
   return (
     <div
-      className="grid gap-4 h-[32rem] p-4 bg-white rounded-2xl shadow-sm"
+      className="grid gap-4 h-128 p-4 bg-white rounded-2xl shadow-sm"
       style={{
         gridTemplateAreas: slide.areas,
         gridTemplateColumns: slide.columns,
@@ -249,7 +251,14 @@ function SlideGrid({ slide }: { slide: Slide }) {
 
 export function HeroBanner() {
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, duration: 25 },
+    { 
+      loop: true, 
+      duration: 25,
+      watchDrag: (_, event) => {
+        const target = event.target as HTMLElement;
+        return !target.closest('model-viewer');
+      }
+    },
     [Autoplay({ delay: 4500, stopOnInteraction: false })],
   );
 

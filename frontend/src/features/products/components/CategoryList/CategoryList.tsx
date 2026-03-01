@@ -78,7 +78,7 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
         <button
           onClick={() => scroll('left')}
           disabled={!canScrollLeft}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 disabled:opacity-0 disabled:pointer-events-none transition-all"
+          className="shrink-0 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 disabled:opacity-0 disabled:pointer-events-none transition-all"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -105,7 +105,7 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
         <button
           onClick={() => scroll('right')}
           disabled={!canScrollRight}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 disabled:opacity-0 disabled:pointer-events-none transition-all"
+          className="shrink-0 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 disabled:opacity-0 disabled:pointer-events-none transition-all"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
