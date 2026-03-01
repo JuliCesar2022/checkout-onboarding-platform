@@ -62,7 +62,18 @@ const SLIDES: Slide[] = [
     columns: '1.4fr 0.9fr',
     rows: '1fr',
     panels: [
-      { area: 'hero',  type: 'hero',  bg: 'from-[#1a1a2e] via-[#16213e] to-[#0f3460]', label: 'Nuevo lanzamiento', title: 'iPhone 16 Pro Max', subtitle: 'Chip A18, cámara Pro, pantalla Super Retina XDR.', cta: 'Shop Now', emoji: '📱' },
+      { 
+        area: 'hero',  
+        type: 'hero',  
+        bg: 'bg-[#f0f2f5]', 
+        label: 'Nuevo lanzamiento', 
+        title: 'iPhone 17 Pro.', 
+        subtitle: 'The future of mobile power and elegancy.', 
+        cta: 'Shop Now', 
+        emoji: '📱', 
+        localModel: '/models/iphone17.glb',
+        isSpecial: true 
+      },
       { area: 'promo', type: 'sale',  bg: 'from-orange-500 to-rose-600',                label: 'Oferta limitada',  title: '50%',             subtitle: 'OFF en accesorios y gaming. Solo hoy.',           cta: 'Ver descuentos', emoji: '⚡' },
     ],
   },
@@ -72,7 +83,18 @@ const SLIDES: Slide[] = [
     columns: '1.4fr 0.9fr',
     rows: '1fr 1fr',
     panels: [
-      { area: 'hero', type: 'hero',  bg: 'from-[#003087] via-[#0070cc] to-[#00439c]', label: 'Gaming Power',     title: 'PlayStation 5',   subtitle: 'Velocidad de siguiente generación.',              cta: 'Ver consolas', emoji: '🎮' },
+      { 
+        area: 'hero', 
+        type: 'hero',  
+        bg: 'bg-[#f0f2f5]', 
+        label: 'Gaming Power',     
+        title: 'Sony PlayStation 5.',   
+        subtitle: 'Experience lightning-fast loading and immersive gaming.',              
+        cta: 'Shop Consoles', 
+        emoji: '🎮', 
+        localModel: '/models/ps5.glb', 
+        isSpecial: true 
+      },
       { area: 'top',  type: 'promo', bg: 'from-violet-600 to-purple-800',              label: 'Bundle exclusivo', title: 'Consola + 2 juegos', subtitle: 'Arma tu setup con los mejores títulos.',       cta: 'Ver bundle',   emoji: '🕹️' },
       { area: 'bot',  type: 'sale',  bg: 'from-amber-500 to-yellow-500',               label: 'Flash sale',       title: '30%',             subtitle: 'OFF en mandos y accesorios.',                     cta: 'Ver oferta',   emoji: '🔥' },
     ],
