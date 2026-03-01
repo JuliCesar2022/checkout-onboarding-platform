@@ -14,6 +14,7 @@ export interface Category {
   slug: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
 }
 
 export interface PaginatedProducts {

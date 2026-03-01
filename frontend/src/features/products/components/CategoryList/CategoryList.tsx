@@ -171,16 +171,30 @@ function CategoryItem({ cat, icon, onSelect }: CategoryItemProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '3rem',
+          fontSize: cat.imageUrl ? undefined : '3rem',
           boxShadow: hovered
             ? '0 6px 20px rgba(0, 0, 0, 0.13)'
             : '0 1px 3px rgba(0, 0, 0, 0.05)',
           outline: hovered ? '2px solid #d1d5db' : '2px solid transparent',
           outlineOffset: '3px',
+          overflow: 'hidden',
           transition: 'background-color 0.2s ease, box-shadow 0.2s ease, outline-color 0.2s ease',
         }}
       >
-        {icon}
+        {cat.imageUrl ? (
+          <img 
+            src={`http://localhost:3000/uploads/${cat.imageUrl}`} 
+            alt={cat.name} 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain',
+              padding: '0.5rem' // Add padding so it doesn't touch the edges
+            }}
+          />
+        ) : (
+          icon
+        )}
       </div>
       <span
         style={{

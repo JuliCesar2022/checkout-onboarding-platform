@@ -8,6 +8,7 @@ export class CategoryMapper {
       slug: prisma.slug,
       name: prisma.name,
       description: prisma.description,
+      imageUrl: prisma.imageUrl,
       createdAt: prisma.createdAt,
       updatedAt: prisma.updatedAt,
     });

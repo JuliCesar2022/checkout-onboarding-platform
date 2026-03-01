@@ -3,6 +3,7 @@ export class CategoryEntity {
   slug: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 
