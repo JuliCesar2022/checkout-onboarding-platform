@@ -10,12 +10,13 @@ interface CardValidationState {
 }
 
 /** Hook for real-time card number formatting and brand detection */
-export function useCardValidation() {
-  const [state, setState] = useState<CardValidationState>({
-    formattedNumber: '',
-    brand: null,
-    isValidNumber: false,
-    isValidExpiry: false,
+export function useCardValidation(initialNumber = '') {
+  const [state, setState] = useState<CardValidationState>(() => {
+    if (!initialNumber) return { formattedNumber: '', brand: null, isValidNumber: false, isValidExpiry: false };
+    const formatted = formatCardNumber(initialNumber);
+    const brand = detectCardBrand(initialNumber);
+    const isValidNumber = isValidLuhn(initialNumber.replace(/\s/g, ''));
+    return { formattedNumber: formatted, brand, isValidNumber, isValidExpiry: false };
   });
 
   const handleCardNumberChange = useCallback((rawValue: string) => {

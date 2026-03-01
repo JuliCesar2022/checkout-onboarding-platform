@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm, Controller, useController } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -56,14 +56,23 @@ const cardSchema = z.object({
 
 export type CardFormData = z.infer<typeof cardSchema>;
 
-interface CardFormProps {
-  onSubmit: (data: CardFormData) => void;
+interface CardDefaultValues {
+  cardNumber?: string;
+  holderName?: string;
+  expiryMonth?: string;
+  expiryYear?: string;
 }
 
-export function CardForm({ onSubmit }: CardFormProps) {
+interface CardFormProps {
+  onSubmit: (data: CardFormData) => void;
+  autoFocus?: boolean;
+  defaultValues?: CardDefaultValues;
+}
+
+export function CardForm({ onSubmit, autoFocus, defaultValues }: CardFormProps) {
   const [focused, setFocused] = useState<Focused>('');
   const [cvvValue, setCvvValue] = useState('');
-  const { formattedNumber, brand: detectedBrand, handleCardNumberChange } = useCardValidation();
+  const { formattedNumber, brand: detectedBrand, handleCardNumberChange } = useCardValidation(defaultValues?.cardNumber ?? '');
 
   const holderRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLInputElement>(null);
@@ -89,21 +98,29 @@ export function CardForm({ onSubmit }: CardFormProps) {
     control,
     register,
     handleSubmit,
+    trigger,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<CardFormData>({
     resolver: zodResolver(cardSchema),
     mode: 'onBlur',
     defaultValues: {
-      cardNumber: '',
+      cardNumber: defaultValues?.cardNumber ?? '',
       brand: null,
-      holderName: '',
-      expiryMonth: '',
-      expiryYear: '',
+      holderName: defaultValues?.holderName ?? '',
+      expiryMonth: defaultValues?.expiryMonth ?? '',
+      expiryYear: defaultValues?.expiryYear ?? '',
       cvv: '',
     },
   });
+
+  // When editing (pre-filled data), validate immediately so the button is enabled
+  useEffect(() => {
+    if (defaultValues?.cardNumber) {
+      trigger();
+    }
+  }, []);
 
   const holderName = watch('holderName');
   const expiryMonth = watch('expiryMonth');
@@ -147,6 +164,7 @@ export function CardForm({ onSubmit }: CardFormProps) {
               type="text"
               inputMode="numeric"
               maxLength={19}
+              autoFocus={autoFocus}
               value={formattedNumber}
               onChange={handleChange}
               onKeyDown={onlyDigits}
@@ -268,7 +286,8 @@ export function CardForm({ onSubmit }: CardFormProps) {
 
       <button
         type="submit"
-        className="mt-2 w-full rounded-xl bg-[#222] px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+        disabled={!isValid}
+        className="mt-2 w-full rounded-xl bg-[#222] px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         Continue to summary
       </button>

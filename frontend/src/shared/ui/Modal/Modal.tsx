@@ -28,13 +28,13 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       aria-modal="true" 
       aria-label={title}
     >
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+      <div
+        className="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-      
-      <div className="relative flex w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex-col bg-white sm:rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+
+      <div className="modal-content relative flex w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex-col bg-white sm:rounded-2xl shadow-xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           {title ? (
             <h2 className="text-xl font-semibold text-gray-900">{title}</h2>

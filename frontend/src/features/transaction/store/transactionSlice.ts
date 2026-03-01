@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import type { TransactionStatus } from '../types';
 
 interface TransactionState {
@@ -41,10 +42,24 @@ export const pollTransactionStatus = createAsyncThunk(
   },
 );
 
+interface SetTransactionPayload {
+  id: string;
+  status: TransactionStatus;
+  reference: string;
+  amountInCents: number;
+}
+
 const transactionSlice = createSlice({
   name: 'transaction',
   initialState,
   reducers: {
+    setTransactionResult(state, action: PayloadAction<SetTransactionPayload>) {
+      state.id = action.payload.id;
+      state.status = action.payload.status;
+      state.reference = action.payload.reference;
+      state.amountInCents = action.payload.amountInCents;
+      state.loadingState = 'settled';
+    },
     resetTransaction() {
       return initialState;
     },
@@ -77,5 +92,5 @@ const transactionSlice = createSlice({
   },
 });
 
-export const { resetTransaction } = transactionSlice.actions;
+export const { setTransactionResult, resetTransaction } = transactionSlice.actions;
 export default transactionSlice.reducer;

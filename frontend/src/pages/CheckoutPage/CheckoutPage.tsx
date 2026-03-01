@@ -1,6 +1,7 @@
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   proceedToSummary,
   startProcessing,
@@ -9,7 +10,10 @@ import {
   completeCheckout,
   setCheckoutError,
   setFees,
+  setQuantity,
 } from '../../features/checkout/store/checkoutSlice';
+import { setTransactionResult } from '../../features/transaction/store/transactionSlice';
+import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
 import { OrderSummaryBackdrop } from '../../features/checkout/components/OrderSummaryBackdrop';
@@ -29,6 +33,7 @@ const STEPS = [
 
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity } =
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
@@ -36,10 +41,19 @@ export function CheckoutPage() {
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
 
+  // Keep last known data so forms re-populate when user clicks "Edit"
+  const lastDeliveryRef = useRef(deliveryAddress);
+  if (deliveryAddress) lastDeliveryRef.current = deliveryAddress;
+
+  const lastCardRef = useRef(cardData);
+  if (cardData) lastCardRef.current = cardData;
+
+  const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
+
   useEffect(() => {
     if (!productId) return;
-    productsApi.fetchProductById(productId).then((product) => {
-      const productAmountInCents = product.priceInCents * quantity;
+    productsApi.fetchProductById(productId).then((p) => {
+      const productAmountInCents = p.priceInCents * quantity;
       dispatch(
         setFees({
           productAmount: productAmountInCents / 100,
@@ -48,6 +62,7 @@ export function CheckoutPage() {
           totalAmount: (productAmountInCents + BASE_FEE_IN_CENTS + DELIVERY_FEE_IN_CENTS) / 100,
         })
       );
+      setProduct({ name: p.name, imageUrl: p.imageUrl });
     }).catch(console.error);
   }, [productId, quantity, dispatch]);
 
@@ -60,7 +75,10 @@ export function CheckoutPage() {
 
   const handlePay = async () => {
     if (!cardData || !deliveryAddress || !productId) return;
-    if (!cardData.token) return;
+    if (!cardData.token) {
+      dispatch(setCheckoutError('La tarjeta no ha sido tokenizada. Por favor edita y vuelve a guardar tu tarjeta.'));
+      return;
+    }
 
     dispatch(startProcessing());
 
@@ -91,22 +109,28 @@ export function CheckoutPage() {
       });
 
       let finalResult = result;
-      if (finalResult.status === 'PENDING') {
-        while (finalResult.status === 'PENDING') {
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-          try {
-            finalResult = await checkoutApi.syncTransactionStatus(finalResult.id);
-          } catch {
-            // retry
-          }
+      // Poll until settled (max 30s = 10 retries)
+      let retries = 0;
+      while (finalResult.status === 'PENDING' && retries < 10) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        try {
+          finalResult = await checkoutApi.syncTransactionStatus(finalResult.id);
+        } catch {
+          // keep retrying
         }
+        retries++;
       }
 
-      if (finalResult.status === 'APPROVED') {
-        dispatch(completeCheckout());
-      } else {
-        dispatch(setCheckoutError(`Pago ${finalResult.status.toLowerCase()}: la transacción no fue aprobada.`));
-      }
+      // Save result to transaction slice so TransactionStatusPage can display it
+      dispatch(setTransactionResult({
+        id: finalResult.id,
+        status: finalResult.status as any,
+        reference: finalResult.reference,
+        amountInCents: finalResult.amountInCents,
+      }));
+
+      dispatch(completeCheckout());
+      navigate(ROUTES.TRANSACTION_STATUS);
     } catch (err: any) {
       dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
     }
@@ -169,7 +193,11 @@ export function CheckoutPage() {
             {currentStep === 1 ? (
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Delivery information</h2>
-                <DeliveryForm onSubmit={(data) => dispatch(saveDeliveryAddress(data))} />
+                <DeliveryForm
+                  onSubmit={(data) => dispatch(saveDeliveryAddress(data))}
+                  defaultValues={lastDeliveryRef.current ?? undefined}
+                  autoFocus
+                />
               </div>
             ) : (
               <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-start justify-between gap-4">
@@ -226,6 +254,13 @@ export function CheckoutPage() {
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
                   <h2 className="text-lg font-semibold text-gray-900 mb-6">Payment information</h2>
                   <CardForm
+                    autoFocus
+                    defaultValues={lastCardRef.current ? {
+                      cardNumber: lastCardRef.current.number,
+                      holderName: lastCardRef.current.holderName,
+                      expiryMonth: lastCardRef.current.expiryMonth,
+                      expiryYear: lastCardRef.current.expiryYear,
+                    } : undefined}
                     onSubmit={async (data) => {
                       try {
                         const tokenResult = await checkoutApi.tokenizeCard({
@@ -252,6 +287,46 @@ export function CheckoutPage() {
           <section className="mt-8 lg:col-span-5 lg:mt-0 lg:sticky lg:top-8">
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-5">Order Summary</h2>
+
+              {product && (
+                <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-200">
+                  <div className="w-16 h-16 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain p-1" />
+                    ) : (
+                      <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{product.name}</p>
+                    {fees && (
+                      <p className="text-xs font-medium text-gray-500 mt-0.5">
+                        {formatCurrency(fees.productAmount / quantity)} × {quantity} = <span className="text-gray-900">{formatCurrency(fees.productAmount)}</span>
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        onClick={() => dispatch(setQuantity(quantity - 1))}
+                        disabled={quantity <= 1}
+                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        aria-label="Decrease quantity"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                      </button>
+                      <span className="w-6 text-center text-sm font-semibold text-gray-900">{quantity}</span>
+                      <button
+                        onClick={() => dispatch(setQuantity(quantity + 1))}
+                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+                        aria-label="Increase quantity"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {fees ? (
                 <>

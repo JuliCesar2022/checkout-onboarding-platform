@@ -5,7 +5,6 @@ import { resetCheckout } from '../../features/checkout/store/checkoutSlice';
 import { resetTransaction } from '../../features/transaction/store/transactionSlice';
 import { fetchProducts } from '../../features/products/store/productsSlice';
 import { TransactionResult } from '../../features/transaction/components/TransactionResult';
-import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { ROUTES } from '../../constants/routes';
 
 export function TransactionStatusPage() {
@@ -21,13 +20,11 @@ export function TransactionStatusPage() {
   };
 
   return (
-    <PageWrapper>
-      <TransactionResult
-        status={status}
-        reference={reference}
-        amountInCents={amountInCents}
-        onReturn={handleReturn}
-      />
-    </PageWrapper>
+    <TransactionResult
+      status={status}
+      reference={reference}
+      amountInCents={amountInCents}
+      onReturn={handleReturn}
+    />
   );
 }

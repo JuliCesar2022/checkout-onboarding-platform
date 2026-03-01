@@ -65,6 +65,10 @@ const checkoutSlice = createSlice({
     setWompiAcceptanceToken(state, action: PayloadAction<string>) {
       state.wompiAcceptanceToken = action.payload;
     },
+    setQuantity(state, action: PayloadAction<number>) {
+      state.quantity = Math.max(1, action.payload);
+      state.fees = null; // reset fees so they get recalculated
+    },
     setCheckoutError(state, action: PayloadAction<string>) {
       state.error = action.payload;
       state.step = 'SUMMARY'; // return to summary on error
@@ -80,6 +84,7 @@ export const {
   saveCardData,
   saveDeliveryAddress,
   setFees,
+  setQuantity,
   proceedToSummary,
   startProcessing,
   completeCheckout,
