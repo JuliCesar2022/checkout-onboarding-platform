@@ -4,7 +4,7 @@ import { useEffect } from "react";
  * Hook to apply 'active' class to elements with 'reveal' class when they enter viewport.
  * Uses IntersectionObserver for performance.
  */
-export function useScrollReveal() {
+export function useScrollReveal(deps: any[] = []) {
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -26,6 +26,7 @@ export function useScrollReveal() {
 
     return () => {
       revealElements.forEach((el) => observer.unobserve(el));
+      observer.disconnect();
     };
-  }, []);
+  }, deps);
 }

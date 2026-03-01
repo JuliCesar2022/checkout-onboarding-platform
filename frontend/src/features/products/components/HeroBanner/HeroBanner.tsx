@@ -106,12 +106,14 @@ function BannerPanel({
   p, 
   modelRef, 
   activeColor, 
-  setActiveColor 
+  setActiveColor,
+  isActive
 }: { 
   p: Panel;
   modelRef: React.RefObject<any>;
   activeColor: string;
   setActiveColor: (c: string) => void;
+  isActive?: boolean;
 }) {
   const COLORS = [
     { name: 'Blue', hex: '#3b82f6' },
@@ -124,7 +126,7 @@ function BannerPanel({
   if (p.isSpecial) {
     return (
       <div
-        className={`relative overflow-hidden rounded-2xl ${p.bg} flex flex-col justify-between p-10 border border-gray-200 shadow-md`}
+        className={`relative overflow-hidden rounded-2xl ${p.bg} flex flex-col justify-between pt-10 pb-16 px-10 border border-gray-200 shadow-md`}
         style={{ gridArea: p.area }}
       >
         {/* Floating background particles (simplified) */}
@@ -153,20 +155,20 @@ function BannerPanel({
         {/* Content Layer */}
         <div className="relative z-20 flex flex-col h-full pointer-events-none">
           {/* Badge */}
-          <div className="inline-flex items-center bg-white rounded-full px-4 py-1.5 text-[11px] font-medium text-gray-500 shadow-sm border border-gray-100 mb-8 self-start animate-slide-up animate-stagger-1">
-            <span className="mr-2">🎵</span>
+          <div className={`inline-flex items-center bg-white rounded-full px-4 py-1.5 text-[11px] font-medium text-gray-500 shadow-sm border border-gray-100 mb-8 self-start ${isActive ? 'animate-slide-up animate-stagger-1' : 'opacity-0'}`}>
+            <span className="mr-2">{p.emoji || '✨'}</span>
             {p.label}
           </div>
 
           <div className="flex-1">
-            <h3 className="text-gray-900 font-bold text-5xl md:text-6xl leading-[1.1] max-w-sm mb-8 animate-slide-up animate-stagger-2">
+            <h3 className={`text-gray-900 font-bold text-5xl md:text-6xl leading-[1.1] max-w-sm mb-8 ${isActive ? 'animate-slide-up animate-stagger-2' : 'opacity-0'}`}>
               {p.title.split(' ').map((word, i) => (
                 <span key={i} className="block">{word}</span>
               ))}
             </h3>
 
             {/* Decorative 01 and subtitle section */}
-            <div className="flex items-start gap-6 mb-10 text-gray-400 animate-slide-up animate-stagger-3">
+            <div className={`flex items-start gap-6 mb-10 text-gray-400 ${isActive ? 'animate-slide-up animate-stagger-3' : 'opacity-0'}`}>
               <span className="text-5xl font-light opacity-30 leading-none">01</span>
               <div className="pt-2">
                 <div className="flex items-center gap-2 mb-2">
@@ -182,7 +184,7 @@ function BannerPanel({
             </div>
 
             {/* Lime Green Button + Small Color Picker */}
-            <div className="flex items-center gap-4 animate-slide-up animate-stagger-4 mt-2">
+            <div className={`flex items-center gap-4 mt-2 ${isActive ? 'animate-slide-up animate-stagger-4' : 'opacity-0'}`}>
               <button className="pointer-events-auto flex items-center bg-[#e2ff46] hover:bg-[#d4f035] text-gray-900 font-bold text-xs pl-6 pr-1.5 py-1.5 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95">
                 {p.cta}
                 <div className="ml-4 bg-black rounded-full p-2 flex items-center justify-center">
@@ -211,17 +213,6 @@ function BannerPanel({
             </div>
           </div>
 
-          {/* Social Links Footer */}
-          <div className="flex items-center gap-4 text-gray-400 mt-auto">
-            <span className="text-[10px] font-medium uppercase tracking-tight">Follow us on:</span>
-            <div className="flex gap-3">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="w-7 h-7 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm hover:text-gray-900 cursor-pointer pointer-events-auto transition-colors">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-sm" /> {/* Placeholder for real icons */}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -229,7 +220,7 @@ function BannerPanel({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl flex flex-col justify-between p-6 border border-gray-200 shadow-md ${p.bg.startsWith('bg-') ? p.bg : `bg-linear-to-br ${p.bg}`}`}
+      className={`relative overflow-hidden rounded-3xl flex flex-col justify-between pt-6 pb-8 px-6 border border-gray-200 shadow-md ${p.bg.startsWith('bg-') ? p.bg : `bg-linear-to-br ${p.bg}`}`}
       style={{ gridArea: p.area }}
     >
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/5 pointer-events-none" />
@@ -255,7 +246,7 @@ function BannerPanel({
           <img 
             src={p.image} 
             alt={p.title} 
-            className={`opacity-100 animate-reveal-up transform ${
+            className={`opacity-100 transform ${isActive ? 'animate-reveal-up' : 'opacity-0'} ${
               p.image.includes('lifestyle') 
                 ? 'absolute right-0 bottom-0 h-[110%] w-auto translate-x-12 object-contain' 
                 : p.image.includes('airpods')
@@ -279,22 +270,22 @@ function BannerPanel({
         </div>
       ) : null}
 
-      <div className="relative z-10 pointer-events-none">
-        <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/60'} text-xs font-semibold uppercase tracking-widest mb-1 animate-slide-up animate-stagger-1`}>{p.label}</p>
+      <div className={`relative z-10 pointer-events-none ${isActive ? '' : 'opacity-0'}`}>
+        <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/60'} text-xs font-semibold uppercase tracking-widest mb-1 ${isActive ? 'animate-slide-up animate-stagger-1' : ''}`}>{p.label}</p>
         {p.type === 'sale' ? (
           <>
-            <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-bold text-sm animate-slide-up animate-stagger-1`}>SALE UP TO</p>
-            <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-extrabold text-6xl leading-none animate-slide-up animate-stagger-2`}>{p.title}</p>
+            <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-bold text-sm ${isActive ? 'animate-slide-up animate-stagger-1' : ''}`}>SALE UP TO</p>
+            <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-extrabold text-6xl leading-none ${isActive ? 'animate-slide-up animate-stagger-2' : ''}`}>{p.title}</p>
           </>
         ) : (
-          <h3 className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-extrabold leading-tight animate-slide-up animate-stagger-2 ${p.type === 'hero' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'}`}>
+          <h3 className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-extrabold leading-tight ${p.type === 'hero' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'} ${isActive ? 'animate-slide-up animate-stagger-2' : ''}`}>
             {p.title}
           </h3>
         )}
-        <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/70'} text-sm mt-2 max-w-[200px] animate-slide-up animate-stagger-3`}>{p.subtitle}</p>
+        <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/70'} text-sm mt-2 max-w-[200px] ${isActive ? 'animate-slide-up animate-stagger-3' : ''}`}>{p.subtitle}</p>
       </div>
 
-      <button className={`relative z-10 self-start mt-4 ${p.bg.includes('#f3f4f6') ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md animate-slide-up animate-stagger-4`}>
+      <button className={`relative z-10 self-start mt-4 ${p.bg.includes('#f3f4f6') ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md ${isActive ? 'animate-slide-up animate-stagger-4' : 'opacity-0'}`}>
         {p.cta}
       </button>
 
@@ -303,7 +294,7 @@ function BannerPanel({
   );
 }
 
-function SlideGrid({ slide }: { slide: Slide }) {
+function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
   const modelRef = useRef<any>(null);
   const [activeColor, setActiveColor] = useState('#ffffff');
 
@@ -334,7 +325,7 @@ function SlideGrid({ slide }: { slide: Slide }) {
 
   return (
     <div
-      className="grid gap-4 h-128 p-4 bg-white rounded-2xl shadow-sm"
+      className="grid gap-4 h-[540px] p-4 bg-white rounded-2xl shadow-sm"
       style={{
         gridTemplateAreas: slide.areas,
         gridTemplateColumns: slide.columns,
@@ -348,6 +339,7 @@ function SlideGrid({ slide }: { slide: Slide }) {
           modelRef={modelRef} 
           activeColor={activeColor} 
           setActiveColor={setActiveColor} 
+          isActive={isActive}
         />
       ))}
     </div>
@@ -387,7 +379,7 @@ export function HeroBanner() {
         <div className="flex touch-pan-y" style={{ backfaceVisibility: 'hidden' }}>
           {SLIDES.map((slide, i) => (
             <div key={i} style={{ flex: '0 0 100%', minWidth: 0 }}>
-              <SlideGrid slide={slide} />
+              <SlideGrid slide={slide} isActive={i === selectedIndex} />
             </div>
           ))}
         </div>

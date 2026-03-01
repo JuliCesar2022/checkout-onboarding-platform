@@ -38,7 +38,7 @@ export function ProductsPage() {
     dispatch(fetchCategories());
   }, [dispatch, lastFetchedAt]);
 
-  useScrollReveal();
+  useScrollReveal([products.length, categories.length]);
 
   const handlePay = (product: Product) => {
     dispatch(selectProduct(product.id));
