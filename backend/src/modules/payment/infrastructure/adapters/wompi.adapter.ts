@@ -11,13 +11,13 @@ import { Result } from '../../../../common/result/result';
 import type { Env } from '../../../../config/env.validation';
 import type { TransactionStatus } from '../../../transactions/domain/entities/transaction.entity';
 
-const WOMPI_STATUS_MAP: Record<string, TransactionStatus> = {
-  APPROVED: 'APPROVED',
-  DECLINED: 'DECLINED',
-  VOIDED: 'VOIDED',
-  ERROR: 'ERROR',
-  PENDING: 'PENDING',
-};
+import {
+  WOMPI_STATUS_MAP,
+  WOMPI_ENDPOINTS,
+  WOMPI_ERROR_MESSAGES,
+  WOMPI_PAYMENT_METHODS,
+  WOMPI_DEFAULT_CURRENCY,
+} from '../../domain/constants/wompi.constants';
 
 @Injectable()
 export class WompiAdapter implements IPaymentPort {
@@ -40,7 +40,7 @@ export class WompiAdapter implements IPaymentPort {
     try {
       const publicKey = this.config.get('WOMPI_PUBLIC_KEY', { infer: true });
       const { data } = await axios.get(
-        `${this.baseUrl}/merchants/${publicKey}`,
+        `${this.baseUrl}${WOMPI_ENDPOINTS.MERCHANTS}/${publicKey}`,
       );
       const presignedAcceptance = data.data?.presigned_acceptance;
       const presignedPersonalDataAuth = data.data?.presigned_personal_data_auth;
@@ -51,7 +51,7 @@ export class WompiAdapter implements IPaymentPort {
       });
     } catch (error) {
       this.logger.error('Failed to get acceptance token from Wompi', error);
-      return Result.fail('Could not retrieve acceptance token from Wompi');
+      return Result.fail(WOMPI_ERROR_MESSAGES.ACCEPTANCE_TOKEN_FAILURE);
     }
   }
 
@@ -73,14 +73,14 @@ export class WompiAdapter implements IPaymentPort {
         accept_personal_auth: input.acceptPersonalAuth,
         signature,
         payment_method: {
-          type: 'CARD',
+          type: WOMPI_PAYMENT_METHODS.CARD,
           token: input.cardToken,
           installments: input.installments,
         },
       };
 
       const { data } = await axios.post(
-        `${this.baseUrl}/transactions`,
+        `${this.baseUrl}${WOMPI_ENDPOINTS.TRANSACTIONS}`,
         payload,
         {
           headers: {
@@ -105,7 +105,7 @@ export class WompiAdapter implements IPaymentPort {
       const message = axios.isAxiosError(error)
         ? ((error.response?.data as { error?: { reason?: string } })?.error
             ?.reason ?? error.message)
-        : 'Unknown payment error';
+        : WOMPI_ERROR_MESSAGES.PAYMENT_UNKNOWN_ERROR;
       return Result.fail(message);
     }
   }
@@ -115,7 +115,7 @@ export class WompiAdapter implements IPaymentPort {
   ): Promise<Result<ChargeCardOutput>> {
     try {
       const { data } = await axios.get(
-        `${this.baseUrl}/transactions/${wompiId}`,
+        `${this.baseUrl}${WOMPI_ENDPOINTS.TRANSACTIONS}/${wompiId}`,
         {
           headers: {
             Authorization: `Bearer ${this.privateKey}`,
@@ -137,7 +137,7 @@ export class WompiAdapter implements IPaymentPort {
       this.logger.error(`Wompi status check failed for ${wompiId}`, error);
       const message = axios.isAxiosError(error)
         ? (JSON.stringify(error.response?.data) ?? error.message)
-        : 'Unknown status check error';
+        : WOMPI_ERROR_MESSAGES.STATUS_CHECK_UNKNOWN_ERROR;
       return Result.fail(message);
     }
   }

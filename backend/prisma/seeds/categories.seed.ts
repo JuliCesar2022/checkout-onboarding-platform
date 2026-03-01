@@ -1,9 +1,13 @@
 import type { PrismaClient, Category } from '@prisma/client';
 
 export const INITIAL_CATEGORIES = [
-  'Audio',
-  'Peripherals',
-  'Networking',
+  'Hardware',
+  'PlayStation',
+  'Xbox',
+  'Nintendo',
+  'Gaming Laptops',
+  'Accesorios',
+  'MacBooks',
 ] as const;
 
 export async function seedCategories(
