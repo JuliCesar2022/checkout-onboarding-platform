@@ -82,8 +82,6 @@ export async function seedProducts(
   prisma: PrismaClient,
   categoriesMap: Map<string, any>,
 ): Promise<void> {
-  await prisma.product.deleteMany();
-
   for (const productData of data) {
     const { category, ...rest } = productData;
     const categoryModel = categoriesMap.get(category);

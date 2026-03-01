@@ -15,6 +15,13 @@ import { seedProducts } from './products.seed';
 import { seedCategories } from './categories.seed';
 
 export async function runAllSeeds(prisma: PrismaClient): Promise<void> {
+  // Clean in dependency order (children first, then parents)
+  await prisma.delivery.deleteMany();
+  await prisma.transaction.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.customer.deleteMany();
+  await prisma.category.deleteMany();
+
   console.log(`\nRunning seed: categories`);
   const categoriesMap = await seedCategories(prisma);
 

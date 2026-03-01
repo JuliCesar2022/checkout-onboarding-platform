@@ -8,13 +8,13 @@ export const INITIAL_CATEGORIES = [
   'Gaming Laptops',
   'Accesorios',
   'MacBooks',
+  'Celulares',
+  'Realidad Virtual',
 ] as const;
 
 export async function seedCategories(
   prisma: PrismaClient,
 ): Promise<Map<string, Category>> {
-  await prisma.category.deleteMany();
-
   const categoriesMap = new Map<string, Category>();
 
   for (const name of INITIAL_CATEGORIES) {

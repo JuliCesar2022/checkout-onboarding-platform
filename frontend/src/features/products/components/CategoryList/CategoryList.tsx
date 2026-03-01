@@ -5,13 +5,23 @@ interface CategoryListProps {
   onSelect?: (category: Category) => void;
 }
 
-const CATEGORY_ICONS: Record<string, { icon: string; bg: string }> = {
-  AUDIO: { icon: '🎧', bg: 'bg-violet-100' },
-  PERIPHERALS: { icon: '⌨️', bg: 'bg-blue-100' },
-  NETWORKING: { icon: '🌐', bg: 'bg-emerald-100' },
+const CATEGORY_ICONS: Record<string, string> = {
+  HARDWARE: '🖥️',
+  PLAYSTATION: '🎮',
+  XBOX: '🟢',
+  NINTENDO: '🔴',
+  'GAMING LAPTOPS': '💻',
+  ACCESORIOS: '🎧',
+  MACBOOKS: '🍎',
+  CELULARES: '📱',
+  'REALIDAD VIRTUAL': '🥽',
+  // legacy
+  AUDIO: '🎧',
+  PERIPHERALS: '⌨️',
+  NETWORKING: '🌐',
 };
 
-const DEFAULT_ICON = { icon: '📦', bg: 'bg-gray-100' };
+const DEFAULT_ICON = '📦';
 
 export function CategoryList({ categories, onSelect }: CategoryListProps) {
   if (categories.length === 0) return null;
@@ -19,19 +29,19 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
   return (
     <div className="flex gap-6 overflow-x-auto pb-2 scrollbar-hide">
       {categories.map((cat) => {
-        const { icon, bg } = CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON;
+        const icon = CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON;
         return (
           <button
             key={cat.id}
             onClick={() => onSelect?.(cat)}
-            className="flex flex-col items-center gap-2 flex-shrink-0 group"
+            className="flex flex-col items-center gap-3 flex-shrink-0 group p-2"
           >
             <div
-              className={`w-20 h-20 rounded-full ${bg} flex items-center justify-center text-3xl group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 transition-all`}
+              className="w-28 h-28 rounded-full bg-indigo-50 flex items-center justify-center text-5xl group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 transition-all"
             >
               {icon}
             </div>
-            <span className="text-xs font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">
+            <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">
               {cat.name}
             </span>
           </button>
