@@ -37,6 +37,19 @@ export class TransactionsController {
     return unwrap(await this.transactionsService.create(dto));
   }
 
+  @Get(':id/sync')
+  @PublicEndpoint() // Or maybe a slightly stricter throttle if needed
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sync transaction status with Wompi' })
+  @ApiResponse({ status: 200, type: TransactionResponseDto })
+  @ApiResponse({
+    status: 404,
+    description: 'Transaction not found or has no Wompi ID',
+  })
+  async syncStatus(@Param('id') id: string): Promise<TransactionResponseDto> {
+    return unwrap(await this.transactionsService.syncStatus(id));
+  }
+
   @Get(':id')
   @PublicEndpoint() // Read-only: 100 req/min per IP
   @HttpCode(HttpStatus.OK)
@@ -60,18 +73,5 @@ export class TransactionsController {
       await this.transactionsService.findByReference(reference),
       'not_found',
     );
-  }
-
-  @Get(':id/sync')
-  @PublicEndpoint() // Or maybe a slightly stricter throttle if needed
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Sync transaction status with Wompi' })
-  @ApiResponse({ status: 200, type: TransactionResponseDto })
-  @ApiResponse({
-    status: 404,
-    description: 'Transaction not found or has no Wompi ID',
-  })
-  async syncStatus(@Param('id') id: string): Promise<TransactionResponseDto> {
-    return unwrap(await this.transactionsService.syncStatus(id), 'not_found');
   }
 }

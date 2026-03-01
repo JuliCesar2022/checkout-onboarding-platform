@@ -136,8 +136,7 @@ export class WompiAdapter implements IPaymentPort {
     } catch (error: unknown) {
       this.logger.error(`Wompi status check failed for ${wompiId}`, error);
       const message = axios.isAxiosError(error)
-        ? ((error.response?.data as { error?: { reason?: string } })?.error
-            ?.reason ?? error.message)
+        ? (JSON.stringify(error.response?.data) ?? error.message)
         : 'Unknown status check error';
       return Result.fail(message);
     }
