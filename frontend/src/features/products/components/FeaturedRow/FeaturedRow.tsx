@@ -6,16 +6,16 @@ import { productDetailPath } from '../../../../constants/routes';
 interface FeaturedRowProps {
   title: string;
   products: Product[];
-  onPay: (product: Product) => void;
+  onPay?: (product: Product) => void;
 }
 
-export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
+export function FeaturedRow({ title, products }: FeaturedRowProps) {
   const navigate = useNavigate();
 
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-white rounded-2xl p-6 shadow-sm">
+    <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-900">{title}</h2>
         <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
@@ -31,9 +31,9 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
           <article
             key={product.id}
             onClick={() => navigate(productDetailPath(product.id))}
-            className="flex-shrink-0 w-44 cursor-pointer group"
+            className="flex-shrink-0 w-52 cursor-pointer group"
           >
-            <div className="w-full h-36 rounded-xl bg-gray-50 overflow-hidden border border-gray-100 group-hover:shadow-md transition-shadow">
+            <div className="w-full h-48 rounded-xl bg-gray-50 overflow-hidden border border-gray-100 group-hover:shadow-md transition-shadow">
               {product.imageUrl ? (
                 <img
                   src={product.imageUrl}
@@ -54,13 +54,6 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
               <p className="text-sm font-bold text-indigo-600 mt-1">
                 {formatCOP(product.priceInCents)}
               </p>
-              <button
-                onClick={(e) => { e.stopPropagation(); onPay(product); }}
-                disabled={product.stock === 0}
-                className="mt-2 w-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg py-1.5 transition-colors"
-              >
-                {product.stock === 0 ? 'Sin stock' : 'Comprar'}
-              </button>
             </div>
           </article>
         ))}

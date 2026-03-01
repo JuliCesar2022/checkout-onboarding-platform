@@ -1,0 +1,1 @@
+export { SmartphoneShowcase } from './SmartphoneShowcase';

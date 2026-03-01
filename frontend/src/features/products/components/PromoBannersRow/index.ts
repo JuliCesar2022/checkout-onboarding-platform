@@ -1,0 +1,1 @@
+export { PromoBannersRow } from './PromoBannersRow';

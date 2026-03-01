@@ -1,0 +1,43 @@
+interface ShowcaseItem {
+  label: string;
+  emoji: string;
+}
+
+const ITEMS: ShowcaseItem[] = [
+  { label: 'Smartphones',  emoji: '📱' },
+  { label: 'Smartwatch',   emoji: '⌚' },
+  { label: 'Tablets',      emoji: '📲' },
+  { label: 'Auriculares',  emoji: '🎧' },
+  { label: 'Cargadores',   emoji: '🔌' },
+];
+
+export function SmartphoneShowcase() {
+  return (
+    <section className="bg-white rounded-2xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-gray-900">Smartphones &amp; Wearables</h2>
+        <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
+          View All <span>&gt;</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+        {ITEMS.map((item) => (
+          <button
+            key={item.label}
+            className="flex flex-col items-center gap-3 group cursor-pointer"
+          >
+            <div className="w-full aspect-square rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center group-hover:shadow-md group-hover:border-indigo-100 transition-all duration-200 overflow-hidden">
+              <span className="text-6xl group-hover:scale-110 transition-transform duration-200 select-none">
+                {item.emoji}
+              </span>
+            </div>
+            <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">
+              {item.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
