@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Product } from '../types';
+import { productsApi } from '../api';
 
 interface ProductsState {
   items: Product[];
@@ -8,6 +9,8 @@ interface ProductsState {
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
   lastFetchedAt: number | null; // unix ms, for cache invalidation
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
 const initialState: ProductsState = {
@@ -16,14 +19,20 @@ const initialState: ProductsState = {
   status: 'idle',
   error: null,
   lastFetchedAt: null,
+  nextCursor: null,
+  hasMore: false,
 };
 
-// TODO: implement — calls GET /api/products
 export const fetchProducts = createAsyncThunk('products/fetchAll', async () => {
-  // const response = await productsApi.fetchProducts();
-  // return response;
-  return [] as Product[];
+  return productsApi.fetchProducts();
 });
+
+export const fetchMoreProducts = createAsyncThunk(
+  'products/fetchMore',
+  async (cursor: string) => {
+    return productsApi.fetchProducts(cursor);
+  },
+);
 
 const productsSlice = createSlice({
   name: 'products',
@@ -45,12 +54,28 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.items = action.payload;
+        state.items = action.payload.data;
+        state.nextCursor = action.payload.nextCursor;
+        state.hasMore = action.payload.hasMore;
         state.lastFetchedAt = Date.now();
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message ?? 'Failed to fetch products';
+      })
+      .addCase(fetchMoreProducts.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchMoreProducts.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.items.push(...action.payload.data);
+        state.nextCursor = action.payload.nextCursor;
+        state.hasMore = action.payload.hasMore;
+        state.lastFetchedAt = Date.now();
+      })
+      .addCase(fetchMoreProducts.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message ?? 'Failed to load more products';
       });
   },
 });

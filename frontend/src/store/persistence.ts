@@ -4,7 +4,7 @@ import type { RootState } from './rootReducer';
 
 // Selective persistence — CVV is never in Redux state so it's never persisted
 export const persistConfig: PersistConfig<RootState> = {
-  key: 'root',
+  key: 'root-v2', // bumped to purge stale persisted state
   storage,
   whitelist: ['products', 'checkout', 'transaction'],
   // Products: cache items for 5 minutes, revalidate on stale

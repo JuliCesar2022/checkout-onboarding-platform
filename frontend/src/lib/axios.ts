@@ -6,9 +6,14 @@ const client = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Response interceptor: normalize error shape
+// Response interceptor: unwrap NestJS ResponseInterceptor envelope { data: T, timestamp: string } → T
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data !== null && typeof response.data === 'object' && 'data' in response.data && 'timestamp' in response.data) {
+      response.data = response.data.data;
+    }
+    return response;
+  },
   (error) => {
     const message = error.response?.data?.message ?? error.message ?? 'Unknown error';
     return Promise.reject(new Error(message));

@@ -2,8 +2,15 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  price: number; // in cents (COP)
-  imageUrl: string;
+  imageUrl: string | null;
+  priceInCents: number;
   stock: number;
-  category?: string;
+  isAvailable: boolean;
+  categoryId: string;
+}
+
+export interface PaginatedProducts {
+  data: Product[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
