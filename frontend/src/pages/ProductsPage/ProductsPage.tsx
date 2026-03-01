@@ -19,6 +19,7 @@ import { CategoryShowcase } from '../../features/products/components/CategorySho
 import { GamingShowcase } from '../../features/products/components/GamingShowcase';
 import { SmartphoneShowcase } from '../../features/products/components/SmartphoneShowcase';
 import { ROUTES } from '../../constants/routes';
+import { useScrollReveal } from '../../shared/hooks/useScrollReveal';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -37,20 +38,25 @@ export function ProductsPage() {
     dispatch(fetchCategories());
   }, [dispatch, lastFetchedAt]);
 
+  useScrollReveal();
+
   const handlePay = (product: Product) => {
     dispatch(selectProduct(product.id));
     dispatch(openCheckoutForm({ productId: product.id, quantity: 1 }));
     navigate(ROUTES.CHECKOUT);
   };
 
-return (
+ return (
     <PageWrapper>
       <div className="flex flex-col gap-10">
         {/* Hero Banner */}
-        <HeroBanner />
+        <div className="reveal">
+          <HeroBanner />
+        </div>
 
         {/* Explore Popular Categories */}
         <section
+          className="reveal delay-100"
           style={{
             backgroundColor: '#ffffff',
             borderRadius: '1rem',
@@ -65,32 +71,44 @@ return (
 
         {/* Featured products row */}
         {products.length > 0 && (
-          <FeaturedRow
-            title="⚡ Más vendidos"
-            products={products.slice(0, 8)}
-            onPay={handlePay}
-          />
+          <div className="reveal">
+            <FeaturedRow
+              title="⚡ Más vendidos"
+              products={products.slice(0, 8)}
+              onPay={handlePay}
+            />
+          </div>
         )}
 
         {/* Promo Banners Row */}
-        <PromoBannersRow />
+        <div className="reveal">
+          <PromoBannersRow />
+        </div>
 
         {/* Category Showcase */}
-        <CategoryShowcase />
+        <div className="reveal">
+          <CategoryShowcase />
+        </div>
 
         {/* Gaming Showcase */}
-        <GamingShowcase />
+        <div className="reveal">
+          <GamingShowcase />
+        </div>
 
         {/* Smartphone Showcase */}
-        <SmartphoneShowcase />
+        <div className="reveal">
+          <SmartphoneShowcase />
+        </div>
 
         {/* Second featured row */}
         {products.length > 0 && (
-          <FeaturedRow
-            title="🔥 Ofertas del día"
-            products={products.slice(3, 11)}
-            onPay={handlePay}
-          />
+          <div className="reveal">
+            <FeaturedRow
+              title="🔥 Ofertas del día"
+              products={products.slice(3, 11)}
+              onPay={handlePay}
+            />
+          </div>
         )}
 
       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 
@@ -23,6 +23,7 @@ interface Panel {
   area: string;
   sketchfabId?: string;
   localModel?: string;
+  image?: string;
   isSpecial?: boolean; // For the redesigned headphones layout
 }
 
@@ -52,8 +53,8 @@ const SLIDES: Slide[] = [
         localModel: '/models/auriculares.glb',
         isSpecial: true
       },
-      { area: 'top',  type: 'promo', bg: 'from-violet-600 to-purple-800',              label: 'Bundle exclusivo', title: 'Consola + 2 juegos', subtitle: 'Arma tu setup con los mejores títulos.',       cta: 'Ver bundle',   emoji: '🕹️' },
-      { area: 'bot',  type: 'sale',  bg: 'from-amber-500 to-yellow-500',               label: 'Flash sale',       title: '30%',             subtitle: 'OFF en mandos y accesorios.',                     cta: 'Ver oferta',   emoji: '🔥' },
+      { area: 'top',  type: 'promo', bg: 'bg-[#f8f9fa]',                                   label: 'Bundle exclusivo', title: 'AirPods Pro',   subtitle: 'Magia para tus oídos.',                    cta: 'Comprar ahora', emoji: '🎧', image: '/airpods.png' },
+      { area: 'bot',  type: 'promo', bg: 'bg-[#f8f9fa]',                                   label: 'Experience',      title: 'Vive el Sonido', subtitle: 'Diseñados para tu comodidad diaria.',   cta: 'Saber más',     emoji: '✨', image: '/lifestyle.jpg' },
     ],
   },
   /* ── 2 paneles lado a lado ── */
@@ -77,11 +78,11 @@ const SLIDES: Slide[] = [
       { area: 'promo', type: 'sale',  bg: 'from-orange-500 to-rose-600',                label: 'Oferta limitada',  title: '50%',             subtitle: 'OFF en accesorios y gaming. Solo hoy.',           cta: 'Ver descuentos', emoji: '⚡' },
     ],
   },
-  /* ── panel grande + 2 apilados ── */
+  /* ── panel grande (PS5 FULL WIDTH) ── */
   {
-    areas: '"hero top" "hero bot"',
-    columns: '1.4fr 0.9fr',
-    rows: '1fr 1fr',
+    areas: '"hero"',
+    columns: '1fr',
+    rows: '1fr',
     panels: [
       { 
         area: 'hero', 
@@ -95,13 +96,29 @@ const SLIDES: Slide[] = [
         localModel: '/models/ps5.glb', 
         isSpecial: true 
       },
-      { area: 'top',  type: 'promo', bg: 'from-violet-600 to-purple-800',              label: 'Bundle exclusivo', title: 'Consola + 2 juegos', subtitle: 'Arma tu setup con los mejores títulos.',       cta: 'Ver bundle',   emoji: '🕹️' },
-      { area: 'bot',  type: 'sale',  bg: 'from-amber-500 to-yellow-500',               label: 'Flash sale',       title: '30%',             subtitle: 'OFF en mandos y accesorios.',                     cta: 'Ver oferta',   emoji: '🔥' },
     ],
   },
 ];
 
-function BannerPanel({ p }: { p: Panel }) {
+function BannerPanel({ 
+  p, 
+  modelRef, 
+  activeColor, 
+  setActiveColor 
+}: { 
+  p: Panel;
+  modelRef: React.RefObject<any>;
+  activeColor: string;
+  setActiveColor: (c: string) => void;
+}) {
+  const COLORS = [
+    { name: 'Blue', hex: '#3b82f6' },
+    { name: 'Orange', hex: '#f97316' },
+    { name: 'Green', hex: '#22c55e' },
+    { name: 'Red', hex: '#ef4444' },
+    { name: 'Cyan', hex: '#06b6d4' },
+  ];
+
   if (p.isSpecial) {
     return (
       <div
@@ -116,6 +133,7 @@ function BannerPanel({ p }: { p: Panel }) {
         {/* 3D Model Layer */}
         <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-10 overflow-hidden pointer-events-auto">
           <model-viewer
+            ref={modelRef}
             src={p.localModel}
             alt={p.title}
             auto-rotate
@@ -133,20 +151,20 @@ function BannerPanel({ p }: { p: Panel }) {
         {/* Content Layer */}
         <div className="relative z-20 flex flex-col h-full pointer-events-none">
           {/* Badge */}
-          <div className="inline-flex items-center bg-white rounded-full px-4 py-1.5 text-[11px] font-medium text-gray-500 shadow-sm border border-gray-100 mb-8 self-start">
+          <div className="inline-flex items-center bg-white rounded-full px-4 py-1.5 text-[11px] font-medium text-gray-500 shadow-sm border border-gray-100 mb-8 self-start animate-slide-up animate-stagger-1">
             <span className="mr-2">🎵</span>
             {p.label}
           </div>
 
           <div className="flex-1">
-            <h3 className="text-gray-900 font-bold text-5xl md:text-6xl leading-[1.1] max-w-sm mb-8">
+            <h3 className="text-gray-900 font-bold text-5xl md:text-6xl leading-[1.1] max-w-sm mb-8 animate-slide-up animate-stagger-2">
               {p.title.split(' ').map((word, i) => (
                 <span key={i} className="block">{word}</span>
               ))}
             </h3>
 
             {/* Decorative 01 and subtitle section */}
-            <div className="flex items-start gap-6 mb-10 text-gray-400">
+            <div className="flex items-start gap-6 mb-10 text-gray-400 animate-slide-up animate-stagger-3">
               <span className="text-5xl font-light opacity-30 leading-none">01</span>
               <div className="pt-2">
                 <div className="flex items-center gap-2 mb-2">
@@ -159,15 +177,34 @@ function BannerPanel({ p }: { p: Panel }) {
               </div>
             </div>
 
-            {/* Lime Green Button */}
-            <button className="pointer-events-auto flex items-center bg-[#e2ff46] hover:bg-[#d4f035] text-gray-900 font-bold text-xs pl-6 pr-1.5 py-1.5 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95">
-              {p.cta}
-              <div className="ml-4 bg-black rounded-full p-2 flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </div>
-            </button>
+            {/* Lime Green Button + Small Color Picker */}
+            <div className="flex items-center gap-4 animate-slide-up animate-stagger-4 mt-2">
+              <button className="pointer-events-auto flex items-center bg-[#e2ff46] hover:bg-[#d4f035] text-gray-900 font-bold text-xs pl-6 pr-1.5 py-1.5 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95">
+                {p.cta}
+                <div className="ml-4 bg-black rounded-full p-2 flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Minimalist Color Selector */}
+              {p.localModel?.includes('auriculares') && (
+                <div className="flex items-center gap-1.5 pointer-events-auto bg-white/60 backdrop-blur-sm px-3 py-2 rounded-full border border-white/40 shadow-sm ml-2">
+                  {COLORS.map((c) => (
+                    <button
+                      key={c.hex}
+                      onClick={() => setActiveColor(c.hex)}
+                      title={c.name}
+                      className={`w-4 h-4 rounded-full transition-all flex items-center justify-center ${
+                        activeColor === c.hex ? 'ring-1 ring-gray-900 ring-offset-1 scale-110' : 'hover:scale-110'
+                      }`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Social Links Footer */}
@@ -188,7 +225,7 @@ function BannerPanel({ p }: { p: Panel }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${p.bg} flex flex-col justify-between p-6`}
+      className={`relative overflow-hidden rounded-2xl flex flex-col justify-between p-6 ${p.bg.startsWith('bg-') ? p.bg : `bg-linear-to-br ${p.bg}`}`}
       style={{ gridArea: p.area }}
     >
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/5 pointer-events-none" />
@@ -205,6 +242,16 @@ function BannerPanel({ p }: { p: Panel }) {
             exposure="1"
             interaction-prompt="none"
             style={{ width: '100%', height: '100%', outline: 'none' }}
+          />
+        </div>
+      ) : p.image ? (
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {/* Subtle gradient overlay to ensure text legibility over full images */}
+          <div className="absolute inset-0 bg-linear-to-r from-white/90 via-white/40 to-transparent z-10" />
+          <img 
+            src={p.image} 
+            alt={p.title} 
+            className="w-full h-full object-cover opacity-100 animate-reveal-up"
           />
         </div>
       ) : p.sketchfabId ? (
@@ -227,23 +274,24 @@ function BannerPanel({ p }: { p: Panel }) {
       )}
 
       <div className="relative z-10 pointer-events-none">
-        <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">{p.label}</p>
+        <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-500' : 'text-white/60'} text-xs font-semibold uppercase tracking-widest mb-1 animate-slide-up animate-stagger-1`}>{p.label}</p>
         {p.type === 'sale' ? (
           <>
-            <p className="text-white font-bold text-sm">SALE UP TO</p>
-            <p className="text-white font-extrabold text-6xl leading-none">{p.title}</p>
+            <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-900' : 'text-white'} font-bold text-sm animate-slide-up animate-stagger-1`}>SALE UP TO</p>
+            <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-900' : 'text-white'} font-extrabold text-6xl leading-none animate-slide-up animate-stagger-2`}>{p.title}</p>
           </>
         ) : (
-          <h3 className={`text-white font-extrabold leading-tight ${p.type === 'hero' ? 'text-4xl md:text-5xl' : 'text-xl'}`}>
+          <h3 className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-900' : 'text-white'} font-extrabold leading-tight animate-slide-up animate-stagger-2 ${p.type === 'hero' ? 'text-4xl md:text-5xl' : 'text-xl'}`}>
             {p.title}
           </h3>
         )}
-        <p className="text-white/70 text-sm mt-2 max-w-[200px]">{p.subtitle}</p>
+        <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-500' : 'text-white/70'} text-sm mt-2 max-w-[200px] animate-slide-up animate-stagger-3`}>{p.subtitle}</p>
       </div>
 
-      <button className="relative z-10 self-start mt-4 bg-white text-gray-900 font-semibold text-xs px-5 py-2 rounded-full hover:bg-gray-100 transition-colors shadow-md">
+      <button className={`relative z-10 self-start mt-4 ${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md animate-slide-up animate-stagger-4`}>
         {p.cta}
       </button>
+
 
       {p.type !== 'hero' && !p.sketchfabId && !p.localModel && (
         <span className="absolute bottom-3 right-3 text-[80px] opacity-15 select-none pointer-events-none">
@@ -255,6 +303,34 @@ function BannerPanel({ p }: { p: Panel }) {
 }
 
 function SlideGrid({ slide }: { slide: Slide }) {
+  const modelRef = useRef<any>(null);
+  const [activeColor, setActiveColor] = useState('#ffffff');
+
+  useEffect(() => {
+    const modelViewer = modelRef.current;
+    if (!modelViewer) return;
+
+    const applyColor = () => {
+      // Solo aplicamos si el modelo está cargado y si es el de auriculares
+      if (modelViewer.src?.includes('auriculares')) {
+        const material = modelViewer.model?.materials[0];
+        if (material) {
+          const r = parseInt(activeColor.slice(1, 3), 16) / 255;
+          const g = parseInt(activeColor.slice(3, 5), 16) / 255;
+          const b = parseInt(activeColor.slice(5, 7), 16) / 255;
+          material.pbrMetallicRoughness.setBaseColorFactor([r, g, b, 1]);
+        }
+      }
+    };
+
+    if (modelViewer.model) {
+      applyColor();
+    } else {
+      modelViewer.addEventListener('load', applyColor);
+      return () => modelViewer.removeEventListener('load', applyColor);
+    }
+  }, [activeColor]);
+
   return (
     <div
       className="grid gap-4 h-128 p-4 bg-white rounded-2xl shadow-sm"
@@ -265,7 +341,13 @@ function SlideGrid({ slide }: { slide: Slide }) {
       }}
     >
       {slide.panels.map((p) => (
-        <BannerPanel key={p.area} p={p} />
+        <BannerPanel 
+          key={p.area} 
+          p={p} 
+          modelRef={modelRef} 
+          activeColor={activeColor} 
+          setActiveColor={setActiveColor} 
+        />
       ))}
     </div>
   );
