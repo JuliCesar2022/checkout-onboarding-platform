@@ -152,4 +152,16 @@ export const checkoutApi = {
 
     return response.data;
   },
+
+  /**
+   * Polls the backend to sync the transaction status with Wompi.
+   */
+  syncTransactionStatus: async (
+    transactionId: string,
+  ): Promise<TransactionResult> => {
+    const response = await client.get<TransactionResult>(
+      `/transactions/${transactionId}/sync`,
+    );
+    return response.data;
+  },
 };

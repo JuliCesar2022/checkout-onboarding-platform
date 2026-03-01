@@ -1,5 +1,6 @@
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
+import { useEffect } from 'react';
 import { 
   proceedToSummary, 
   startProcessing,
@@ -7,20 +8,39 @@ import {
   saveDeliveryAddress,
   completeCheckout,
   setCheckoutError,
+  setFees,
 } from '../../features/checkout/store/checkoutSlice';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
 import { OrderSummaryBackdrop } from '../../features/checkout/components/OrderSummaryBackdrop';
 import { checkoutApi } from '../../features/checkout/api';
+import { productsApi } from '../../features/products/api';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
+
+// Mirror the fee constants from backend .env (in COP cents)
+const BASE_FEE_IN_CENTS = 150_000;   // 1,500 COP
+const DELIVERY_FEE_IN_CENTS = 1_000_000; // 10,000 COP
 
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity } = useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
+  // Load product and compute fee breakdown when productId is available
+  useEffect(() => {
+    if (!productId) return;
+    productsApi.fetchProductById(productId).then((product) => {
+      const productAmountInCents = product.priceInCents * quantity;
+      dispatch(setFees({
+        productAmount: productAmountInCents / 100,
+        baseFee: BASE_FEE_IN_CENTS / 100,
+        deliveryFee: DELIVERY_FEE_IN_CENTS / 100,
+        totalAmount: (productAmountInCents + BASE_FEE_IN_CENTS + DELIVERY_FEE_IN_CENTS) / 100,
+      }));
+    }).catch(console.error);
+  }, [productId, quantity, dispatch]);
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -77,10 +97,27 @@ export function CheckoutPage() {
       console.log(`   ID: ${result.id}`);
       console.log(`   Referencia: ${result.reference}`);
 
-      if (result.status === 'APPROVED') {
+      let finalResult = result;
+
+      // Si Wompi lo deja PENDING (muy común), hacemos polling cada 3s al backend
+      if (finalResult.status === 'PENDING') {
+        console.log('⏳ Transacción PENDING. Iniciando polling cada 3s...');
+        
+        while (finalResult.status === 'PENDING') {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          try {
+            finalResult = await checkoutApi.syncTransactionStatus(finalResult.id);
+            console.log(`🔄 Estado actual: ${finalResult.status}`);
+          } catch (syncError) {
+            console.error('⚠️ Error consultando estado, reintentando...', syncError);
+          }
+        }
+      }
+
+      if (finalResult.status === 'APPROVED') {
         dispatch(completeCheckout());
       } else {
-        dispatch(setCheckoutError(`Pago ${result.status.toLowerCase()}: la transacción no fue aprobada.`));
+        dispatch(setCheckoutError(`Pago ${finalResult.status.toLowerCase()}: la transacción no fue aprobada.`));
       }
 
     } catch (err: any) {

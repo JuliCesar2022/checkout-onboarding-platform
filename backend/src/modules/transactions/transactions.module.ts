@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TransactionsController } from './infrastructure/controllers/transactions.controller';
 import { TransactionsService } from './application/transactions.service';
 import { CreateTransactionUseCase } from './application/use-cases/create-transaction.use-case';
+import { SyncTransactionStatusUseCase } from './application/use-cases/sync-transaction-status.use-case';
 import { ITransactionsRepository } from './domain/repositories/transactions.repository';
 import { PrismaTransactionsRepository } from './infrastructure/repositories/prisma-transactions.repository';
 import { INotificationPort } from './domain/ports/notification.port';
@@ -13,11 +14,18 @@ import { DeliveriesModule } from '../deliveries/deliveries.module';
 import { PaymentModule } from '../payment/payment.module';
 
 @Module({
-  imports: [ConfigModule, ProductsModule, CustomersModule, DeliveriesModule, PaymentModule],
+  imports: [
+    ConfigModule,
+    ProductsModule,
+    CustomersModule,
+    DeliveriesModule,
+    PaymentModule,
+  ],
   controllers: [TransactionsController],
   providers: [
     TransactionsService,
     CreateTransactionUseCase,
+    SyncTransactionStatusUseCase,
     {
       provide: ITransactionsRepository,
       useClass: PrismaTransactionsRepository,

@@ -25,5 +25,10 @@ export interface ChargeCardOutput {
  */
 export abstract class IPaymentPort {
   abstract charge(input: ChargeCardInput): Promise<Result<ChargeCardOutput>>;
-  abstract getAcceptanceToken(): Promise<Result<{ acceptanceToken: string; personalAuthToken: string }>>;
+  abstract getAcceptanceToken(): Promise<
+    Result<{ acceptanceToken: string; personalAuthToken: string }>
+  >;
+  abstract getTransactionStatus(
+    wompiId: string,
+  ): Promise<Result<ChargeCardOutput>>;
 }
