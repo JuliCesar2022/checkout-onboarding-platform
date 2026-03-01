@@ -76,6 +76,15 @@ return (
         {/* Smartphone Showcase */}
         <SmartphoneShowcase />
 
+        {/* Second featured row */}
+        {products.length > 0 && (
+          <FeaturedRow
+            title="🔥 Ofertas del día"
+            products={products.slice(3, 11)}
+            onPay={handlePay}
+          />
+        )}
+
       </div>
     </PageWrapper>
   );

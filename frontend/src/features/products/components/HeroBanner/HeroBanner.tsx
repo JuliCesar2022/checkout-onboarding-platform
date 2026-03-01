@@ -164,8 +164,8 @@ export function HeroBanner() {
             onClick={() => emblaApi?.scrollTo(i)}
             className={`rounded-full transition-all duration-300 ${
               i === selectedIndex
-                ? 'w-6 h-2 bg-indigo-500'
-                : 'w-2 h-2 bg-gray-300 hover:bg-indigo-300'
+                ? 'w-6 h-2 bg-[#222]'
+                : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
             }`}
           />
         ))}

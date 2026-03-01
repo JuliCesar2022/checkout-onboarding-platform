@@ -18,7 +18,7 @@ export function FeaturedRow({ title, products }: FeaturedRowProps) {
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-900">{title}</h2>
-        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+        <button className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors">
           View All &gt;
         </button>
       </div>
@@ -48,10 +48,10 @@ export function FeaturedRow({ title, products }: FeaturedRowProps) {
             </div>
 
             <div className="mt-2 px-1">
-              <p className="text-sm text-gray-800 font-medium leading-snug line-clamp-2 group-hover:text-indigo-600 transition-colors">
+              <p className="text-sm text-gray-800 font-medium leading-snug line-clamp-2 group-hover:text-gray-900 transition-colors">
                 {product.name}
               </p>
-              <p className="text-sm font-bold text-indigo-600 mt-1">
+              <p className="text-sm font-bold text-gray-900 mt-1">
                 {formatCOP(product.priceInCents)}
               </p>
             </div>

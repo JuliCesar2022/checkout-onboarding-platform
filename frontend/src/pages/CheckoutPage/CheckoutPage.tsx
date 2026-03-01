@@ -165,7 +165,7 @@ export function CheckoutPage() {
                     <p>{deliveryAddress.phoneNumber}</p>
                     <button 
                       onClick={() => dispatch(saveDeliveryAddress(null as any))}
-                      className="mt-2 text-indigo-600 hover:text-indigo-500 font-medium"
+                      className="mt-2 text-gray-900 hover:text-gray-600 font-medium"
                     >
                       Edit
                     </button>
@@ -222,7 +222,7 @@ export function CheckoutPage() {
                     <p>Expires: {cardData.expiryMonth}/{cardData.expiryYear}</p>
                     <button 
                       onClick={() => dispatch(saveCardData(null as any))}
-                      className="mt-2 text-indigo-600 hover:text-indigo-500 font-medium"
+                      className="mt-2 text-gray-900 hover:text-gray-600 font-medium"
                     >
                       Edit
                     </button>
@@ -258,7 +258,7 @@ export function CheckoutPage() {
                   </div>
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <dt className="text-base font-semibold text-gray-900">Total</dt>
-                    <dd className="text-xl font-bold text-indigo-600">{formatCurrency(fees.totalAmount)}</dd>
+                    <dd className="text-xl font-bold text-gray-900">{formatCurrency(fees.totalAmount)}</dd>
                   </div>
                 </dl>
 

@@ -59,7 +59,7 @@ export function ProductDetailPage() {
         {/* Back link */}
         <button
           onClick={() => navigate(ROUTES.PRODUCTS)}
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600 transition-colors mb-6"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-6"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -90,7 +90,7 @@ export function ProductDetailPage() {
               <StockBadge stock={product.stock} />
             </div>
 
-            <p className="text-3xl font-extrabold text-indigo-600">
+            <p className="text-3xl font-extrabold text-gray-900">
               {formatCOP(product.priceInCents)}
             </p>
 

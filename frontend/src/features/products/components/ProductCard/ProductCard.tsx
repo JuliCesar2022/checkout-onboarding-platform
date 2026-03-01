@@ -42,7 +42,7 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
           {product.name}
         </h2>
         <p className="text-sm text-gray-500 line-clamp-3 flex-1">{product.description}</p>
-        <p className="text-xl font-bold text-indigo-600 mt-1">{formatCOP(product.priceInCents)}</p>
+        <p className="text-xl font-bold text-gray-900 mt-1">{formatCOP(product.priceInCents)}</p>
         <Button
           onClick={(e) => {
             e.stopPropagation();

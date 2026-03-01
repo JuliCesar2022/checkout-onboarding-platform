@@ -18,7 +18,7 @@ export function Input({ label, error, endIcon, id, className = '', ...props }: I
           className={`w-full rounded-lg border px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${
             error
               ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-              : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-200'
+              : 'border-gray-300 focus:border-gray-900 focus:ring-gray-300'
           } ${endIcon ? 'pr-12' : ''} ${className}`}
           {...props}
         />
