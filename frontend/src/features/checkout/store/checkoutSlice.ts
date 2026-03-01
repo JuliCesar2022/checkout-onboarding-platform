@@ -6,11 +6,14 @@ import type {
   DeliveryAddress,
   FeeBreakdown,
 } from '../types';
+import type { CartItem } from '../../cart/store/cartSlice';
 
 interface CheckoutState {
   step: CheckoutStep;
   selectedProductId: string | null;
   quantity: number;
+  // When coming from cart with multiple items selected
+  cartItems: CartItem[];
   cardData: Omit<CardData, never> | null; // CVV is never stored here
   deliveryAddress: DeliveryAddress | null;
   fees: FeeBreakdown | null;
@@ -22,6 +25,7 @@ const initialState: CheckoutState = {
   step: 'IDLE',
   selectedProductId: null,
   quantity: 1,
+  cartItems: [],
   cardData: null,
   deliveryAddress: null,
   fees: null,
@@ -35,11 +39,12 @@ const checkoutSlice = createSlice({
   reducers: {
     openCheckoutForm(
       state,
-      action: PayloadAction<{ productId: string; quantity: number }>,
+      action: PayloadAction<{ productId: string; quantity: number; cartItems?: CartItem[] }>,
     ) {
       state.step = 'FORM';
       state.selectedProductId = action.payload.productId;
       state.quantity = action.payload.quantity;
+      state.cartItems = action.payload.cartItems ?? [];
       state.error = null;
     },
     saveCardData(state, action: PayloadAction<Omit<CardData, never>>) {

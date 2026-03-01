@@ -51,7 +51,7 @@ const STEPS = [
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity } =
+  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
@@ -70,8 +70,13 @@ export function CheckoutPage() {
 
   useEffect(() => {
     if (!productId) return;
-    productsApi.fetchProductById(productId).then((p) => {
-      const productAmountInCents = p.priceInCents * quantity;
+
+    if (cartItems.length > 1) {
+      // Multi-item from cart: sum all selected items, no need for API call
+      const productAmountInCents = cartItems.reduce(
+        (sum, i) => sum + i.priceInCents * i.quantity,
+        0
+      );
       dispatch(
         setFees({
           productAmount: productAmountInCents / 100,
@@ -80,9 +85,23 @@ export function CheckoutPage() {
           totalAmount: (productAmountInCents + BASE_FEE_IN_CENTS + DELIVERY_FEE_IN_CENTS) / 100,
         })
       );
-      setProduct({ name: p.name, imageUrl: p.imageUrl });
-    }).catch(console.error);
-  }, [productId, quantity, dispatch]);
+      // Use first item as the "representative" product for display fallback
+      setProduct({ name: cartItems[0].name, imageUrl: cartItems[0].imageUrl });
+    } else {
+      productsApi.fetchProductById(productId).then((p) => {
+        const productAmountInCents = p.priceInCents * quantity;
+        dispatch(
+          setFees({
+            productAmount: productAmountInCents / 100,
+            baseFee: BASE_FEE_IN_CENTS / 100,
+            deliveryFee: DELIVERY_FEE_IN_CENTS / 100,
+            totalAmount: (productAmountInCents + BASE_FEE_IN_CENTS + DELIVERY_FEE_IN_CENTS) / 100,
+          })
+        );
+        setProduct({ name: p.name, imageUrl: p.imageUrl });
+      }).catch(console.error);
+    }
+  }, [productId, quantity, cartItems, dispatch]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('es-CO', {
@@ -309,7 +328,28 @@ export function CheckoutPage() {
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-5">Order Summary</h2>
 
-              {product && (
+              {/* Multi-item from cart */}
+              {cartItems.length > 1 ? (
+                <div className="mb-5 pb-5 border-b border-gray-200 space-y-3">
+                  {cartItems.map((item) => (
+                    <div key={item.productId} className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-1" />
+                        ) : (
+                          <span className="text-xl">📦</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{item.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {formatCurrency(item.priceInCents / 100)} × {item.quantity} = <span className="text-gray-900 font-medium">{formatCurrency((item.priceInCents * item.quantity) / 100)}</span>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : product ? (
                 <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-200">
                   <div className="w-16 h-16 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
                     {product.imageUrl ? (
@@ -347,7 +387,7 @@ export function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {fees ? (
                 <>
