@@ -25,6 +25,7 @@ interface Panel {
   localModel?: string;
   image?: string;
   isSpecial?: boolean; // For the redesigned headphones layout
+  secondaryLabel?: string; // e.g. "Clear Sounds"
 }
 
 interface Slide {
@@ -35,7 +36,6 @@ interface Slide {
 }
 
 const SLIDES: Slide[] = [
-  /* ── 3D Focal Headphones (REDESIGN) ── */
   {
     areas: '"hero top" "hero bot"',
     columns: '1.4fr 0.9fr',
@@ -44,7 +44,7 @@ const SLIDES: Slide[] = [
       { 
         area: 'hero', 
         type: 'hero', 
-        bg: 'bg-[#f8f9fa]', // Light theme
+        bg: 'bg-[#f3f4f6]', // Light theme
         label: 'Music is Classic', 
         title: 'Sequoia Inspiring Musico.', 
         subtitle: 'Making your dream music come true stay with Sequios Sounds!', 
@@ -53,8 +53,8 @@ const SLIDES: Slide[] = [
         localModel: '/models/auriculares.glb',
         isSpecial: true
       },
-      { area: 'top',  type: 'promo', bg: 'bg-[#f8f9fa]',                                   label: 'Bundle exclusivo', title: 'AirPods Pro',   subtitle: 'Magia para tus oídos.',                    cta: 'Comprar ahora', emoji: '🎧', image: '/airpods.png' },
-      { area: 'bot',  type: 'promo', bg: 'bg-[#f8f9fa]',                                   label: 'Experience',      title: 'Vive el Sonido', subtitle: 'Diseñados para tu comodidad diaria.',   cta: 'Saber más',     emoji: '✨', image: '/lifestyle.jpg' },
+      { area: 'top',  type: 'promo', bg: 'bg-[#f3f4f6]',                                   label: 'Bundle exclusivo', title: 'AirPods Pro',   subtitle: 'Magia para tus oídos.',                    cta: 'Comprar ahora', emoji: '🎧', image: '/airpods_new.png' },
+      { area: 'bot',  type: 'promo', bg: 'bg-[#f3f4f6]',                                   label: 'Experience',      title: 'Vive el Sonido', subtitle: 'Diseñados para tu comodidad diaria.',   cta: 'Saber más',     emoji: '✨', image: '/lifestyle_new.png' },
     ],
   },
   /* ── 2 paneles lado a lado ── */
@@ -66,16 +66,17 @@ const SLIDES: Slide[] = [
       { 
         area: 'hero',  
         type: 'hero',  
-        bg: 'bg-[#f0f2f5]', 
+        bg: 'bg-[#f3f4f6]', 
         label: 'Nuevo lanzamiento', 
         title: 'iPhone 17 Pro.', 
-        subtitle: 'The future of mobile power and elegancy.', 
+        subtitle: 'Una nueva era de potencia y elegancia en tus manos.', 
         cta: 'Shop Now', 
         emoji: '📱', 
         localModel: '/models/iphone17.glb',
-        isSpecial: true 
+        isSpecial: true,
+        secondaryLabel: 'Pro Performance'
       },
-      { area: 'promo', type: 'sale',  bg: 'from-orange-500 to-rose-600',                label: 'Oferta limitada',  title: '50%',             subtitle: 'OFF en accesorios y gaming. Solo hoy.',           cta: 'Ver descuentos', emoji: '⚡' },
+      { area: 'promo', type: 'promo', bg: 'bg-[#f3f4f6]',                               label: 'Edición Especial', title: 'Estilo sin Límites', subtitle: 'El color que define una nueva era de innovación.',  cta: 'Descúbrelo',    emoji: '✨', image: '/iphone_promo_transparent.png' },
     ],
   },
   /* ── panel grande (PS5 FULL WIDTH) ── */
@@ -87,14 +88,15 @@ const SLIDES: Slide[] = [
       { 
         area: 'hero', 
         type: 'hero',  
-        bg: 'bg-[#f0f2f5]', 
+        bg: 'bg-[#f3f4f6]', 
         label: 'Gaming Power',     
         title: 'Sony PlayStation 5.',   
-        subtitle: 'Experience lightning-fast loading and immersive gaming.',              
+        subtitle: 'Siente el poder de la nueva generación con carga ultrarrápida.',              
         cta: 'Shop Consoles', 
         emoji: '🎮', 
         localModel: '/models/ps5.glb', 
-        isSpecial: true 
+        isSpecial: true,
+        secondaryLabel: 'Play Has No Limits'
       },
     ],
   },
@@ -122,7 +124,7 @@ function BannerPanel({
   if (p.isSpecial) {
     return (
       <div
-        className={`relative overflow-hidden rounded-2xl ${p.bg} flex flex-col justify-between p-10 border border-gray-100 shadow-sm`}
+        className={`relative overflow-hidden rounded-2xl ${p.bg} flex flex-col justify-between p-10 border border-gray-200 shadow-md`}
         style={{ gridArea: p.area }}
       >
         {/* Floating background particles (simplified) */}
@@ -169,7 +171,9 @@ function BannerPanel({
               <div className="pt-2">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="bg-gray-200 h-px w-12" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-900">Clear Sounds</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-900">
+                    {p.secondaryLabel || 'Clear Sounds'}
+                  </span>
                 </div>
                 <p className="text-[11px] text-gray-500 max-w-[200px] leading-relaxed">
                   {p.subtitle}
@@ -225,7 +229,7 @@ function BannerPanel({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl flex flex-col justify-between p-6 ${p.bg.startsWith('bg-') ? p.bg : `bg-linear-to-br ${p.bg}`}`}
+      className={`relative overflow-hidden rounded-3xl flex flex-col justify-between p-6 border border-gray-200 shadow-md ${p.bg.startsWith('bg-') ? p.bg : `bg-linear-to-br ${p.bg}`}`}
       style={{ gridArea: p.area }}
     >
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/5 pointer-events-none" />
@@ -246,12 +250,20 @@ function BannerPanel({
         </div>
       ) : p.image ? (
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          {/* Subtle gradient overlay to ensure text legibility over full images */}
-          <div className="absolute inset-0 bg-linear-to-r from-white/90 via-white/40 to-transparent z-10" />
+          {/* Subtle gradient overlay to ensure text legibility */}
+          <div className={`absolute inset-0 z-10 ${p.bg.includes('#f3f4f6') ? 'bg-linear-to-r from-white/90 via-white/40 to-transparent' : 'bg-linear-to-r from-purple-900/40 via-transparent to-transparent'}`} />
           <img 
             src={p.image} 
             alt={p.title} 
-            className="w-full h-full object-cover opacity-100 animate-reveal-up"
+            className={`opacity-100 animate-reveal-up transform ${
+              p.image.includes('lifestyle') 
+                ? 'absolute right-0 bottom-0 h-[110%] w-auto translate-x-12 object-contain' 
+                : p.image.includes('airpods')
+                ? 'absolute right-4 top-1/2 -translate-y-1/2 w-[50%] h-auto object-contain translate-x-4'
+                : p.image.includes('iphone_promo')
+                ? 'absolute right-0 top-1/2 -translate-y-1/2 h-[90%] w-auto object-contain translate-x-2'
+                : 'w-full h-full object-cover'
+            }`}
           />
         </div>
       ) : p.sketchfabId ? (
@@ -265,39 +277,28 @@ function BannerPanel({
             style={{ width: '100%', height: '100%', border: 'none' }}
           />
         </div>
-      ) : (
-        p.type === 'hero' && (
-          <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[120px] opacity-20 select-none pointer-events-none">
-            {p.emoji}
-          </span>
-        )
-      )}
+      ) : null}
 
       <div className="relative z-10 pointer-events-none">
-        <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-500' : 'text-white/60'} text-xs font-semibold uppercase tracking-widest mb-1 animate-slide-up animate-stagger-1`}>{p.label}</p>
+        <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/60'} text-xs font-semibold uppercase tracking-widest mb-1 animate-slide-up animate-stagger-1`}>{p.label}</p>
         {p.type === 'sale' ? (
           <>
-            <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-900' : 'text-white'} font-bold text-sm animate-slide-up animate-stagger-1`}>SALE UP TO</p>
-            <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-900' : 'text-white'} font-extrabold text-6xl leading-none animate-slide-up animate-stagger-2`}>{p.title}</p>
+            <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-bold text-sm animate-slide-up animate-stagger-1`}>SALE UP TO</p>
+            <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-extrabold text-6xl leading-none animate-slide-up animate-stagger-2`}>{p.title}</p>
           </>
         ) : (
-          <h3 className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-900' : 'text-white'} font-extrabold leading-tight animate-slide-up animate-stagger-2 ${p.type === 'hero' ? 'text-4xl md:text-5xl' : 'text-xl'}`}>
+          <h3 className={`${p.bg.includes('#f3f4f6') ? 'text-gray-900' : 'text-white'} font-extrabold leading-tight animate-slide-up animate-stagger-2 ${p.type === 'hero' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'}`}>
             {p.title}
           </h3>
         )}
-        <p className={`${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'text-gray-500' : 'text-white/70'} text-sm mt-2 max-w-[200px] animate-slide-up animate-stagger-3`}>{p.subtitle}</p>
+        <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/70'} text-sm mt-2 max-w-[200px] animate-slide-up animate-stagger-3`}>{p.subtitle}</p>
       </div>
 
-      <button className={`relative z-10 self-start mt-4 ${(p.bg.includes('#f8f9fa') || p.bg.includes('#f0f2f5')) ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md animate-slide-up animate-stagger-4`}>
+      <button className={`relative z-10 self-start mt-4 ${p.bg.includes('#f3f4f6') ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md animate-slide-up animate-stagger-4`}>
         {p.cta}
       </button>
 
 
-      {p.type !== 'hero' && !p.sketchfabId && !p.localModel && (
-        <span className="absolute bottom-3 right-3 text-[80px] opacity-15 select-none pointer-events-none">
-          {p.emoji}
-        </span>
-      )}
     </div>
   );
 }
@@ -380,7 +381,7 @@ export function HeroBanner() {
   }, [emblaApi, onSelect]);
 
   return (
-    <div className="flex flex-col gap-3 pb-4">
+    <div className="flex flex-col gap-3 pb-4 select-none">
       {/* viewport */}
       <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
         <div className="flex touch-pan-y" style={{ backfaceVisibility: 'hidden' }}>
