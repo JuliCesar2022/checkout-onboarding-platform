@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { useAppSelector } from '../../hooks/useAppSelector';
-import { fetchProducts, selectProduct } from '../../store/slices/productsSlice';
-import { openCheckoutForm } from '../../store/slices/checkoutSlice';
-import { PageWrapper } from '../../components/layout/PageWrapper';
-import { ProductGrid } from '../../components/products/ProductGrid';
-import { ErrorBanner } from '../../components/ui/ErrorBanner';
-import { Spinner } from '../../components/ui/Spinner';
-import type { Product } from '../../types/product.types';
+import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
+import { useAppSelector } from '../../shared/hooks/useAppSelector';
+import { fetchProducts, selectProduct } from '../../features/products/store/productsSlice';
+import { openCheckoutForm } from '../../features/checkout/store/checkoutSlice';
+import { PageWrapper } from '../../shared/layout/PageWrapper';
+import { ProductGrid } from '../../features/products/components/ProductGrid';
+import { ErrorBanner } from '../../shared/ui/ErrorBanner';
+import { Spinner } from '../../shared/ui/Spinner';
+import type { Product } from '../../features/products/types';
 import { ROUTES } from '../../constants/routes';
 
 export function ProductsPage() {

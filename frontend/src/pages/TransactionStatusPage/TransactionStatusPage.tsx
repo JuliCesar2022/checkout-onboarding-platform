@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { useAppSelector } from '../../hooks/useAppSelector';
-import { resetCheckout } from '../../store/slices/checkoutSlice';
-import { resetTransaction } from '../../store/slices/transactionSlice';
-import { fetchProducts } from '../../store/slices/productsSlice';
-import { TransactionResult } from '../../components/transaction/TransactionResult';
-import { PageWrapper } from '../../components/layout/PageWrapper';
+import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
+import { useAppSelector } from '../../shared/hooks/useAppSelector';
+import { resetCheckout } from '../../features/checkout/store/checkoutSlice';
+import { resetTransaction } from '../../features/transaction/store/transactionSlice';
+import { fetchProducts } from '../../features/products/store/productsSlice';
+import { TransactionResult } from '../../features/transaction/components/TransactionResult';
+import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { ROUTES } from '../../constants/routes';
 
 export function TransactionStatusPage() {
