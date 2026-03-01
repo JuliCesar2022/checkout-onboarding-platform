@@ -12,6 +12,7 @@ import {
   setFees,
   setQuantity,
   updateCartItemQuantity,
+  resetCheckout,
 } from '../../features/checkout/store/checkoutSlice';
 import { setTransactionResult } from '../../features/transaction/store/transactionSlice';
 import { ROUTES } from '../../constants/routes';
@@ -64,8 +65,22 @@ export function CheckoutPage() {
   const lastDeliveryRef = useRef(deliveryAddress ?? loadSavedDelivery());
   if (deliveryAddress) lastDeliveryRef.current = deliveryAddress;
 
+  // Auto-confirm delivery from localStorage when starting a new checkout.
+  // openCheckoutForm resets deliveryAddress to null, so if localStorage has
+  // data and Redux has none, pre-confirm it so the user lands on step 2 directly.
+  useEffect(() => {
+    if (!productId) return;
+    if (deliveryAddress) return; // already set, nothing to do
+    const saved = loadSavedDelivery();
+    if (saved) {
+      dispatch(saveDeliveryAddress(saved));
+    }
+  }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const lastCardRef = useRef(cardData);
   if (cardData) lastCardRef.current = cardData;
+
+  const payingRef = useRef(false);
 
   const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
 
@@ -112,12 +127,14 @@ export function CheckoutPage() {
     }).format(amount);
 
   const handlePay = async () => {
+    if (payingRef.current) return;
     if (!cardData || !deliveryAddress || !productId) return;
     if (!cardData.token) {
       dispatch(setCheckoutError('La tarjeta no ha sido tokenizada. Por favor edita y vuelve a guardar tu tarjeta.'));
       return;
     }
 
+    payingRef.current = true;
     dispatch(startProcessing());
 
     try {
@@ -170,6 +187,7 @@ export function CheckoutPage() {
       dispatch(completeCheckout());
       navigate(ROUTES.TRANSACTION_STATUS);
     } catch (err: any) {
+      payingRef.current = false;
       dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
     }
   };
@@ -181,8 +199,24 @@ export function CheckoutPage() {
     <PageWrapper>
       <div className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6">
 
+        {/* ── Top bar: cancel button + stepper ── */}
+        <div className="flex items-center gap-4 mb-10">
+          <button
+            onClick={() => {
+              dispatch(resetCheckout());
+              navigate(ROUTES.PRODUCTS);
+            }}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Cancelar
+          </button>
+
         {/* ── Stepper ── */}
-        <div className="mb-10">
+        <div className="flex-1">
           <div className="flex items-center">
             {STEPS.map((s, idx) => {
               const isDone = s.number < currentStep;
@@ -221,6 +255,7 @@ export function CheckoutPage() {
             })}
           </div>
         </div>
+        </div>{/* end top bar */}
 
         <div className="lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-8">
 

@@ -46,6 +46,10 @@ const checkoutSlice = createSlice({
       state.quantity = action.payload.quantity;
       state.cartItems = action.payload.cartItems ?? [];
       state.error = null;
+      // Reset form data so the user goes through step 1 every new checkout
+      state.deliveryAddress = null;
+      state.cardData = null;
+      state.fees = null;
     },
     saveCardData(state, action: PayloadAction<Omit<CardData, never>>) {
       state.cardData = action.payload;

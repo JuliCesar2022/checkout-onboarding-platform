@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
 import { fetchProducts, selectProduct } from '../../features/products/store/productsSlice';
 import { openCheckoutForm } from '../../features/checkout/store/checkoutSlice';
+import { addToCart } from '../../features/cart/store/cartSlice';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { StockBadge } from '../../features/products/components/StockBadge';
 import { Button } from '../../shared/ui/Button';
@@ -15,6 +16,7 @@ export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [quantity, setQuantity] = useState(1);
 
   const { items: products, status } = useAppSelector((state) => state.products);
   const product = products.find((p) => p.id === id);
@@ -23,10 +25,17 @@ export function ProductDetailPage() {
     if (products.length === 0) dispatch(fetchProducts());
   }, [dispatch, products.length]);
 
+  const handleAddToCart = () => {
+    if (!product) return;
+    for (let i = 0; i < quantity; i++) {
+      dispatch(addToCart({ productId: product.id, name: product.name, imageUrl: product.imageUrl, priceInCents: product.priceInCents }));
+    }
+  };
+
   const handlePay = () => {
     if (!product) return;
     dispatch(selectProduct(product.id));
-    dispatch(openCheckoutForm({ productId: product.id, quantity: 1 }));
+    dispatch(openCheckoutForm({ productId: product.id, quantity }));
     navigate(ROUTES.CHECKOUT);
   };
 
@@ -114,13 +123,53 @@ export function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="mt-auto pt-6">
+            {/* Quantity selector */}
+            {!isOutOfStock && (
+              <div className="flex items-center gap-3 pt-2">
+                <span className="text-sm font-medium text-gray-700">Cantidad:</span>
+                <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    aria-label="Disminuir cantidad"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <span className="w-8 text-center text-sm font-semibold text-gray-900">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                    disabled={quantity >= product.stock}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    aria-label="Aumentar cantidad"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-auto pt-4 flex flex-col gap-3">
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className="w-full rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Agregar al carrito
+              </button>
               <Button
                 onClick={handlePay}
                 disabled={isOutOfStock}
                 className="w-full py-3 text-base"
               >
-                {isOutOfStock ? 'Out of stock' : 'Pay with credit card'}
+                {isOutOfStock ? 'Out of stock' : 'Comprar ahora'}
               </Button>
             </div>
           </div>
