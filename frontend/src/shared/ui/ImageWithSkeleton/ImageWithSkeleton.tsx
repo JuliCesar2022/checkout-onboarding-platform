@@ -12,7 +12,7 @@ export function ImageWithSkeleton({ src, alt, className = '', skeletonClassName 
       {/* Skeleton overlay */}
       {!isLoaded && src && (
         <div 
-          className={`absolute inset-0 bg-gray-200 animate-pulse z-10 ${skeletonClassName}`} 
+          className={`absolute inset-0 bg-gray-300 animate-pulse z-10 ${skeletonClassName}`} 
         />
       )}
       

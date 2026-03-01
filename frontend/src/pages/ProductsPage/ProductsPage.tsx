@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
@@ -7,6 +7,7 @@ import {
   fetchCategories,
   selectProduct,
   setActiveCategory,
+  fetchMoreProducts,
 } from '../../features/products/store/productsSlice';
 import { openCheckoutForm, resetCheckout } from '../../features/checkout/store/checkoutSlice';
 import { productsApi } from '../../features/products/api';
@@ -30,12 +31,15 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 export function ProductsPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const observerTarget = useRef<HTMLDivElement>(null);
   const {
     items: products,
     categories,
     activeCategoryId,
     lastFetchedAt,
     status,
+    hasMore,
+    nextCursor,
   } = useAppSelector((state) => state.products);
   const { step, selectedProductId, quantity } = useAppSelector((state) => state.checkout);
 
@@ -78,6 +82,33 @@ export function ProductsPage() {
     setShowPendingModal(false);
     navigate(ROUTES.CHECKOUT);
   };
+
+  const handleLoadMore = useCallback(() => {
+    if (status !== 'loading' && nextCursor) {
+      dispatch(fetchMoreProducts(nextCursor));
+    }
+  }, [status, nextCursor, dispatch]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          handleLoadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    );
+
+    const target = observerTarget.current;
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [handleLoadMore, hasMore]);
 
   const handleDiscardPending = () => {
     dispatch(resetCheckout());
@@ -193,11 +224,23 @@ export function ProductsPage() {
                  Mostrando {products.length} {products.length === 1 ? 'producto' : 'productos'} encontrados
                </p>
              </div>
-             
-             {status === 'loading' ? (
-                <div className="py-20 text-center text-gray-500">Cargando productos...</div>
+             {status === 'loading' && products.length === 0 ? (
+                <ProductGrid isLoading={true} products={[]} onPay={handlePay} />
              ) : (
-                <ProductGrid products={products} onPay={handlePay} />
+                <>
+                  <ProductGrid products={products} onPay={handlePay} />
+                  {hasMore && (
+                    <div ref={observerTarget} className="mt-10 flex justify-center py-4">
+                      {status === 'loading' && (
+                        <div className="flex gap-2 items-center justify-center">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
              )}
           </div>
         ) : (
@@ -243,6 +286,28 @@ export function ProductsPage() {
                 />
               </div>
             )}
+
+            {/* All Products Grid at the bottom */}
+            <div className="reveal mt-8">
+              <SectionHeader title="Todos los Productos" />
+              {status === 'loading' && products.length === 0 ? (
+                <ProductGrid isLoading={true} products={[]} onPay={handlePay} />
+              ) : (
+                <ProductGrid products={products} onPay={handlePay} />
+              )}
+              
+              {hasMore && (
+                <div ref={observerTarget} className="mt-10 flex justify-center py-4">
+                  {status === 'loading' && (
+                    <div className="flex gap-2 items-center justify-center">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300" />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </>
         )}
 
