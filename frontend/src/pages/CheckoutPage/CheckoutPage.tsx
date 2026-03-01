@@ -4,18 +4,21 @@ import {
   proceedToSummary, 
   startProcessing,
   saveCardData,
-  saveDeliveryAddress
+  saveDeliveryAddress,
+  completeCheckout,
+  setCheckoutError,
 } from '../../features/checkout/store/checkoutSlice';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
 import { OrderSummaryBackdrop } from '../../features/checkout/components/OrderSummaryBackdrop';
+import { checkoutApi } from '../../features/checkout/api';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
 
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
-  const { step, fees, error, deliveryAddress, cardData } = useAppSelector((state) => state.checkout);
+  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity } = useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
   const formatCurrency = (amount: number) => {
@@ -26,11 +29,66 @@ export function CheckoutPage() {
     }).format(amount);
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
+    if (!cardData || !deliveryAddress) return;
+    if (!cardData.token) {
+      console.error('❌ No hay token de tarjeta. Tokeniza primero.');
+      return;
+    }
+    if (!productId) {
+      console.error('❌ No hay producto seleccionado.');
+      return;
+    }
+
     dispatch(startProcessing());
-    // TODO: dispatch(submitTransaction(...)) with card token + fees
-    // TODO: navigate to /status on COMPLETE
+
+    try {
+      // Step 1: Get Wompi acceptance tokens from our backend
+      console.log('📜 Obteniendo acceptance tokens de Wompi...');
+      const { acceptanceToken, personalAuthToken } = await checkoutApi.fetchAcceptanceToken();
+      console.log('✅ Acceptance tokens obtenidos');
+
+      // Step 2: Submit transaction to our backend
+      const result = await checkoutApi.submitTransaction({
+        productId,
+        quantity,
+        cardData: {
+          token: cardData.token,
+          brand: cardData.brand ?? 'VISA',
+          lastFour: cardData.number?.slice(-4) ?? '0000',
+          installments: 1,
+        },
+        deliveryData: {
+          address: `${deliveryAddress.addressLine1} ${deliveryAddress.addressLine2 ?? ''}`.trim(),
+          city: deliveryAddress.city,
+          state: deliveryAddress.department,
+        },
+        customerData: {
+          email: deliveryAddress.email,
+          name: deliveryAddress.recipientName,
+          phone: deliveryAddress.phoneNumber,
+        },
+        acceptanceToken,
+        acceptPersonalAuth: personalAuthToken,
+      });
+
+      console.log('🎉 Transacción procesada:', result);
+      console.log(`   Status: ${result.status}`);
+      console.log(`   ID: ${result.id}`);
+      console.log(`   Referencia: ${result.reference}`);
+
+      if (result.status === 'APPROVED') {
+        dispatch(completeCheckout());
+      } else {
+        dispatch(setCheckoutError(`Pago ${result.status.toLowerCase()}: la transacción no fue aprobada.`));
+      }
+
+    } catch (err: any) {
+      console.error('❌ Error al procesar el pago:', err.message);
+      dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
+    }
   };
+
 
   const isFormComplete = deliveryAddress && cardData;
   const isLoading = loadingState === 'submitting' || loadingState === 'polling';
@@ -90,10 +148,34 @@ export function CheckoutPage() {
                 </div>
                 {!cardData ? (
                   <CardForm 
-                    onSubmit={(data) => {
-                      const { cvv, cardNumber, ...restData } = data;
-                      dispatch(saveCardData({ ...restData, number: cardNumber, token: null }));
-                      dispatch(proceedToSummary()); // Opens mobile backdrop or enables desktop pay button
+                    onSubmit={async (data) => {
+                      try {
+                        // 1. Tokenize card directly with Wompi
+                        const tokenResult = await checkoutApi.tokenizeCard({
+                          number: data.cardNumber,
+                          cvc: data.cvv,
+                          expMonth: data.expiryMonth,
+                          expYear: data.expiryYear,
+                          cardHolder: data.holderName,
+                        });
+
+                        console.log('✅ Wompi Tokenization Success!');
+                        console.log('Token generated:', tokenResult.token);
+                        console.log('Brand detected:', tokenResult.brand);
+
+                        // 2. Save safe data + token to Redux (never save CVV or full card number)
+                        const { cvv, cardNumber, ...restData } = data;
+                        dispatch(saveCardData({ 
+                          ...restData, 
+                          number: cardNumber, 
+                          brand: tokenResult.brand, // Use Wompi's confirmed brand
+                          token: tokenResult.token 
+                        }));
+                        
+                        dispatch(proceedToSummary());
+                      } catch (err: any) {
+                        alert(err.message || 'Error tokenizing card');
+                      }
                     }} 
                   />
                 ) : (

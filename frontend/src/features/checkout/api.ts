@@ -1,5 +1,8 @@
-import client from '../../lib/axios';
-import type { CardData } from './types';
+import client from "../../lib/axios";
+import type { CardData } from "./types";
+import axios from "axios";
+
+// ─── Interfaces ──────────────────────────────────────────────────────────────
 
 interface TokenizeCardPayload {
   number: string;
@@ -11,22 +14,142 @@ interface TokenizeCardPayload {
 
 interface TokenizeCardResult {
   token: string;
-  brand: CardData['brand'];
+  brand: CardData["brand"];
   lastFour: string;
 }
 
+export interface SubmitTransactionPayload {
+  productId: string;
+  quantity: number;
+  cardData: {
+    token: string;
+    brand: string;
+    lastFour: string;
+    installments?: number;
+  };
+  deliveryData: {
+    address: string;
+    city: string;
+    state: string;
+    postalCode?: string;
+  };
+  customerData: {
+    email: string;
+    name: string;
+    phone?: string;
+  };
+  acceptanceToken: string;
+  acceptPersonalAuth: string;
+}
+
+export interface TransactionResult {
+  id: string;
+  reference: string;
+  status: "PENDING" | "APPROVED" | "DECLINED" | "ERROR" | "VOIDED";
+  amountInCents: number;
+  productAmountInCents: number;
+  baseFeeInCents: number;
+  deliveryFeeInCents: number;
+}
+
+// ─── API ─────────────────────────────────────────────────────────────────────
+
 export const checkoutApi = {
-  /** Fetches Wompi merchant acceptance token (required before tokenization) */
-  fetchAcceptanceToken: async (): Promise<{ token: string; permalink: string }> => {
-    // TODO: implement
-    const response = await client.get('/checkout/acceptance-token');
+  /**
+   * Fetches Wompi acceptance + personal auth tokens via our backend proxy.
+   * Required by Wompi before any transaction.
+   */
+  fetchAcceptanceToken: async (): Promise<{
+    acceptanceToken: string;
+    personalAuthToken: string;
+  }> => {
+    const response = await client.get("/checkout/acceptance-token");
     return response.data;
   },
 
-  /** Proxied through backend to Wompi card tokenization endpoint */
-  tokenizeCard: async (payload: TokenizeCardPayload): Promise<TokenizeCardResult> => {
-    // TODO: implement
-    const response = await client.post<TokenizeCardResult>('/checkout/tokenize-card', payload);
+  /**
+   * Tokenizes the card DIRECTLY against Wompi using the public key.
+   * The full card data never touches our backend.
+   */
+  tokenizeCard: async (
+    payload: TokenizeCardPayload,
+  ): Promise<TokenizeCardResult> => {
+    const wompiUrl = import.meta.env.VITE_WOMPI_BASE_URL;
+    const pubKey = import.meta.env.VITE_WOMPI_PUBLIC_KEY;
+
+    if (!wompiUrl || !pubKey) {
+      throw new Error(
+        "Wompi env vars are missing (VITE_WOMPI_BASE_URL / VITE_WOMPI_PUBLIC_KEY)",
+      );
+    }
+
+    const wompiPayload = {
+      number: payload.number.replace(/\s+/g, ""),
+      cvc: payload.cvc,
+      exp_month: payload.expMonth,
+      exp_year: payload.expYear,
+      card_holder: payload.cardHolder,
+    };
+
+    console.log(
+      "🔐 Tokenizando tarjeta con Wompi...",
+      `**** ${wompiPayload.number.slice(-4)}`,
+    );
+
+    try {
+      const response = await axios.post(
+        `${wompiUrl}/tokens/cards`,
+        wompiPayload,
+        {
+          headers: { Authorization: `Bearer ${pubKey}` },
+        },
+      );
+
+      const data = response.data.data;
+
+      console.log("✅ Token generado:", data.id);
+
+      return {
+        token: data.id,
+        brand: data.brand.toUpperCase() as CardData["brand"],
+        lastFour: data.last_four || payload.number.slice(-4),
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("❌ Wompi Tokenization Error:", error.response?.data);
+        throw new Error(
+          error.response?.data?.error?.messages?.number?.[0] ||
+            "Error al tokenizar la tarjeta",
+        );
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Submits the transaction to OUR backend.
+   * Backend will use the private key to charge the tokenized card via Wompi.
+   */
+  submitTransaction: async (
+    payload: SubmitTransactionPayload,
+  ): Promise<TransactionResult> => {
+    console.log("🚀 Enviando transacción al backend...", {
+      productId: payload.productId,
+      card: `${payload.cardData.brand} **** ${payload.cardData.lastFour}`,
+      customer: payload.customerData.email,
+    });
+
+    const response = await client.post<TransactionResult>(
+      "/transactions",
+      payload,
+    );
+
+    console.log("✅ Respuesta del backend:", {
+      id: response.data.id,
+      status: response.data.status,
+      reference: response.data.reference,
+    });
+
     return response.data;
   },
 };

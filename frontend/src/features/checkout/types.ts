@@ -1,4 +1,4 @@
-export type CardBrand = 'VISA' | 'MASTERCARD' | null;
+export type CardBrand = "VISA" | "MASTERCARD" | null;
 
 export interface CardData {
   number: string; // masked for display e.g. '4111 **** **** 1111'
@@ -12,6 +12,7 @@ export interface CardData {
 
 export interface DeliveryAddress {
   recipientName: string;
+  email: string;
   addressLine1: string;
   addressLine2?: string;
   city: string;
@@ -26,4 +27,9 @@ export interface FeeBreakdown {
   totalAmount: number;
 }
 
-export type CheckoutStep = 'IDLE' | 'FORM' | 'SUMMARY' | 'PROCESSING' | 'COMPLETE';
+export type CheckoutStep =
+  | "IDLE"
+  | "FORM"
+  | "SUMMARY"
+  | "PROCESSING"
+  | "COMPLETE";

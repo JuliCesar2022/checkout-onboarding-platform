@@ -5,18 +5,19 @@ import type { DeliveryAddress } from '../../types';
 import { Input } from '../../../../shared/ui/Input';
 
 const deliverySchema = z.object({
-  recipientName: z.string().min(2, 'Name is required'),
-  addressLine1: z.string().min(5, 'Address is required'),
+  recipientName: z.string().min(2, 'Nombre requerido'),
+  email: z.string().email('Correo electrónico inválido'),
+  addressLine1: z.string().min(5, 'Dirección requerida'),
   addressLine2: z.string().optional(),
-  city: z.string().min(2, 'City is required'),
-  department: z.string().min(2, 'Department/Region is required'),
-  phoneNumber: z.string().min(7, 'Valid phone number is required').max(15, 'Phone number is too long'),
+  city: z.string().min(2, 'Ciudad requerida'),
+  department: z.string().min(2, 'Departamento requerido'),
+  phoneNumber: z.string().min(7, 'Teléfono inválido').max(15, 'Teléfono muy largo'),
 });
 
 export type DeliveryFormData = z.infer<typeof deliverySchema>;
 
 interface DeliveryFormProps {
-  onSubmit: (data: DeliveryAddress) => void;
+  onSubmit: (data: DeliveryAddress & { email: string }) => void;
 }
 
 export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
@@ -28,6 +29,7 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
     resolver: zodResolver(deliverySchema),
     defaultValues: {
       recipientName: '',
+      email: '',
       addressLine1: '',
       addressLine2: '',
       city: '',
@@ -40,11 +42,21 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <Input
         id="recipientName"
-        label="Recipient Name"
+        label="Nombre del destinatario"
         type="text"
-        placeholder="e.g. Jane Doe"
+        placeholder="ej. Jane Doe"
         {...register('recipientName')}
         error={errors.recipientName?.message}
+      />
+
+      <Input
+        id="email"
+        label="Correo electrónico"
+        type="email"
+        inputMode="email"
+        placeholder="ej. juan@email.com"
+        {...register('email')}
+        error={errors.email?.message}
       />
 
       <Input
