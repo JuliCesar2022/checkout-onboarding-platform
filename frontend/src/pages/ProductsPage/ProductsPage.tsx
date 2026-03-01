@@ -50,7 +50,15 @@ return (
         <HeroBanner />
 
         {/* Explore Popular Categories */}
-        <section>
+        <section
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.07)',
+            border: '1px solid #f0f0f0',
+          }}
+        >
           <SectionHeader title="Explore Popular Categories" actionLabel="View All" onAction={() => {}} />
           <CategoryList categories={categories} />
         </section>

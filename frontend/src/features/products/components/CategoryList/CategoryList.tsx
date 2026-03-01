@@ -91,23 +91,14 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
           className="flex gap-2 overflow-x-auto"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {categories.map((cat) => {
-            const icon = CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => onSelect?.(cat)}
-                className="flex flex-col items-center gap-3 flex-shrink-0 group p-2"
-              >
-                <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center text-5xl group-hover:ring-2 group-hover:ring-gray-400 group-hover:ring-offset-2 transition-all">
-                  {icon}
-                </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
-                  {cat.name}
-                </span>
-              </button>
-            );
-          })}
+          {categories.map((cat) => (
+            <CategoryItem
+              key={cat.id}
+              cat={cat}
+              icon={CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON}
+              onSelect={onSelect}
+            />
+          ))}
         </div>
 
         {/* Right arrow */}
@@ -139,5 +130,68 @@ export function CategoryList({ categories, onSelect }: CategoryListProps) {
         </div>
       )}
     </div>
+  );
+}
+
+/* ─── Item de categoría con hover via React state ─── */
+interface CategoryItemProps {
+  cat: import('../../types').Category;
+  icon: string;
+  onSelect?: (cat: import('../../types').Category) => void;
+}
+
+function CategoryItem({ cat, icon, onSelect }: CategoryItemProps) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      key={cat.id}
+      onClick={() => onSelect?.(cat)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.75rem',
+        flexShrink: 0,
+        padding: '0.5rem',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
+        transition: 'transform 0.2s ease',
+      }}
+    >
+      <div
+        style={{
+          width: '7rem',
+          height: '7rem',
+          borderRadius: '9999px',
+          backgroundColor: hovered ? '#e5e7eb' : '#f3f4f6',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '3rem',
+          boxShadow: hovered
+            ? '0 6px 20px rgba(0, 0, 0, 0.13)'
+            : '0 1px 3px rgba(0, 0, 0, 0.05)',
+          outline: hovered ? '2px solid #d1d5db' : '2px solid transparent',
+          outlineOffset: '3px',
+          transition: 'background-color 0.2s ease, box-shadow 0.2s ease, outline-color 0.2s ease',
+        }}
+      >
+        {icon}
+      </div>
+      <span
+        style={{
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          color: hovered ? '#111827' : '#374151',
+          transition: 'color 0.2s ease',
+        }}
+      >
+        {cat.name}
+      </span>
+    </button>
   );
 }
