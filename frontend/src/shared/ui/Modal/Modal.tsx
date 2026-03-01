@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,15 +8,53 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
-  // TODO: implement full-screen mobile modal with Tailwind
+
   return (
-    <div role="dialog" aria-modal="true" aria-label={title}>
-      <div onClick={onClose} />
-      <div>
-        {title && <h2>{title}</h2>}
-        <button onClick={onClose} aria-label="Close modal">✕</button>
-        {children}
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center sm:p-4"
+      role="dialog" 
+      aria-modal="true" 
+      aria-label={title}
+    >
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      
+      <div className="relative flex w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex-col bg-white sm:rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          {title ? (
+            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+          ) : (
+            <div />
+          )}
+          <button 
+            onClick={onClose} 
+            className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            aria-label="Close modal"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {children}
+        </div>
       </div>
     </div>
   );
