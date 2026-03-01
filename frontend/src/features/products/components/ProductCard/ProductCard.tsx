@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { formatCOP } from '../../../../shared/utils/currencyFormat';
 import type { Product } from '../../types';
 import { Button } from '../../../../shared/ui/Button';
 import { StockBadge } from '../StockBadge';
+import { productDetailPath } from '../../../../constants/routes';
 
 interface ProductCardProps {
   product: Product;
@@ -9,12 +11,14 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onPay }: ProductCardProps) {
+  const navigate = useNavigate();
   const isOutOfStock = product.stock === 0;
 
   return (
     <article
       aria-label={product.name}
-      className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200"
+      className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
+      onClick={() => navigate(productDetailPath(product.id))}
     >
       <div className="relative h-48 bg-gray-50 flex-shrink-0">
         {product.imageUrl ? (
@@ -39,7 +43,14 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
         </h2>
         <p className="text-sm text-gray-500 line-clamp-3 flex-1">{product.description}</p>
         <p className="text-xl font-bold text-indigo-600 mt-1">{formatCOP(product.priceInCents)}</p>
-        <Button onClick={() => onPay(product)} disabled={isOutOfStock} className="w-full mt-2">
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onPay(product);
+          }}
+          disabled={isOutOfStock}
+          className="w-full mt-2"
+        >
           Pay with credit card
         </Button>
       </div>
