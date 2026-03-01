@@ -21,7 +21,8 @@ export function ImageWithSkeleton({ src, alt, className = '', skeletonClassName 
         <img
           src={src}
           alt={alt}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
+          draggable={false}
+          className={`w-full h-full object-cover transition-opacity duration-300 select-none ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setIsLoaded(true)}

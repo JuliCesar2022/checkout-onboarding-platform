@@ -1,22 +1,28 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { openCart, closeCart } from '../../../features/cart/store/cartSlice';
+import { setSearchQuery, fetchProducts } from '../../../features/products/store/productsSlice';
+import { ROUTES } from '../../../constants/routes';
 import { CategoryNav } from './CategoryNav';
 
-interface HeaderProps {
-  onSearch?: (query: string) => void;
-}
-
-export function Header({ onSearch }: HeaderProps) {
+export function Header() {
   const [query, setQuery] = useState('');
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { items: cartItems, isOpen: cartIsOpen } = useAppSelector((state) => state.cart);
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch?.(query.trim());
+    const trimmed = query.trim();
+    dispatch(setSearchQuery(trimmed));
+    dispatch(fetchProducts());
+    if (location.pathname !== ROUTES.PRODUCTS) {
+      navigate(ROUTES.PRODUCTS);
+    }
   };
 
   return (
@@ -32,7 +38,7 @@ export function Header({ onSearch }: HeaderProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar productos..."
-              className="w-full rounded-xl border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors"
+              className="w-full rounded-xl border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors"
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
@@ -42,6 +48,22 @@ export function Header({ onSearch }: HeaderProps) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('');
+                  dispatch(setSearchQuery(''));
+                  dispatch(fetchProducts());
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                aria-label="Limpiar búsqueda"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </form>
 

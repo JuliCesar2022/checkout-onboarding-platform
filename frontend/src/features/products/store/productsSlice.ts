@@ -8,6 +8,7 @@ interface ProductsState {
   categories: Category[];
   selectedProductId: string | null;
   activeCategoryId: string | null;
+  searchQuery: string;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   lastFetchedAt: number | null;
@@ -20,6 +21,7 @@ const initialState: ProductsState = {
   categories: [],
   selectedProductId: null,
   activeCategoryId: null,
+  searchQuery: '',
   status: "idle",
   error: null,
   lastFetchedAt: null,
@@ -32,7 +34,8 @@ export const fetchProducts = createAsyncThunk(
   async (_, { getState }) => {
     const state = getState() as any;
     const categoryId = state.products.activeCategoryId || undefined;
-    return productsApi.fetchProducts({ categoryId });
+    const search = state.products.searchQuery || undefined;
+    return productsApi.fetchProducts({ categoryId, search });
   },
 );
 
@@ -41,7 +44,8 @@ export const fetchMoreProducts = createAsyncThunk(
   async (cursor: string, { getState }) => {
     const state = getState() as any;
     const categoryId = state.products.activeCategoryId || undefined;
-    return productsApi.fetchProducts({ cursor, categoryId });
+    const search = state.products.searchQuery || undefined;
+    return productsApi.fetchProducts({ cursor, categoryId, search });
   },
 );
 
@@ -61,6 +65,11 @@ const productsSlice = createSlice({
     },
     setActiveCategory(state, action: PayloadAction<string | null>) {
       state.activeCategoryId = action.payload;
+      state.searchQuery = ''; // clear search when category changes
+    },
+    setSearchQuery(state, action: PayloadAction<string>) {
+      state.searchQuery = action.payload;
+      state.activeCategoryId = null; // clear category when searching
     },
     updateProductStock(
       state,
@@ -109,6 +118,6 @@ const productsSlice = createSlice({
   },
 });
 
-export const { selectProduct, setActiveCategory, updateProductStock } =
+export const { selectProduct, setActiveCategory, setSearchQuery, updateProductStock } =
   productsSlice.actions;
 export default productsSlice.reducer;

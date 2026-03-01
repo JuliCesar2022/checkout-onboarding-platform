@@ -7,6 +7,7 @@ import {
   fetchCategories,
   selectProduct,
   setActiveCategory,
+  setSearchQuery,
   fetchMoreProducts,
 } from '../../features/products/store/productsSlice';
 import { openCheckoutForm, resetCheckout } from '../../features/checkout/store/checkoutSlice';
@@ -36,6 +37,7 @@ export function ProductsPage() {
     items: products,
     categories,
     activeCategoryId,
+    searchQuery,
     lastFetchedAt,
     status,
     hasMore,
@@ -179,7 +181,7 @@ export function ProductsPage() {
           </div>
         </Modal>
 
-        {!activeCategoryId && (
+        {!activeCategoryId && !searchQuery && (
           <div className="reveal">
             <HeroBanner />
           </div>
@@ -187,7 +189,7 @@ export function ProductsPage() {
 
         {/* Categories Section */}
         <section
-          className={`reveal ${activeCategoryId ? '' : 'delay-100'}`}
+          className={`reveal ${activeCategoryId || searchQuery ? '' : 'delay-100'}`}
           style={{
             backgroundColor: '#ffffff',
             borderRadius: '1rem',
@@ -214,7 +216,61 @@ export function ProductsPage() {
         </section>
 
         {/* Dynamic Content based on Selection */}
-        {activeCategoryId ? (
+        {searchQuery ? (
+          /* ── Search results view ── */
+          <div className="reveal">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Resultados para <span className="text-[#222]">"{searchQuery}"</span>
+                </h2>
+                <p className="text-gray-500 text-sm mt-1">
+                  {status === 'loading'
+                    ? 'Buscando...'
+                    : `${products.length} ${products.length === 1 ? 'producto encontrado' : 'productos encontrados'}`}
+                </p>
+              </div>
+              <button
+                onClick={() => { dispatch(setSearchQuery('')); dispatch(fetchProducts()); }}
+                className="shrink-0 text-sm text-gray-500 hover:text-gray-900 underline underline-offset-2 cursor-pointer transition-colors"
+              >
+                Limpiar búsqueda
+              </button>
+            </div>
+            {status === 'loading' && products.length === 0 ? (
+              <ProductGrid isLoading={true} products={[]} onPay={handlePay} />
+            ) : products.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+                <span className="text-6xl">🔍</span>
+                <h3 className="text-lg font-semibold text-gray-900">No encontramos resultados</h3>
+                <p className="text-gray-500 text-sm max-w-xs">
+                  Intenta con otras palabras o explora nuestras categorías.
+                </p>
+                <button
+                  onClick={() => { dispatch(setSearchQuery('')); dispatch(fetchProducts()); }}
+                  className="mt-2 rounded-xl bg-[#222] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#333] cursor-pointer transition-colors"
+                >
+                  Ver todos los productos
+                </button>
+              </div>
+            ) : (
+              <>
+                <ProductGrid products={products} onPay={handlePay} />
+                {hasMore && (
+                  <div ref={observerTarget} className="mt-10 flex justify-center py-4">
+                    {status === 'loading' && (
+                      <div className="flex gap-2 items-center justify-center">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        ) : activeCategoryId ? (
           <div className="reveal">
              <div className="mb-6">
                <h2 className="text-2xl font-bold text-gray-900">
