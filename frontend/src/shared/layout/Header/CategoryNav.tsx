@@ -29,8 +29,8 @@ export function CategoryNav() {
             </svg>
           </button>
 
-          {/* Category links from backend */}
-          {categories.map((cat) => (
+          {/* Category links from backend — max 5 */}
+          {categories.slice(0, 5).map((cat) => (
             <button
               key={cat.id}
               className="flex-shrink-0 text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors whitespace-nowrap"

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useForm, Controller, useController } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import ReactCreditCards, { type Focused } from 'react-credit-cards-2';
@@ -67,9 +67,10 @@ interface CardFormProps {
   onSubmit: (data: CardFormData) => void;
   autoFocus?: boolean;
   defaultValues?: CardDefaultValues;
+  isTokenizing?: boolean;
 }
 
-export function CardForm({ onSubmit, autoFocus, defaultValues }: CardFormProps) {
+export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = false }: CardFormProps) {
   const [focused, setFocused] = useState<Focused>('');
   const [cvvValue, setCvvValue] = useState('');
   const { formattedNumber, brand: detectedBrand, handleCardNumberChange } = useCardValidation(defaultValues?.cardNumber ?? '');
@@ -286,10 +287,20 @@ export function CardForm({ onSubmit, autoFocus, defaultValues }: CardFormProps) 
 
       <button
         type="submit"
-        disabled={!isValid}
-        className="mt-2 w-full rounded-xl bg-[#222] px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+        disabled={!isValid || isTokenizing}
+        className="mt-2 w-full rounded-xl bg-[#222] px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        Continue to summary
+        {isTokenizing ? (
+          <>
+            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            Tokenizando tarjeta...
+          </>
+        ) : (
+          'Continue to summary'
+        )}
       </button>
     </form>
   );

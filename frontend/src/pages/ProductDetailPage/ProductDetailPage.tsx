@@ -22,6 +22,10 @@ export function ProductDetailPage() {
   const product = products.find((p) => p.id === id);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  useEffect(() => {
     if (products.length === 0) dispatch(fetchProducts());
   }, [dispatch, products.length]);
 

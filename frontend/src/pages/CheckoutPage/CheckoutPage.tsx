@@ -1,7 +1,7 @@
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import {
   proceedToSummary,
   startProcessing,
@@ -57,6 +57,11 @@ export function CheckoutPage() {
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
+  // Redirect to products if no product is selected or if checkout is complete
+  if (!productId && cartItems.length === 0) {
+    return <Navigate to={ROUTES.PRODUCTS} replace />;
+  }
+
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
 
@@ -81,6 +86,8 @@ export function CheckoutPage() {
   if (cardData) lastCardRef.current = cardData;
 
   const payingRef = useRef(false);
+  const [isTokenizing, setIsTokenizing] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
   const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
 
@@ -135,6 +142,7 @@ export function CheckoutPage() {
     }
 
     payingRef.current = true;
+    setIsPaying(true);
     dispatch(startProcessing());
 
     try {
@@ -188,32 +196,20 @@ export function CheckoutPage() {
       navigate(ROUTES.TRANSACTION_STATUS);
     } catch (err: any) {
       payingRef.current = false;
+      setIsPaying(false);
       dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
     }
   };
 
   const isFormComplete = deliveryAddress && cardData;
-  const isLoading = loadingState === 'submitting' || loadingState === 'polling';
+  const isLoading = isPaying || loadingState === 'submitting' || loadingState === 'polling';
 
   return (
     <PageWrapper>
       <div className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6">
 
-        {/* ── Top bar: cancel button + stepper ── */}
+        {/* ── Top bar: stepper ── */}
         <div className="flex items-center gap-4 mb-10">
-          <button
-            onClick={() => {
-              dispatch(resetCheckout());
-              navigate(ROUTES.PRODUCTS);
-            }}
-            disabled={isLoading}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Cancelar
-          </button>
 
         {/* ── Stepper ── */}
         <div className="flex-1">
@@ -293,7 +289,7 @@ export function CheckoutPage() {
                 </div>
                 <button
                   onClick={() => dispatch(saveDeliveryAddress(null as any))}
-                  className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2"
+                  className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2 cursor-pointer"
                 >
                   Edit
                 </button>
@@ -321,7 +317,7 @@ export function CheckoutPage() {
                   </div>
                   <button
                     onClick={() => dispatch(saveCardData(null as any))}
-                    className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2"
+                    className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2 cursor-pointer"
                   >
                     Edit
                   </button>
@@ -331,6 +327,7 @@ export function CheckoutPage() {
                   <h2 className="text-lg font-semibold text-gray-900 mb-6">Payment information</h2>
                   <CardForm
                     autoFocus
+                    isTokenizing={isTokenizing}
                     defaultValues={lastCardRef.current ? {
                       cardNumber: lastCardRef.current.number,
                       holderName: lastCardRef.current.holderName,
@@ -338,6 +335,7 @@ export function CheckoutPage() {
                       expiryYear: lastCardRef.current.expiryYear,
                     } : undefined}
                     onSubmit={async (data) => {
+                      setIsTokenizing(true);
                       try {
                         const tokenResult = await checkoutApi.tokenizeCard({
                           number: data.cardNumber,
@@ -349,8 +347,11 @@ export function CheckoutPage() {
                         const { cvv: _cvv, cardNumber, ...restData } = data;
                         dispatch(saveCardData({ ...restData, number: cardNumber, brand: tokenResult.brand, token: tokenResult.token }));
                         dispatch(proceedToSummary());
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                       } catch (err: any) {
                         alert(err.message || 'Error tokenizing card');
+                      } finally {
+                        setIsTokenizing(false);
                       }
                     }}
                   />
@@ -385,7 +386,7 @@ export function CheckoutPage() {
                           <button
                             onClick={() => dispatch(updateCartItemQuantity({ productId: item.productId, quantity: item.quantity - 1 }))}
                             disabled={item.quantity <= 1}
-                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                             aria-label="Decrease quantity"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
@@ -393,7 +394,7 @@ export function CheckoutPage() {
                           <span className="w-6 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
                           <button
                             onClick={() => dispatch(updateCartItemQuantity({ productId: item.productId, quantity: item.quantity + 1 }))}
-                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors"
                             aria-label="Increase quantity"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -425,7 +426,7 @@ export function CheckoutPage() {
                       <button
                         onClick={() => dispatch(setQuantity(quantity - 1))}
                         disabled={quantity <= 1}
-                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                         aria-label="Decrease quantity"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
@@ -433,7 +434,7 @@ export function CheckoutPage() {
                       <span className="w-6 text-center text-sm font-semibold text-gray-900">{quantity}</span>
                       <button
                         onClick={() => dispatch(setQuantity(quantity + 1))}
-                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors"
                         aria-label="Increase quantity"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -466,15 +467,25 @@ export function CheckoutPage() {
 
                   {error && <div className="mt-4"><ErrorBanner message={error} /></div>}
 
-                  <div className="mt-6">
+                  <div className="mt-6 space-y-3">
                     <Button
                       onClick={handlePay}
                       isLoading={isLoading}
                       disabled={!isFormComplete || isLoading}
                       className="w-full"
                     >
-                      {!isFormComplete ? 'Complete details to pay' : isLoading ? 'Processing...' : 'Pay now'}
+                      {!isFormComplete ? 'Complete details to pay' : 'Pay now'}
                     </Button>
+                    <button
+                      onClick={() => {
+                        dispatch(resetCheckout());
+                        navigate(ROUTES.PRODUCTS);
+                      }}
+                      disabled={isLoading}
+                      className="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Cancelar
+                    </button>
                   </div>
                 </>
               ) : (
