@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../../../../shared/hooks/useAppDispatch';
+import { addToCart } from '../../../cart/store/cartSlice';
 import { formatCOP } from '../../../../shared/utils/currencyFormat';
 import type { Product } from '../../types';
 import { Button } from '../../../../shared/ui/Button';
@@ -12,6 +14,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onPay }: ProductCardProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const isOutOfStock = product.stock === 0;
 
   return (
@@ -43,16 +46,32 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
         </h2>
         <p className="text-sm text-gray-500 line-clamp-3 flex-1">{product.description}</p>
         <p className="text-xl font-bold text-gray-900 mt-1">{formatCOP(product.priceInCents)}</p>
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            onPay(product);
-          }}
-          disabled={isOutOfStock}
-          className="w-full mt-2"
-        >
-          Pay with credit card
-        </Button>
+
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch(addToCart({ productId: product.id, name: product.name, imageUrl: product.imageUrl, priceInCents: product.priceInCents }));
+            }}
+            disabled={isOutOfStock}
+            className="flex-shrink-0 rounded-xl border border-gray-200 p-3 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Agregar al carrito"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPay(product);
+            }}
+            disabled={isOutOfStock}
+            className="flex-1"
+          >
+            Comprar ahora
+          </Button>
+        </div>
       </div>
     </article>
   );

@@ -3,11 +3,13 @@ import { ProductsPage } from './pages/ProductsPage'
 import { ProductDetailPage } from './pages/ProductDetailPage'
 import { CheckoutPage } from './pages/CheckoutPage'
 import { TransactionStatusPage } from './pages/TransactionStatusPage'
+import { CartDrawer } from './features/cart/components/CartDrawer/CartDrawer'
 import { ROUTES } from './constants/routes'
 
 function App() {
   return (
     <BrowserRouter>
+      <CartDrawer />
       <Routes>
         <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
         <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetailPage />} />

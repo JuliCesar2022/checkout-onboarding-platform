@@ -35,19 +35,27 @@ export function ProductsPage() {
   } = useAppSelector((state) => state.products);
   const { step, selectedProductId, quantity } = useAppSelector((state) => state.checkout);
 
-  // Show pending session modal after page loads — delay so the page renders first
-  const hasPending = step !== 'IDLE' && step !== 'COMPLETE' && !!selectedProductId;
+  // Show pending session modal after page loads — delay so the page renders first.
+  // Only show for FORM or SUMMARY — never for PROCESSING/COMPLETE/IDLE.
+  const hasPending = (step === 'FORM' || step === 'SUMMARY') && !!selectedProductId;
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [pendingProduct, setPendingProduct] = useState<{ name: string; imageUrl: string | null; priceInCents: number } | null>(null);
 
   useEffect(() => {
+    // If we just came from a completed/discarded checkout, skip the modal
+    if (sessionStorage.getItem('checkout_just_reset') === '1') {
+      sessionStorage.removeItem('checkout_just_reset');
+      return;
+    }
     if (!hasPending || !selectedProductId) return;
-    // Load product data and then open modal with a short delay for page to settle
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
     productsApi.fetchProductById(selectedProductId).then((p) => {
+      if (cancelled) return;
       setPendingProduct({ name: p.name, imageUrl: p.imageUrl, priceInCents: p.priceInCents });
-      const timer = setTimeout(() => setShowPendingModal(true), 600);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => { if (!cancelled) setShowPendingModal(true); }, 600);
     }).catch(() => {});
+    return () => { cancelled = true; clearTimeout(timer); };
   }, []);
 
   useEffect(() => {
@@ -71,6 +79,7 @@ export function ProductsPage() {
 
   const handleDiscardPending = () => {
     dispatch(resetCheckout());
+    sessionStorage.setItem('checkout_just_reset', '1');
     setShowPendingModal(false);
   };
 

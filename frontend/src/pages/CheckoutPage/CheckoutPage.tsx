@@ -26,6 +26,23 @@ import { ErrorBanner } from '../../shared/ui/ErrorBanner';
 const BASE_FEE_IN_CENTS = 150_000;
 const DELIVERY_FEE_IN_CENTS = 1_000_000;
 
+const SAVED_DELIVERY_KEY = 'saved_delivery_info';
+
+function loadSavedDelivery() {
+  try {
+    const raw = localStorage.getItem(SAVED_DELIVERY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDeliveryLocally(data: object) {
+  try {
+    localStorage.setItem(SAVED_DELIVERY_KEY, JSON.stringify(data));
+  } catch {}
+}
+
 const STEPS = [
   { number: 1, label: 'Delivery' },
   { number: 2, label: 'Payment' },
@@ -41,8 +58,9 @@ export function CheckoutPage() {
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
 
-  // Keep last known data so forms re-populate when user clicks "Edit"
-  const lastDeliveryRef = useRef(deliveryAddress);
+  // Keep last known data so forms re-populate when user clicks "Edit",
+  // and also seed from localStorage so returning users don't re-type their info.
+  const lastDeliveryRef = useRef(deliveryAddress ?? loadSavedDelivery());
   if (deliveryAddress) lastDeliveryRef.current = deliveryAddress;
 
   const lastCardRef = useRef(cardData);
@@ -194,7 +212,10 @@ export function CheckoutPage() {
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Delivery information</h2>
                 <DeliveryForm
-                  onSubmit={(data) => dispatch(saveDeliveryAddress(data))}
+                  onSubmit={(data) => {
+                    saveDeliveryLocally(data);
+                    dispatch(saveDeliveryAddress(data));
+                  }}
                   defaultValues={lastDeliveryRef.current ?? undefined}
                   autoFocus
                 />

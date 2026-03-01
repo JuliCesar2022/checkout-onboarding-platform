@@ -6,7 +6,7 @@ import type { RootState } from './rootReducer';
 export const persistConfig: PersistConfig<RootState> = {
   key: 'root-v2', // bumped to purge stale persisted state
   storage,
-  whitelist: ['products', 'checkout', 'transaction'],
+  whitelist: ['products', 'checkout', 'transaction', 'cart'],
   // Products: cache items for 5 minutes, revalidate on stale
   // Checkout: recover step, selectedProductId, deliveryAddress, fees on refresh
   // Transaction: show result after redirect to /status

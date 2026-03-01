@@ -16,6 +16,9 @@ export function TransactionStatusPage() {
     dispatch(resetCheckout());
     dispatch(resetTransaction());
     dispatch(fetchProducts()); // refresh stock
+    // Flag so ProductsPage skips the pending-checkout modal on this navigation
+    // (avoids a redux-persist race condition where old persisted step is re-read)
+    sessionStorage.setItem('checkout_just_reset', '1');
     navigate(ROUTES.PRODUCTS);
   };
 
