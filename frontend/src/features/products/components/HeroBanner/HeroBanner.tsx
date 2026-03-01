@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
 
 declare global {
   namespace React {
@@ -243,7 +244,7 @@ function BannerPanel({
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           {/* Subtle gradient overlay to ensure text legibility */}
           <div className={`absolute inset-0 z-10 ${p.bg.includes('#f3f4f6') ? 'bg-linear-to-r from-white/90 via-white/40 to-transparent' : 'bg-linear-to-r from-purple-900/40 via-transparent to-transparent'}`} />
-          <img 
+          <ImageWithSkeleton 
             src={p.image} 
             alt={p.title} 
             className={`opacity-100 transform ${isActive ? 'animate-reveal-up' : 'opacity-0'} ${

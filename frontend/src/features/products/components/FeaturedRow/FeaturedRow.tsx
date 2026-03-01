@@ -4,6 +4,7 @@ import { addToCart } from '../../../cart/store/cartSlice';
 import type { Product } from '../../types';
 import { formatCOP } from '../../../../shared/utils/currencyFormat';
 import { productDetailPath } from '../../../../constants/routes';
+import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
 
 interface FeaturedRowProps {
   title: string;
@@ -40,7 +41,7 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
             >
               <div className="w-full h-48 rounded-xl bg-gray-50 overflow-hidden border border-gray-100 group-hover:shadow-md transition-shadow">
                 {product.imageUrl ? (
-                  <img
+                  <ImageWithSkeleton
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

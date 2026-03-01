@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import type { Category } from '../../types';
+import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
 
 interface CategoryListProps {
   categories: Category[];
@@ -189,15 +190,10 @@ function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
         }}
       >
         {cat.imageUrl ? (
-          <img 
+          <ImageWithSkeleton 
             src={`http://localhost:3000/uploads/${cat.imageUrl}`} 
             alt={cat.name} 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'contain',
-              padding: '0.5rem' // Add padding so it doesn't touch the edges
-            }}
+            className="w-full h-full object-contain p-2"
           />
         ) : (
           icon

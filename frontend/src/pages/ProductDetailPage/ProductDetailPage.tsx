@@ -11,6 +11,7 @@ import { Button } from '../../shared/ui/Button';
 import { Spinner } from '../../shared/ui/Spinner';
 import { formatCOP } from '../../shared/utils/currencyFormat';
 import { ROUTES } from '../../constants/routes';
+import { ImageWithSkeleton } from '../../shared/ui/ImageWithSkeleton';
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -84,10 +85,10 @@ export function ProductDetailPage() {
           {/* Product Image */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             {product.imageUrl ? (
-              <img
+              <ImageWithSkeleton
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-80 md:h-[28rem] object-cover"
+                className="w-full h-80 md:h-[28rem]"
               />
             ) : (
               <div className="w-full h-80 md:h-[28rem] bg-gray-50 flex items-center justify-center text-gray-300 text-8xl">

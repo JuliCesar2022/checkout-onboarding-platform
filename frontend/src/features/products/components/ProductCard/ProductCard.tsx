@@ -6,6 +6,7 @@ import type { Product } from '../../types';
 import { Button } from '../../../../shared/ui/Button';
 import { StockBadge } from '../StockBadge';
 import { productDetailPath } from '../../../../constants/routes';
+import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
 
 interface ProductCardProps {
   product: Product;
@@ -25,10 +26,10 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
     >
       <div className="relative h-48 bg-gray-50 shrink-0">
         {product.imageUrl ? (
-          <img
+          <ImageWithSkeleton
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
