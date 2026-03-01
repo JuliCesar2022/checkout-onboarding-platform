@@ -11,6 +11,7 @@ import {
   setCheckoutError,
   setFees,
   setQuantity,
+  updateCartItemQuantity,
 } from '../../features/checkout/store/checkoutSlice';
 import { setTransactionResult } from '../../features/transaction/store/transactionSlice';
 import { ROUTES } from '../../constants/routes';
@@ -330,9 +331,9 @@ export function CheckoutPage() {
 
               {/* Multi-item from cart */}
               {cartItems.length > 1 ? (
-                <div className="mb-5 pb-5 border-b border-gray-200 space-y-3">
+                <div className="mb-5 pb-5 border-b border-gray-200 space-y-4">
                   {cartItems.map((item) => (
-                    <div key={item.productId} className="flex items-center gap-3">
+                    <div key={item.productId} className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
                         {item.imageUrl ? (
                           <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-1" />
@@ -345,6 +346,24 @@ export function CheckoutPage() {
                         <p className="text-xs text-gray-500 mt-0.5">
                           {formatCurrency(item.priceInCents / 100)} × {item.quantity} = <span className="text-gray-900 font-medium">{formatCurrency((item.priceInCents * item.quantity) / 100)}</span>
                         </p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <button
+                            onClick={() => dispatch(updateCartItemQuantity({ productId: item.productId, quantity: item.quantity - 1 }))}
+                            disabled={item.quantity <= 1}
+                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            aria-label="Decrease quantity"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                          </button>
+                          <span className="w-6 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
+                          <button
+                            onClick={() => dispatch(updateCartItemQuantity({ productId: item.productId, quantity: item.quantity + 1 }))}
+                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+                            aria-label="Increase quantity"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

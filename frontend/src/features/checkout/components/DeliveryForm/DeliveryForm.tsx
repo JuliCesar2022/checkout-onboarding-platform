@@ -31,7 +31,7 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
     formState: { errors, isValid },
   } = useForm<DeliveryFormData>({
     resolver: zodResolver(deliverySchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       recipientName: '',
       email: '',

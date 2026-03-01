@@ -74,6 +74,16 @@ const checkoutSlice = createSlice({
       state.quantity = Math.max(1, action.payload);
       state.fees = null; // reset fees so they get recalculated
     },
+    updateCartItemQuantity(
+      state,
+      action: PayloadAction<{ productId: string; quantity: number }>,
+    ) {
+      const item = state.cartItems.find((i) => i.productId === action.payload.productId);
+      if (item) {
+        item.quantity = Math.max(1, action.payload.quantity);
+        state.fees = null; // reset fees so they get recalculated
+      }
+    },
     setCheckoutError(state, action: PayloadAction<string>) {
       state.error = action.payload;
       state.step = 'SUMMARY'; // return to summary on error
@@ -90,6 +100,7 @@ export const {
   saveDeliveryAddress,
   setFees,
   setQuantity,
+  updateCartItemQuantity,
   proceedToSummary,
   startProcessing,
   completeCheckout,

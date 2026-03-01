@@ -104,7 +104,7 @@ export function CardForm({ onSubmit, autoFocus, defaultValues }: CardFormProps) 
     formState: { errors, isValid },
   } = useForm<CardFormData>({
     resolver: zodResolver(cardSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       cardNumber: defaultValues?.cardNumber ?? '',
       brand: null,
