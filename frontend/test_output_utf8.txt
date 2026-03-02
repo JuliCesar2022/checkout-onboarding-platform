@@ -1,0 +1,469 @@
+﻿node.exe : ts-jest[config] (WARN) 
+En C:\nvm4w\nodejs\npx.ps1: 16 
+Carácter: 5
++     & "$basedir/node$exe"  "$basedir/
+node_modules/npm/bin/npx-cli.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpeci 
+   fied: (ts-jest[config] (WARN) :Str  
+  ing) [], RemoteException
+    + FullyQualifiedErrorId : NativeCo 
+   mmandError
+ 
+    The "ts-jest" config option 
+"isolatedModules" is deprecated and 
+will be removed in v30.0.0. Please use 
+"isolatedModules: true" in C:/Users/jul
+io/OneDrive/Documents/Prueba-tecnica/ch
+eckout-onboarding-platform/frontend/tsc
+onfig.json instead, see https://www.typ
+escriptlang.org/tsconfig/#isolatedModul
+es
+  
+FAIL src/features/products/components/P
+roductCard/ProductCard.test.tsx
+  ProductCard
+    × renders product information 
+correctly (107 ms)
+    √ calls onPay when "Comprar ahora" 
+is clicked (35 ms)
+    √ dispatches addToCart when cart 
+button is clicked (31 ms)
+    × shows out of stock state (16 ms)
+
+  ● ProductCard › renders product 
+information correctly
+
+    TestingLibraryElementError: Unable 
+to find an element with the text: 
+$100.000. This could be because the 
+text is broken up by multiple 
+elements. In this case, you can 
+provide a function for your text 
+matcher to make your matcher more 
+flexible.
+
+    Ignored nodes: comments, script, 
+style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<article[39m
+          
+[33maria-label[39m=[32m"Test 
+Product"[39m
+          [33mclass[39m=[32m"flex 
+flex-col bg-white rounded-2xl 
+shadow-sm border border-gray-100 
+overflow-hidden hover:shadow-md 
+transition-all duration-300 
+cursor-pointer hover:-translate-y-1 
+will-change-transform"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"relative h-36 
+sm:h-48 bg-gray-50 shrink-0"[39m
+          [36m>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"relative 
+overflow-hidden w-full h-full w-full 
+h-full"[39m
+            [36m>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"absolute inset-0 
+bg-gray-300 animate-pulse z-10 "[39m
+              [36m/>[39m
+              [36m<img[39m
+                
+[33malt[39m=[32m"Test Product"[39m
+                
+[33mclass[39m=[32m"w-full h-full 
+object-cover transition-opacity 
+duration-300 select-none 
+opacity-0"[39m
+                
+[33mdraggable[39m=[32m"false"[39m
+                [33msrc[39m=[32m"tes
+t-image.jpg"[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"absolute top-2 
+right-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                
+[33mclass[39m=[32m"inline-flex 
+items-center px-2 py-0.5 rounded-full 
+text-xs font-medium bg-green-100 
+text-green-700"[39m
+              [36m>[39m
+                [0mIn stock[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex 
+flex-col flex-1 p-3 sm:p-4 gap-1.5 
+sm:gap-2"[39m
+          [36m>[39m
+            [36m<h2[39m
+              
+[33mclass[39m=[32m"font-semibold 
+text-gray-900 text-sm sm:text-base 
+leading-snug line-clamp-2"[39m
+            [36m>[39m
+              [0mTest Product[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              
+[33mclass[39m=[32m"text-xs 
+sm:text-sm text-gray-500 truncate"[39m
+            [36m>[39m
+              [0mTest Description[0m
+            [36m</p>[39m
+            [36m<p[39m
+              
+[33mclass[39m=[32m"text-base 
+sm:text-xl font-bold text-gray-900 
+mt-1"[39m
+            [36m>[39m
+              [0m$ 100[0m
+            [36m</p>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex gap-1.5 
+sm:gap-2 mt-1 sm:mt-2"[39m
+            [36m>[39m
+              [36m<button[39m
+                
+[33maria-label[39m=[32m"Agregar al 
+carrito"[39m
+                
+[33mclass[39m=[32m"shrink-0 
+cursor-pointer rounded-xl border 
+border-gray-200 p-2 sm:p-3 
+text-gray-600 hover:bg-gray-50 
+hover:border-gray-300 
+transition-colors disabled:opacity-30 
+disabled:cursor-not-allowed"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  
+[33mclass[39m=[32m"w-4 h-4 sm:w-5 
+sm:h-5"[39m
+                  
+[33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32
+m"currentColor"[39m
+                  
+[33mstroke-width[39m=[32m"2"[39m
+                  
+[33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    
+[33md[39m=[32m"M3 3h2l.4 2M7 
+13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 
+2.293c-.63.63-.184 1.707.707 
+1.707H17m0 0a2 2 0 100 4 2 2 0 
+000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 
+0z"[39m
+                    [33mstroke-linecap
+[39m=[32m"round"[39m
+                    [33mstroke-linejoi
+n[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"hidden sm:flex 
+flex-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  
+[33mclass[39m=[32m"inline-flex 
+items-center justify-center rounded-xl 
+px-5 py-2.5 text-sm font-semibold 
+transition-all duration-200 
+focus-visible:outline-none 
+focus-visible:ring-2 
+focus-visible:ring-offset-2 
+cursor-pointer 
+disabled:cursor-not-allowed 
+active:scale-[0.98] bg-linear-to-r 
+from-gray-900 to-gray-800 text-white 
+hover:from-black hover:to-gray-900 
+shadow-sm focus-visible:ring-gray-400 
+disabled:from-gray-400 
+disabled:to-gray-400 flex-1"[39m
+                [36m>[39m
+                  [0mComprar ahora[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+    [0m [90m 21 |[39m     expect(scr
+een[33m.[39mgetByText([32m'Test Prod
+uct'[39m))[33m.[39mtoBeInTheDocument
+()[33m;[39m
+     [90m 22 |[39m     expect(screen
+[33m.[39mgetByText([32m'Test Descript
+ion'[39m))[33m.[39mtoBeInTheDocument
+()[33m;[39m
+    [31m[1m>[22m[39m[90m 23 
+|[39m     expect(screen[33m.[39mgetB
+yText([32m'$100.000'[39m))[33m.[39m
+toBeInTheDocument()[33m;[39m
+     [90m    |[39m                   
+[31m[1m^[22m[39m
+     [90m 24 |[39m     expect(screen
+[33m.[39mgetByAltText([32m'Test Produ
+ct'[39m))[33m.[39mtoBeInTheDocument(
+)[33m;[39m
+     [90m 25 |[39m   })[33m;[39m
+     [90m 26 |[39m[0m
+
+      at Object.getElementError (node_m
+odules/@testing-library/dom/dist/config
+.js:37:19)
+      at node_modules/@testing-library/
+dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/
+dom/dist/query-helpers.js:52:17
+      at node_modules/@testing-library/
+dom/dist/query-helpers.js:95:19
+      at Object.<anonymous> (src/featur
+es/products/components/ProductCard/Prod
+uctCard.test.tsx:23:19)
+
+  ● ProductCard › shows out of stock 
+state
+
+    TestingLibraryElementError: Unable 
+to find an element with the text: 
+Agotado. This could be because the 
+text is broken up by multiple 
+elements. In this case, you can 
+provide a function for your text 
+matcher to make your matcher more 
+flexible.
+
+    Ignored nodes: comments, script, 
+style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<article[39m
+          
+[33maria-label[39m=[32m"Test 
+Product"[39m
+          [33mclass[39m=[32m"flex 
+flex-col bg-white rounded-2xl 
+shadow-sm border border-gray-100 
+overflow-hidden hover:shadow-md 
+transition-all duration-300 
+cursor-pointer hover:-translate-y-1 
+will-change-transform"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"relative h-36 
+sm:h-48 bg-gray-50 shrink-0"[39m
+          [36m>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"relative 
+overflow-hidden w-full h-full w-full 
+h-full"[39m
+            [36m>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"absolute inset-0 
+bg-gray-300 animate-pulse z-10 "[39m
+              [36m/>[39m
+              [36m<img[39m
+                
+[33malt[39m=[32m"Test Product"[39m
+                
+[33mclass[39m=[32m"w-full h-full 
+object-cover transition-opacity 
+duration-300 select-none 
+opacity-0"[39m
+                
+[33mdraggable[39m=[32m"false"[39m
+                [33msrc[39m=[32m"tes
+t-image.jpg"[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"absolute top-2 
+right-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                
+[33mclass[39m=[32m"inline-flex 
+items-center px-2 py-0.5 rounded-full 
+text-xs font-medium bg-red-100 
+text-red-700"[39m
+              [36m>[39m
+                [0mOut of stock[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex 
+flex-col flex-1 p-3 sm:p-4 gap-1.5 
+sm:gap-2"[39m
+          [36m>[39m
+            [36m<h2[39m
+              
+[33mclass[39m=[32m"font-semibold 
+text-gray-900 text-sm sm:text-base 
+leading-snug line-clamp-2"[39m
+            [36m>[39m
+              [0mTest Product[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              
+[33mclass[39m=[32m"text-xs 
+sm:text-sm text-gray-500 truncate"[39m
+            [36m>[39m
+              [0mTest Description[0m
+            [36m</p>[39m
+            [36m<p[39m
+              
+[33mclass[39m=[32m"text-base 
+sm:text-xl font-bold text-gray-900 
+mt-1"[39m
+            [36m>[39m
+              [0m$ 100[0m
+            [36m</p>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex gap-1.5 
+sm:gap-2 mt-1 sm:mt-2"[39m
+            [36m>[39m
+              [36m<button[39m
+                
+[33maria-label[39m=[32m"Agregar al 
+carrito"[39m
+                
+[33mclass[39m=[32m"shrink-0 
+cursor-pointer rounded-xl border 
+border-gray-200 p-2 sm:p-3 
+text-gray-600 hover:bg-gray-50 
+hover:border-gray-300 
+transition-colors disabled:opacity-30 
+disabled:cursor-not-allowed"[39m
+                
+[33mdisabled[39m=[32m""[39m
+              [36m>[39m
+                [36m<svg[39m
+                  
+[33mclass[39m=[32m"w-4 h-4 sm:w-5 
+sm:h-5"[39m
+                  
+[33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32
+m"currentColor"[39m
+                  
+[33mstroke-width[39m=[32m"2"[39m
+                  
+[33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    
+[33md[39m=[32m"M3 3h2l.4 2M7 
+13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 
+2.293c-.63.63-.184 1.707.707 
+1.707H17m0 0a2 2 0 100 4 2 2 0 
+000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 
+0z"[39m
+                    [33mstroke-linecap
+[39m=[32m"round"[39m
+                    [33mstroke-linejoi
+n[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"hidden sm:flex 
+flex-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  
+[33mclass[39m=[32m"inline-flex 
+items-center justify-center rounded-xl 
+px-5 py-2.5 text-sm font-semibold 
+transition-all duration-200 
+focus-visible:outline-none 
+focus-visible:ring-2 
+focus-visible:ring-offset-2 
+cursor-pointer 
+disabled:cursor-not-allowed 
+active:scale-[0.98] bg-linear-to-r 
+from-gray-900 to-gray-800 text-white 
+hover:from-black hover:to-gray-900 
+shadow-sm focus-visible:ring-gray-400 
+disabled:from-gray-400 
+disabled:to-gray-400 flex-1"[39m
+                  
+[33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [0mComprar ahora[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+    [0m [90m 52 |[39m     
+[36mconst[39m buyButton [33m=[39m s
+creen[33m.[39mgetByText([32m'Comprar
+ ahora'[39m)[33m;[39m
+     [90m 53 |[39m     expect(buyButt
+on)[33m.[39mtoBeDisabled()[33m;[39m
+    [31m[1m>[22m[39m[90m 54 
+|[39m     expect(screen[33m.[39mgetB
+yText([32m'Agotado'[39m))[33m.[39mt
+oBeInTheDocument()[33m;[39m
+     [90m    |[39m                   
+[31m[1m^[22m[39m
+     [90m 55 |[39m   })[33m;[39m
+     [90m 56 |[39m })[33m;[39m
+     [90m 57 |[39m[0m
+
+      at Object.getElementError (node_m
+odules/@testing-library/dom/dist/config
+.js:37:19)
+      at node_modules/@testing-library/
+dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/
+dom/dist/query-helpers.js:52:17
+      at node_modules/@testing-library/
+dom/dist/query-helpers.js:95:19
+      at Object.<anonymous> (src/featur
+es/products/components/ProductCard/Prod
+uctCard.test.tsx:54:19)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 passed, 4 
+total
+Snapshots:   0 total
+Time:        3.586 s
+Ran all test suites matching /src\\feat
+ures\\products\\components\\ProductCard
+\\ProductCard.test.tsx/i.

@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { TransactionStatus } from "../../../shared/interfaces";
-import { checkoutApi } from "../../checkout/api";
 import type {
+  TransactionStatus,
   SubmitTransactionPayload,
   TransactionResult,
-} from "../../checkout/api";
+} from "../../../shared/interfaces";
+import { checkoutApi } from "../../checkout/api";
 
 interface TransactionState {
   id: string | null;

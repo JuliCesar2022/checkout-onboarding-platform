@@ -1,9 +1,14 @@
 import client from "../../lib/axios";
-import type { CardData } from "../../shared/interfaces";
+import type {
+  CardData,
+  SubmitTransactionPayload,
+  TransactionResult,
+} from "../../shared/interfaces";
 import axios from "axios";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
+// Tokenize types remain internal as they are only used here
 interface TokenizeCardPayload {
   number: string;
   cvc: string;
@@ -16,41 +21,6 @@ interface TokenizeCardResult {
   token: string;
   brand: CardData["brand"];
   lastFour: string;
-}
-
-export interface SubmitTransactionPayload {
-  productId: string;
-  quantity: number;
-  cardData: {
-    token: string;
-    brand: string;
-    lastFour: string;
-    installments?: number;
-  };
-  deliveryData: {
-    address: string;
-    addressDetail?: string;
-    city: string;
-    state: string;
-    postalCode?: string;
-  };
-  customerData: {
-    email: string;
-    name: string;
-    phone?: string;
-  };
-  acceptanceToken: string;
-  acceptPersonalAuth: string;
-}
-
-export interface TransactionResult {
-  id: string;
-  reference: string;
-  status: "PENDING" | "APPROVED" | "DECLINED" | "ERROR" | "VOIDED";
-  amountInCents: number;
-  productAmountInCents: number;
-  baseFeeInCents: number;
-  deliveryFeeInCents: number;
 }
 
 // ─── API ─────────────────────────────────────────────────────────────────────

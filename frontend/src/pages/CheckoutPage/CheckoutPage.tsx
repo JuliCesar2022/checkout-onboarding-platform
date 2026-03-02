@@ -25,6 +25,7 @@ import { productsApi } from '../../features/products/api';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
+import { CartItem } from '../../features/cart/components/CartItem/CartItem';
 
 const BASE_FEE_IN_CENTS = 150_000;
 const DELIVERY_FEE_IN_CENTS = 1_000_000;
@@ -364,46 +365,20 @@ export function CheckoutPage() {
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-5">Order Summary</h2>
 
-              {/* Multi-item from cart */}
-              {cartItems.length > 1 ? (
+              {cartItems.length > 0 ? (
                 <div className="mb-5 pb-5 border-b border-gray-200 space-y-4">
                   {cartItems.map((item) => (
-                    <div key={item.productId} className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-1" />
-                        ) : (
-                          <span className="text-xl">📦</span>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{item.name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {formatCurrency(item.priceInCents / 100)} × {item.quantity} = <span className="text-gray-900 font-medium">{formatCurrency((item.priceInCents * item.quantity) / 100)}</span>
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <button
-                            onClick={() => dispatch(updateCartItemQuantity({ productId: item.productId, quantity: item.quantity - 1 }))}
-                            disabled={item.quantity <= 1}
-                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                            aria-label="Decrease quantity"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
-                          </button>
-                          <span className="w-6 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
-                          <button
-                            onClick={() => dispatch(updateCartItemQuantity({ productId: item.productId, quantity: item.quantity + 1 }))}
-                            className="w-6 h-6 rounded-md border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors"
-                            aria-label="Increase quantity"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <CartItem
+                      key={item.productId}
+                      item={item}
+                      compact
+                      onUpdateQuantity={(newQty: number) => 
+                        dispatch(updateCartItemQuantity({ productId: item.productId, quantity: newQty }))
+                      }
+                    />
                   ))}
                 </div>
-              ) : product ? (
+              ) : (product && (
                 <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-200">
                   <div className="w-16 h-16 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
                     {product.imageUrl ? (
@@ -441,7 +416,7 @@ export function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              ) : null}
+              ))}
 
               {fees ? (
                 <>
