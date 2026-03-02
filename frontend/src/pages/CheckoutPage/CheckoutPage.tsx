@@ -14,7 +14,7 @@ import {
   updateCartItemQuantity,
   resetCheckout,
 } from '../../features/checkout/store/checkoutSlice';
-import { setTransactionResult } from '../../features/transaction/store/transactionSlice';
+import { submitTransaction, pollTransactionStatus } from '../../features/transaction/store/transactionSlice';
 import { updateProductStock } from '../../features/products/store/productsSlice';
 import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
@@ -147,9 +147,8 @@ export function CheckoutPage() {
     dispatch(startProcessing());
 
     try {
-      const { acceptanceToken, personalAuthToken } = await checkoutApi.fetchAcceptanceToken();
-
-      const result = await checkoutApi.submitTransaction({
+      // 1. Submit the transaction (this handles acceptance tokens internally)
+      const result = await dispatch(submitTransaction({
         productId,
         quantity,
         cardData: {
@@ -169,32 +168,12 @@ export function CheckoutPage() {
           name: deliveryAddress.recipientName,
           phone: deliveryAddress.phoneNumber,
         },
-        acceptanceToken,
-        acceptPersonalAuth: personalAuthToken,
-      });
+      })).unwrap();
 
-      let finalResult = result;
-      // Poll until settled (max 30s = 10 retries)
-      let retries = 0;
-      while (finalResult.status === 'PENDING' && retries < 10) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        try {
-          finalResult = await checkoutApi.syncTransactionStatus(finalResult.id);
-        } catch {
-          // keep retrying
-        }
-        retries++;
-      }
+      // 2. Poll for the final status
+      const finalResult = await dispatch(pollTransactionStatus(result.id)).unwrap();
 
-      // Save result to transaction slice so TransactionStatusPage can display it
-      dispatch(setTransactionResult({
-        id: finalResult.id,
-        status: finalResult.status as any,
-        reference: finalResult.reference,
-        amountInCents: finalResult.amountInCents,
-      }));
-
-      // Refetch stock from backend so Redux + persist reflect the real value
+      // 3. Optional: refresh stock locally if approved
       if (finalResult.status === 'APPROVED') {
         const productIdsToRefresh = cartItems.length > 1
           ? cartItems.map((item) => item.productId)
@@ -206,7 +185,7 @@ export function CheckoutPage() {
               const fresh = await productsApi.fetchProductById(pid);
               dispatch(updateProductStock({ productId: pid, newStock: fresh.stock }));
             } catch {
-              // non-critical: stock will be correct on next full refresh
+              // non-critical
             }
           })
         );

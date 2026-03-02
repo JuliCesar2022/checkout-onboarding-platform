@@ -52,6 +52,16 @@ const CONFIG: Record<
       </svg>
     ),
   },
+  VOIDED: {
+    bg: '#9ca3af',
+    label: 'Pago anulado',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="w-20 h-20">
+        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+        <path d="M15 9l-6 6M9 9l6 6" />
+      </svg>
+    ),
+  },
 };
 
 const formatCurrency = (amount: number) =>
