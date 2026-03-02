@@ -15,6 +15,8 @@ export function Header() {
   const { items: cartItems, isOpen: cartIsOpen } = useAppSelector((state) => state.cart);
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
+  const isProductDetail = location.pathname.startsWith('/products/');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = query.trim();
@@ -30,6 +32,19 @@ export function Header() {
       {/* Top bar: logo + search + cart */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-4">
         <span className="hidden sm:block text-xl font-bold flex-shrink-0" style={{ color: '#222222' }}>TechStore</span>
+
+        {/* Back button — mobile only, only on product detail */}
+        {isProductDetail && (
+          <button
+            onClick={() => navigate(-1)}
+            className="sm:hidden flex-shrink-0 rounded-xl p-2 text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Volver"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
 
         <form onSubmit={handleSubmit} className="flex-1 max-w-2xl mx-auto">
           <div className="relative">

@@ -15,6 +15,10 @@ export function BottomNav() {
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   const isHome = location.pathname === ROUTES.PRODUCTS;
+  const isProductDetail = location.pathname.startsWith('/products/');
+
+  // Hide entirely on product detail — replaced by inline action bar
+  if (isProductDetail) return null;
 
   return (
     <>
