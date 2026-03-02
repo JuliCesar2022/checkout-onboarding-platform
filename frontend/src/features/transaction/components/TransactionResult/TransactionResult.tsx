@@ -74,7 +74,7 @@ const formatCurrency = (amount: number) =>
   }).format(amount / 100);
 
 export function TransactionResult({ status, reference, amountInCents, onReturn, isPolling = false }: TransactionResultProps) {
-  const cfg = CONFIG[status ?? 'PENDING'];
+  const cfg = CONFIG[status as keyof typeof CONFIG] || CONFIG.PENDING;
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center bg-white">

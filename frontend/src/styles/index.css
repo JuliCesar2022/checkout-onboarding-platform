@@ -12,8 +12,8 @@
 
 /* Transaction result animations */
 @keyframes blob-expand {
-  0%   { transform: scale(0); opacity: 1; }
-  100% { transform: scale(25); opacity: 1; }
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(25); opacity: 1; }
 }
 
 @keyframes icon-pop {

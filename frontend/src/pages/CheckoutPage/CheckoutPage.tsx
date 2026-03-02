@@ -64,9 +64,11 @@ export function CheckoutPage() {
   }
 
   // If we already have a transaction in progress, don't allow returning to the form
-  if (loadingState === 'polling' || loadingState === 'submitting') {
-    return <Navigate to={ROUTES.TRANSACTION_STATUS} replace />;
-  }
+  useEffect(() => {
+    if (loadingState === 'polling' || loadingState === 'submitting') {
+      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
+    }
+  }, [loadingState, navigate]);
 
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
@@ -146,6 +148,9 @@ export function CheckoutPage() {
       dispatch(setCheckoutError('La tarjeta no ha sido tokenizada. Por favor edita y vuelve a guardar tu tarjeta.'));
       return;
     }
+
+    payingRef.current = true;
+    setIsPaying(true);
 
     // Prevent accidental navigation during processing
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
