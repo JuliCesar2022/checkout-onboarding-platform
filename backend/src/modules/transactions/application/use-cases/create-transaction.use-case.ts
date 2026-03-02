@@ -11,7 +11,9 @@ import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { TransactionResponseDto } from '../dto/transaction-response.dto';
 import type { Env } from '../../../../config/env.validation';
 
+import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum';
 import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
+import { TransactionStatus } from '../../domain/entities/transaction.entity';
 
 /**
  * ProcessPayment Use Case — Railway Oriented Programming
@@ -116,7 +118,13 @@ export class CreateTransactionUseCase {
     }
 
     const wompiResult = paymentResult.getValue();
-    const finalStatus = wompiResult.status; // APPROVED | DECLINED | ERROR
+    const paymentStatus = wompiResult.status;
+
+    // Map PaymentStatus -> TransactionStatus
+    let finalStatus: TransactionStatus = 'ERROR';
+    if (paymentStatus === PaymentStatus.SUCCESS) finalStatus = 'APPROVED';
+    if (paymentStatus === PaymentStatus.DECLINED) finalStatus = 'DECLINED';
+    if (paymentStatus === PaymentStatus.PENDING) finalStatus = 'PENDING';
 
     // Step 6: Update transaction with Wompi result
     const updatedTransaction = await this.transactionsRepo.updateStatus(

@@ -1,11 +1,11 @@
-import type { TransactionStatus } from '../../../../modules/transactions/domain/entities/transaction.entity';
+import { PaymentStatus } from '../enums/payment-status.enum';
 
-export const WOMPI_STATUS_MAP: Record<string, TransactionStatus> = {
-  APPROVED: 'APPROVED',
-  DECLINED: 'DECLINED',
-  VOIDED: 'VOIDED',
-  ERROR: 'ERROR',
-  PENDING: 'PENDING',
+export const WOMPI_STATUS_MAP: Record<string, PaymentStatus> = {
+  APPROVED: PaymentStatus.SUCCESS,
+  DECLINED: PaymentStatus.DECLINED,
+  VOIDED: PaymentStatus.ERROR, // Or a specific status if needed
+  ERROR: PaymentStatus.ERROR,
+  PENDING: PaymentStatus.PENDING,
 };
 
 export const WOMPI_ENDPOINTS = {

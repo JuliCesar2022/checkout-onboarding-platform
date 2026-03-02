@@ -8,8 +8,8 @@ import {
   ChargeCardOutput,
 } from '../../domain/ports/payment.port';
 import { Result } from '../../../../common/result/result';
+import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import type { Env } from '../../../../config/env.validation';
-import type { TransactionStatus } from '../../../transactions/domain/entities/transaction.entity';
 
 import {
   WOMPI_STATUS_MAP,
@@ -92,8 +92,8 @@ export class WompiAdapter implements IPaymentPort {
 
       const transaction = data.data;
       const wompiStatus: string = transaction?.status ?? 'ERROR';
-      const mappedStatus: TransactionStatus =
-        WOMPI_STATUS_MAP[wompiStatus] ?? 'ERROR';
+      const mappedStatus: PaymentStatus =
+        WOMPI_STATUS_MAP[wompiStatus] ?? PaymentStatus.ERROR;
 
       return Result.ok({
         wompiId: transaction.id,
@@ -125,8 +125,8 @@ export class WompiAdapter implements IPaymentPort {
 
       const transaction = data.data;
       const wompiStatus: string = transaction?.status ?? 'ERROR';
-      const mappedStatus: TransactionStatus =
-        WOMPI_STATUS_MAP[wompiStatus] ?? 'ERROR';
+      const mappedStatus: PaymentStatus =
+        WOMPI_STATUS_MAP[wompiStatus] ?? PaymentStatus.ERROR;
 
       return Result.ok({
         wompiId: transaction.id,

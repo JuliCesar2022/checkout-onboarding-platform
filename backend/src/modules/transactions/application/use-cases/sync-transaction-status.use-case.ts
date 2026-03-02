@@ -5,6 +5,8 @@ import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
 import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
 import { TransactionEntity } from '../../domain/entities/transaction.entity';
 
+import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum';
+import { TransactionStatus } from '../../domain/entities/transaction.entity';
 import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
 
 @Injectable()
@@ -39,7 +41,13 @@ export class SyncTransactionStatusUseCase {
       return Result.fail(wompiResult.getError());
     }
 
-    const { status: newStatus, rawResponse } = wompiResult.getValue();
+    const { status: paymentStatus, rawResponse } = wompiResult.getValue();
+
+    // Map PaymentStatus -> TransactionStatus
+    let newStatus: TransactionStatus = 'ERROR';
+    if (paymentStatus === PaymentStatus.SUCCESS) newStatus = 'APPROVED';
+    if (paymentStatus === PaymentStatus.DECLINED) newStatus = 'DECLINED';
+    if (paymentStatus === PaymentStatus.PENDING) newStatus = 'PENDING';
 
     if (newStatus === transaction.status) {
       // Status hasn't changed

@@ -1,6 +1,7 @@
 import { SyncTransactionStatusUseCase } from './sync-transaction-status.use-case';
 import { ITransactionsRepository } from '../../domain/repositories/transactions.repository';
 import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
+import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum';
 import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
 import { TransactionEntity } from '../../domain/entities/transaction.entity';
 import { Result } from '../../../../common/result/result';
@@ -52,7 +53,7 @@ describe('SyncTransactionStatusUseCase', () => {
     paymentPort.getTransactionStatus.mockResolvedValue(
       Result.ok({
         wompiId: 'w-1',
-        status: 'APPROVED',
+        status: PaymentStatus.SUCCESS,
         rawResponse: {},
       }),
     );

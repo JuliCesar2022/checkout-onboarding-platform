@@ -1,5 +1,5 @@
 import type { Result } from '../../../../common/result/result';
-import type { TransactionStatus } from '../../../transactions/domain/entities/transaction.entity';
+import { PaymentStatus } from '../enums/payment-status.enum';
 
 export interface ChargeCardInput {
   amountInCents: number;
@@ -14,7 +14,7 @@ export interface ChargeCardInput {
 
 export interface ChargeCardOutput {
   wompiId: string;
-  status: TransactionStatus;
+  status: PaymentStatus;
   rawResponse: Record<string, unknown>;
 }
 

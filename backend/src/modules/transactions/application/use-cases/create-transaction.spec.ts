@@ -4,6 +4,7 @@ import { IProductsRepository } from '../../../products/domain/repositories/produ
 import { ICustomersRepository } from '../../../customers/domain/repositories/customers.repository';
 import { IDeliveriesRepository } from '../../../deliveries/domain/repositories/deliveries.repository';
 import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
+import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum';
 import { ConfigService } from '@nestjs/config';
 import { Result } from '../../../../common/result/result';
 import { TransactionEntity } from '../../domain/entities/transaction.entity';
@@ -71,7 +72,7 @@ describe('CreateTransactionUseCase', () => {
     paymentPort.charge.mockResolvedValue(
       Result.ok({
         wompiId: 'w1',
-        status: 'APPROVED',
+        status: PaymentStatus.SUCCESS,
         rawResponse: {},
       }),
     );
