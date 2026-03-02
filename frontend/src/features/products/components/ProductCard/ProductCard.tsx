@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../../shared/hooks/useAppDispatch';
 import { addToCart } from '../../../cart/store/cartSlice';
@@ -13,7 +14,7 @@ interface ProductCardProps {
   onPay: (product: Product) => void;
 }
 
-export function ProductCard({ product, onPay }: ProductCardProps) {
+export const ProductCard = memo(({ product, onPay }: ProductCardProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const isOutOfStock = product.stock === 0;
@@ -21,7 +22,7 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
   return (
     <article
       aria-label={product.name}
-      className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
+      className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1 will-change-transform"
       onClick={() => navigate(productDetailPath(product.id))}
     >
       <div className="relative h-36 sm:h-48 bg-gray-50 shrink-0">
@@ -78,4 +79,6 @@ export function ProductCard({ product, onPay }: ProductCardProps) {
       </div>
     </article>
   );
-}
+});
+
+ProductCard.displayName = 'ProductCard';

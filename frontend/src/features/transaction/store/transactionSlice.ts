@@ -104,6 +104,7 @@ const transactionSlice = createSlice({
       .addCase(submitTransaction.pending, (state) => {
         state.loadingState = "submitting";
         state.error = null;
+        state.status = null;
       })
       .addCase(submitTransaction.fulfilled, (state, action) => {
         state.id = action.payload.id;

@@ -348,7 +348,7 @@ export function CheckoutPage() {
                         dispatch(proceedToSummary());
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       } catch (err: any) {
-                        alert(err.message || 'Error tokenizing card');
+                        dispatch(setCheckoutError(err.message || 'Error al tokenizar la tarjeta.'));
                       } finally {
                         setIsTokenizing(false);
                       }
@@ -475,16 +475,17 @@ export function CheckoutPage() {
                     >
                       {!isFormComplete ? 'Complete details to pay' : 'Pay now'}
                     </Button>
-                    <button
+                    <Button
+                      variant="secondary"
                       onClick={() => {
                         dispatch(resetCheckout());
                         navigate(ROUTES.PRODUCTS);
                       }}
                       disabled={isLoading}
-                      className="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      className="w-full"
                     >
                       Cancelar
-                    </button>
+                    </Button>
                   </div>
                 </>
               ) : (

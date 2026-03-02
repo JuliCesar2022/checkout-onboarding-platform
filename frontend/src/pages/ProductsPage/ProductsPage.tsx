@@ -13,6 +13,8 @@ import {
 import { openCheckoutForm, resetCheckout } from '../../features/checkout/store/checkoutSlice';
 import { productsApi } from '../../features/products/api';
 import { Modal } from '../../shared/ui/Modal';
+import { Button } from '../../shared/ui/Button';
+import { ErrorBanner } from '../../shared/ui/ErrorBanner';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { HeroBanner } from '../../features/products/components/HeroBanner';
 import { CategoryList } from '../../features/products/components/CategoryList';
@@ -42,6 +44,7 @@ export function ProductsPage() {
     status,
     hasMore,
     nextCursor,
+    error,
   } = useAppSelector((state) => state.products);
   const { step, selectedProductId, quantity } = useAppSelector((state) => state.checkout);
 
@@ -74,11 +77,11 @@ export function ProductsPage() {
 
   useScrollReveal([products.length, categories.length]);
 
-  const handlePay = (product: Product) => {
+  const handlePay = useCallback((product: Product) => {
     dispatch(selectProduct(product.id));
     dispatch(openCheckoutForm({ productId: product.id, quantity: 1 }));
     navigate(ROUTES.CHECKOUT);
-  };
+  }, [dispatch, navigate]);
 
   const handleResumePending = () => {
     setShowPendingModal(false);
@@ -118,7 +121,7 @@ export function ProductsPage() {
     setShowPendingModal(false);
   };
 
-  const handleCategorySelect = (category: Category) => {
+  const handleCategorySelect = useCallback((category: Category) => {
     if (activeCategoryId === category.id) {
       dispatch(setActiveCategory(null));
       dispatch(fetchProducts());
@@ -130,7 +133,7 @@ export function ProductsPage() {
     setTimeout(() => {
       document.getElementById('product-grid-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
-  };
+  }, [activeCategoryId, dispatch]);
 
  return (
     <PageWrapper>
@@ -167,18 +170,19 @@ export function ProductsPage() {
               </p>
             </div>
             <div className="flex gap-3 w-full">
-              <button
+              <Button
+                variant="secondary"
                 onClick={handleDiscardPending}
-                className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex-1"
               >
                 Descartar
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleResumePending}
-                className="flex-1 rounded-xl bg-[#222] px-4 py-3 text-sm font-semibold text-white hover:bg-[#333] transition-colors"
+                className="flex-1"
               >
                 Continuar compra
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>
@@ -209,6 +213,12 @@ export function ProductsPage() {
         </section>
 
         {/* Dynamic Content based on Selection */}
+        {status === 'failed' && error && (
+          <div className="reveal mb-6">
+            <ErrorBanner message={error} />
+          </div>
+        )}
+
         {searchQuery ? (
           /* ── Search results view ── */
           <div className="reveal">

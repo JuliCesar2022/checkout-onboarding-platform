@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,16 +8,24 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  const titleId = useId();
+
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleEscape);
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -26,7 +34,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center sm:p-4"
       role="dialog" 
       aria-modal="true" 
-      aria-label={title}
+      aria-labelledby={title ? titleId : undefined}
     >
       <div
         className="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -37,7 +45,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       <div className="modal-content relative flex w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex-col bg-white sm:rounded-2xl shadow-xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           {title ? (
-            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <h2 id={titleId} className="text-xl font-bold text-gray-900">{title}</h2>
           ) : (
             <div />
           )}

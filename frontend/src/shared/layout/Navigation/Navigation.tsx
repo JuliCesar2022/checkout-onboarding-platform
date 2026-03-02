@@ -7,17 +7,17 @@ export function Navigation() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-slate-100 border-b border-slate-300 px-4 py-3">
-      <div className="max-w-6xl mx-auto flex gap-6 items-center">
-        <h1 className="font-bold text-lg text-slate-800">Checkout</h1>
+    <nav className="bg-white border-b border-gray-100 px-4 py-3">
+      <div className="max-w-7xl mx-auto flex gap-6 items-center">
+        <h1 className="font-bold text-lg text-gray-900">Checkout Flow</h1>
 
-        <div className="flex gap-4 ml-auto">
+        <div className="flex gap-2 ml-auto">
           <Link
             to={ROUTES.PRODUCTS}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 ${
               isActive(ROUTES.PRODUCTS)
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-700 hover:bg-slate-200'
+                ? 'bg-gray-900 text-white shadow-sm'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
             1. Products
@@ -25,10 +25,10 @@ export function Navigation() {
 
           <Link
             to={ROUTES.CHECKOUT}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 ${
               isActive(ROUTES.CHECKOUT)
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-700 hover:bg-slate-200'
+                ? 'bg-gray-900 text-white shadow-sm'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
             2. Checkout
@@ -36,10 +36,10 @@ export function Navigation() {
 
           <Link
             to={ROUTES.TRANSACTION_STATUS}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 ${
               isActive(ROUTES.TRANSACTION_STATUS)
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-700 hover:bg-slate-200'
+                ? 'bg-gray-900 text-white shadow-sm'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
             3. Status
@@ -47,10 +47,6 @@ export function Navigation() {
         </div>
       </div>
 
-      {/* Info actual de Redux state */}
-      <div className="max-w-6xl mx-auto mt-2 text-xs text-slate-600">
-        📍 Current path: <code className="bg-slate-200 px-2 py-1 rounded">{location.pathname}</code>
-      </div>
     </nav>
   );
 }

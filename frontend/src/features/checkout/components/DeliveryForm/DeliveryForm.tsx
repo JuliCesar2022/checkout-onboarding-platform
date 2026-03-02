@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { DeliveryAddress } from '../../../../shared/interfaces';
 import { Input } from '../../../../shared/ui/Input';
+import { Button } from '../../../../shared/ui/Button';
 
 const deliverySchema = z.object({
   recipientName: z.string().min(2, 'Nombre requerido'),
@@ -135,13 +136,13 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
         </div>
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={!isValid}
-        className="mt-4 w-full rounded-xl bg-[#222] px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+        className="mt-4 w-full"
       >
         Continue
-      </button>
+      </Button>
     </form>
   );
 }

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { Product, Category } from "../../../shared/interfaces";
 import { productsApi } from "../api";
+import type { RootState } from "../../../store";
 
 interface ProductsState {
   items: Product[];
@@ -32,7 +33,7 @@ const initialState: ProductsState = {
 export const fetchProducts = createAsyncThunk(
   "products/fetchAll",
   async (_, { getState }) => {
-    const state = getState() as any;
+    const state = getState() as RootState;
     const categoryId = state.products.activeCategoryId || undefined;
     const search = state.products.searchQuery || undefined;
     return productsApi.fetchProducts({ categoryId, search });
@@ -42,7 +43,7 @@ export const fetchProducts = createAsyncThunk(
 export const fetchMoreProducts = createAsyncThunk(
   "products/fetchMore",
   async (cursor: string, { getState }) => {
-    const state = getState() as any;
+    const state = getState() as RootState;
     const categoryId = state.products.activeCategoryId || undefined;
     const search = state.products.searchQuery || undefined;
     return productsApi.fetchProducts({ cursor, categoryId, search });

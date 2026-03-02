@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, memo } from 'react';
 import type { Category } from '../../../../shared/interfaces';
 import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
 
@@ -108,71 +108,40 @@ interface CategoryItemProps {
   onSelect?: (cat: Category) => void;
 }
 
-function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
-  const [hovered, setHovered] = useState(false);
-  const bgColor = isActive ? '#dbeafe' : (hovered ? '#e5e7eb' : '#f3f4f6');
-  const outlineColor = isActive ? '#3b82f6' : (hovered ? '#d1d5db' : 'transparent');
-  const textColor = isActive ? '#1d4ed8' : (hovered ? '#111827' : '#374151');
-
+const CategoryItem = memo(({ cat, icon, isActive, onSelect }: CategoryItemProps) => {
   return (
     <button
-      key={cat.id}
       onClick={() => onSelect?.(cat)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.75rem',
-        flexShrink: 0,
-        padding: 'clamp(0.25rem, 1vw, 0.5rem)',
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        transform: hovered || isActive ? 'translateY(-3px)' : 'translateY(0)',
-        transition: 'transform 0.2s ease',
-      }}
+      className={`group flex flex-col items-center gap-3 shrink-0 p-1 cursor-pointer transition-all duration-300 will-change-transform ${
+        isActive ? '-translate-y-1' : 'hover:-translate-y-1'
+      }`}
     >
       <div
-        style={{
-          width: 'clamp(4.5rem, 12vw, 7rem)',
-          height: 'clamp(4.5rem, 12vw, 7rem)',
-          borderRadius: '9999px',
-          backgroundColor: bgColor,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: cat.imageUrl ? undefined : '3rem',
-          boxShadow: hovered || isActive
-            ? '0 6px 20px rgba(0, 0, 0, 0.13)'
-            : '0 1px 3px rgba(0, 0, 0, 0.05)',
-          outline: `2px solid ${outlineColor}`,
-          outlineOffset: '2px', // slightly tighter outline
-          overflow: 'hidden',
-          transition: 'background-color 0.2s ease, box-shadow 0.2s ease, outline-color 0.2s ease',
-        }}
+        className={`w-18 h-18 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
+          isActive
+            ? 'bg-blue-50 ring-2 ring-blue-500 ring-offset-2 shadow-lg scale-105'
+            : 'bg-gray-50 ring-0 ring-transparent shadow-sm group-hover:bg-gray-100 group-hover:shadow-md group-hover:ring-1 group-hover:ring-gray-200'
+        }`}
       >
         {cat.imageUrl ? (
           <ImageWithSkeleton
             src={cat.imageUrl.startsWith('http') ? cat.imageUrl : `http://localhost:3000/uploads/${cat.imageUrl}`}
             alt={cat.name}
-            className="w-full h-full object-contain p-2"
+            className="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-300 group-hover:scale-110"
           />
         ) : (
-          icon
+          <span className="text-3xl sm:text-4xl md:text-5xl select-none">{icon}</span>
         )}
       </div>
       <span
-        style={{
-          fontSize: 'clamp(0.65rem, 2vw, 0.875rem)',
-          fontWeight: isActive ? 600 : 500,
-          color: textColor,
-          transition: 'color 0.2s ease, font-weight 0.2s ease',
-        }}
+        className={`text-[10px] sm:text-xs md:text-sm font-medium transition-colors duration-300 ${
+          isActive ? 'text-blue-700 font-bold' : 'text-gray-600 group-hover:text-gray-900'
+        }`}
       >
         {cat.name}
       </span>
     </button>
   );
-}
+});
+
+CategoryItem.displayName = 'CategoryItem';
