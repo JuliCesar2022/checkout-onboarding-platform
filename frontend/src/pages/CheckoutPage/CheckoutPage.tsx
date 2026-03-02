@@ -18,7 +18,6 @@ import { submitTransaction } from '../../features/transaction/store/transactionS
 import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
-import { OrderSummaryBackdrop } from '../../features/checkout/components/OrderSummaryBackdrop';
 import { checkoutApi } from '../../features/checkout/api';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
@@ -55,7 +54,7 @@ const STEPS = [
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
+  const { fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
@@ -453,14 +452,6 @@ export function CheckoutPage() {
         </div>
       </div>
 
-      {/* Mobile Order Summary Backdrop */}
-      <OrderSummaryBackdrop
-        isOpen={(step === 'SUMMARY' || step === 'PROCESSING') && !!isFormComplete}
-        fees={fees}
-        isLoading={isLoading}
-        error={error}
-        onPay={handlePay}
-      />
     </PageWrapper>
   );
 }
