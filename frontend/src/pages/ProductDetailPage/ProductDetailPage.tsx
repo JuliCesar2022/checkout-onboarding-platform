@@ -93,20 +93,19 @@ export function ProductDetailPage() {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Product Images Carousel */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <ImageCarousel
-              images={
-                product.images?.length
-                  ? product.images
-                  : product.imageUrl
-                    ? [product.imageUrl]
-                    : []
-              }
-              alt={product.name}
-              className="w-full h-80 md:h-[28rem]"
-            />
-          </div>
+          {/* Product Images Carousel + Thumbnails */}
+          <ImageCarousel
+            images={
+              product.images?.length
+                ? product.images
+                : product.imageUrl
+                  ? [product.imageUrl]
+                  : []
+            }
+            alt={product.name}
+            className="w-full h-80 md:h-[28rem] rounded-2xl border border-gray-100 bg-white"
+            showThumbnails
+          />
 
           {/* Product Info */}
           <div className="flex flex-col gap-4">

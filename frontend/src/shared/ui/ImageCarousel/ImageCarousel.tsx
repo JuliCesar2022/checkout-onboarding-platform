@@ -7,9 +7,17 @@ interface ImageCarouselProps {
   className?: string;
   /** Stop click propagation on nav controls (e.g. inside a clickable card) */
   stopPropagation?: boolean;
+  /** Show thumbnail strip below the main image instead of dot indicators */
+  showThumbnails?: boolean;
 }
 
-export function ImageCarousel({ images, alt, className = '', stopPropagation = false }: ImageCarouselProps) {
+export function ImageCarousel({
+  images,
+  alt,
+  className = '',
+  stopPropagation = false,
+  showThumbnails = false,
+}: ImageCarouselProps) {
   const [current, setCurrent] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -26,8 +34,8 @@ export function ImageCarousel({ images, alt, className = '', stopPropagation = f
     setCurrent((c) => (c + 1) % total);
   }, [total, stopPropagation]);
 
-  const goTo = useCallback((e: React.MouseEvent, idx: number) => {
-    if (stopPropagation) e.stopPropagation();
+  const goTo = useCallback((idx: number, e?: React.MouseEvent) => {
+    if (stopPropagation) e?.stopPropagation();
     setCurrent(idx);
   }, [stopPropagation]);
 
@@ -40,7 +48,6 @@ export function ImageCarousel({ images, alt, className = '', stopPropagation = f
     if (touchStartX.current === null || touchStartY.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = e.changedTouches[0].clientY - touchStartY.current;
-    // Only swipe horizontally if horizontal movement is dominant
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
       if (dx < 0) setCurrent((c) => (c + 1) % total);
       else setCurrent((c) => (c - 1 + total) % total);
@@ -68,60 +75,90 @@ export function ImageCarousel({ images, alt, className = '', stopPropagation = f
   }
 
   return (
-    <div
-      className={`relative w-full h-full overflow-hidden select-none ${className}`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Slides */}
+    <div className="flex flex-col gap-3 w-full">
+      {/* Main image */}
       <div
-        className="flex h-full transition-transform duration-300 ease-out will-change-transform"
-        style={{ transform: `translateX(-${current * 100}%)` }}
+        className={`relative overflow-hidden select-none ${className}`}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        {images.map((src, i) => (
-          <div key={i} className="shrink-0 w-full h-full">
-            <ImageWithSkeleton src={src} alt={`${alt} ${i + 1}`} className="w-full h-full" />
+        {/* Slides */}
+        <div
+          className="flex h-full transition-transform duration-300 ease-out will-change-transform"
+          style={{ transform: `translateX(-${current * 100}%)` }}
+        >
+          {images.map((src, i) => (
+            <div key={i} className="shrink-0 w-full h-full">
+              <ImageWithSkeleton src={src} alt={`${alt} ${i + 1}`} className="w-full h-full" />
+            </div>
+          ))}
+        </div>
+
+        {/* Prev button */}
+        <button
+          onClick={prev}
+          aria-label="Imagen anterior"
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"
+        >
+          <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Next button */}
+        <button
+          onClick={next}
+          aria-label="Siguiente imagen"
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"
+        >
+          <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Dot indicators — only when thumbnails are NOT shown */}
+        {!showThumbnails && (
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => goTo(i, e)}
+                aria-label={`Ir a imagen ${i + 1}`}
+                className={`rounded-full transition-all duration-200 ${
+                  i === current
+                    ? 'bg-white w-3.5 h-1.5'
+                    : 'bg-white/50 w-1.5 h-1.5 hover:bg-white/80'
+                }`}
+              />
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Prev button */}
-      <button
-        onClick={prev}
-        aria-label="Imagen anterior"
-        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center shadow transition-colors z-10"
-      >
-        <svg className="w-3 h-3 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      {/* Next button */}
-      <button
-        onClick={next}
-        aria-label="Siguiente imagen"
-        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center shadow transition-colors z-10"
-      >
-        <svg className="w-3 h-3 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-
-      {/* Dot indicators */}
-      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-        {images.map((_, i) => (
-          <button
-            key={i}
-            onClick={(e) => goTo(e, i)}
-            aria-label={`Ir a imagen ${i + 1}`}
-            className={`rounded-full transition-all duration-200 ${
-              i === current
-                ? 'bg-white w-3.5 h-1.5'
-                : 'bg-white/50 w-1.5 h-1.5 hover:bg-white/80'
-            }`}
-          />
-        ))}
-      </div>
+      {/* Thumbnail strip */}
+      {showThumbnails && (
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          {images.map((src, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Ver imagen ${i + 1}`}
+              className={`shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-200 focus:outline-none ${
+                i === current
+                  ? 'border-gray-900 opacity-100 shadow-md'
+                  : 'border-transparent opacity-60 hover:opacity-90 hover:border-gray-300'
+              }`}
+            >
+              <img
+                src={src}
+                alt={`${alt} miniatura ${i + 1}`}
+                className="w-16 h-16 object-cover"
+                loading="lazy"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
