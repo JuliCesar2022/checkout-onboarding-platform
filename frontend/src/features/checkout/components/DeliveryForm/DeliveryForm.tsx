@@ -78,28 +78,28 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
 
       <Input
         id="phoneNumber"
-        label="Phone Number"
+        label="Teléfono"
         type="tel"
         inputMode="tel"
-        placeholder="e.g. 300 123 4567"
+        placeholder="ej. 300 123 4567"
         {...register('phoneNumber')}
         error={errors.phoneNumber?.message}
       />
 
       <Input
         id="addressLine1"
-        label="Address Line 1"
+        label="Dirección"
         type="text"
-        placeholder="e.g. 123 Main St"
+        placeholder="ej. Calle 123 #45-67"
         {...register('addressLine1')}
         error={errors.addressLine1?.message}
       />
 
       <Input
         id="addressLine2"
-        label="Address Line 2 (Optional)"
+        label="Dirección (opcional)"
         type="text"
-        placeholder="Apt, Suite, Bldg. (optional)"
+        placeholder="Apto, Oficina, Local (opcional)"
         {...register('addressLine2')}
         error={errors.addressLine2?.message}
       />
@@ -117,9 +117,9 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
         <div className="flex-1">
           <Input
             id="city"
-            label="City"
+            label="Ciudad"
             type="text"
-            placeholder="e.g. Bogota"
+            placeholder="ej. Bogotá"
             {...register('city')}
             error={errors.city?.message}
           />
@@ -127,9 +127,9 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
         <div className="flex-1">
           <Input
             id="department"
-            label="Department"
+            label="Departamento"
             type="text"
-            placeholder="e.g. Cundinamarca"
+            placeholder="ej. Cundinamarca"
             {...register('department')}
             error={errors.department?.message}
           />
@@ -141,7 +141,7 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
         disabled={!isValid}
         className="mt-4 w-full"
       >
-        Continue
+        Continuar
       </Button>
     </form>
   );

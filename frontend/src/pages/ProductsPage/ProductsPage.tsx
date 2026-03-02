@@ -195,8 +195,8 @@ export function ProductsPage() {
         {/* Categories Section */}
         <section className={`reveal ${activeCategoryId || searchQuery ? '' : 'delay-100'} sm:bg-white sm:rounded-2xl sm:p-6 sm:shadow-sm sm:border sm:border-gray-100`}>
           <SectionHeader 
-            title="Explore Popular Categories" 
-            actionLabel={activeCategoryId ? 'Ver todas' : 'View All'} 
+            title="Explorar categorías populares" 
+            actionLabel={activeCategoryId ? 'Ver todas' : 'Ver todas'} 
             onAction={() => { 
                if (activeCategoryId) {
                  dispatch(setActiveCategory(null));

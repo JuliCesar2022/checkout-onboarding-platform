@@ -14,35 +14,35 @@ const currentMonth = new Date().getMonth() + 1;     // 1-12
 const cardSchema = z.object({
   cardNumber: z
     .string()
-    .min(1, 'Card number is required')
+    .min(1, 'El número de tarjeta es requerido')
     .refine((v) => {
       const digits = v.replace(/\s/g, '');
       return digits.length >= 16 && digits.length <= 19;
-    }, 'Card number must be 16–19 digits')
-    .refine((v) => isValidLuhn(v.replace(/\s/g, '')), 'Invalid card number'),
+    }, 'El número de tarjeta debe tener entre 16 y 19 dígitos')
+    .refine((v) => isValidLuhn(v.replace(/\s/g, '')), 'Número de tarjeta inválido'),
   brand: z.enum(['VISA', 'MASTERCARD']).nullable(),
   holderName: z
     .string()
-    .min(2, 'Name is required')
-    .max(50, 'Name is too long')
-    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, 'Only letters and spaces allowed'),
+    .min(2, 'El nombre es requerido')
+    .max(50, 'El nombre es muy largo')
+    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, 'Solo se permiten letras y espacios'),
   expiryMonth: z
     .string()
-    .length(2, 'Enter MM')
+    .length(2, 'Ingrese MM')
     .refine((v) => {
       const m = parseInt(v, 10);
       return m >= 1 && m <= 12;
-    }, 'Invalid month (01–12)'),
+    }, 'Mes inválido (01–12)'),
   expiryYear: z
     .string()
-    .length(2, 'Enter YY')
-    .refine((v) => /^\d{2}$/.test(v), 'Must be 2 digits')
-    .refine((v) => parseInt(v, 10) >= currentYear, `Year must be ${currentYear} or later`),
+    .length(2, 'Ingrese AA')
+    .refine((v) => /^\d{2}$/.test(v), 'Debe tener 2 dígitos')
+    .refine((v) => parseInt(v, 10) >= currentYear, `El año debe ser ${currentYear} o posterior`),
   cvv: z
     .string()
-    .min(3, 'CVV is required')
-    .max(4, 'CVV too long')
-    .regex(/^\d{3,4}$/, 'CVV must be 3–4 digits'),
+    .min(3, 'CVV es requerido')
+    .max(4, 'CVV muy largo')
+    .regex(/^\d{3,4}$/, 'CVV debe tener 3–4 dígitos'),
 }).refine(
   (data) => {
     const month = parseInt(data.expiryMonth, 10);
@@ -52,7 +52,7 @@ const cardSchema = z.object({
     if (year === currentYear && month >= currentMonth) return true;
     return false;
   },
-  { message: 'Card is expired', path: ['expiryYear'] }
+  { message: 'La tarjeta ha expirado', path: ['expiryYear'] }
 );
 
 export type CardFormData = z.infer<typeof cardSchema>;
@@ -138,7 +138,7 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
       <div className="flex justify-center py-2">
         <ReactCreditCards
           number={formattedNumber}
-          name={holderName || 'FULL NAME'}
+          name={holderName || 'NOMBRE COMPLETO'}
           expiry={expiryDisplay}
           cvc={cvvValue}
           focused={focused}
@@ -162,7 +162,7 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
           return (
             <Input
               id="card-number"
-              label="Card Number"
+              label="Número de tarjeta"
               type="text"
               inputMode="numeric"
               maxLength={19}
@@ -189,9 +189,9 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
         return (
           <Input
             id="holderName"
-            label="Cardholder Name"
+            label="Nombre del titular"
             type="text"
-            placeholder="e.g. John Doe"
+            placeholder="ej. Juan Pérez"
             name={name}
             onChange={onChange}
             onBlur={onBlur}
@@ -209,7 +209,7 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
           return (
             <Input
               id="expiryMonth"
-              label="Month"
+              label="Mes"
               type="text"
               inputMode="numeric"
               maxLength={2}
@@ -249,11 +249,11 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
           return (
             <Input
               id="expiryYear"
-              label="Year"
+              label="Año"
               type="text"
               inputMode="numeric"
               maxLength={2}
-              placeholder="YY"
+              placeholder="AA"
               name={name}
               onChange={(e) => { onChange(e); if (e.target.value.length === 2) cvvRef.current?.focus(); }}
               onBlur={onBlur}
@@ -292,7 +292,7 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
         disabled={!isValid || isTokenizing}
         className="mt-2 w-full"
       >
-        {isTokenizing ? 'Tokenizando tarjeta...' : 'Continue to summary'}
+        {isTokenizing ? 'Tokenizando tarjeta...' : 'Continuar al resumen'}
       </Button>
     </form>
   );

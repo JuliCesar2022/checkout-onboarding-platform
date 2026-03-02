@@ -20,14 +20,15 @@ export function FeaturedRow({ title, products, onPay }: FeaturedRowProps) {
       </div>
 
       <div
-        className="flex gap-4 overflow-x-auto pb-6"
+        className="flex gap-3 sm:gap-4 overflow-x-auto pb-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product) => (
-          <div key={product.id} className="shrink-0 w-72">
-            <ProductCard 
-              product={product} 
-              onPay={onPay || (() => {})} 
+          <div key={product.id} className="shrink-0 w-44 sm:w-60">
+            <ProductCard
+              product={product}
+              onPay={onPay || (() => {})}
+              showBuyButton
             />
           </div>
         ))}

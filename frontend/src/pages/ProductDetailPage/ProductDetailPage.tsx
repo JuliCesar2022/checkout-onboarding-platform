@@ -69,9 +69,9 @@ export function ProductDetailPage() {
       <PageWrapper>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <p className="text-6xl mb-4">🔍</p>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Product not found</h2>
-          <p className="text-gray-500 mb-6">The product you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate(ROUTES.PRODUCTS)}>Back to store</Button>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Producto no encontrado</h2>
+          <p className="text-gray-500 mb-6">El producto que estás buscando no existe.</p>
+          <Button onClick={() => navigate(ROUTES.PRODUCTS)}>Volver a la tienda</Button>
         </div>
       </PageWrapper>
     );
@@ -92,7 +92,7 @@ export function ProductDetailPage() {
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to products
+          Volver a productos
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -124,22 +124,22 @@ export function ProductDetailPage() {
             </p>
 
             <div className="border-t border-gray-100 pt-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Descripción</h3>
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
 
             <div className="border-t border-gray-100 pt-4 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>🚚</span>
-                <span>Free shipping on this product</span>
+                <span>Envío gratis en este producto</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>🔒</span>
-                <span>Secure payment with credit card</span>
+                <span>Pago seguro con tarjeta de crédito</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>📦</span>
-                <span>{product.stock} units available</span>
+                <span>{product.stock} unidades disponibles</span>
               </div>
             </div>
 
@@ -189,7 +189,7 @@ export function ProductDetailPage() {
                 disabled={isOutOfStock}
                 className="w-full py-3 text-base"
               >
-                {isOutOfStock ? 'Out of stock' : 'Comprar ahora'}
+                {isOutOfStock ? 'Agotado' : 'Comprar ahora'}
               </Button>
             </div>
           </div>

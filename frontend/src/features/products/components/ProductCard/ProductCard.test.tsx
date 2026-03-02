@@ -31,7 +31,7 @@ describe('ProductCard', () => {
     const handlePay = jest.fn();
     renderWithProviders(<ProductCard product={mockProduct} onPay={handlePay} />);
     
-    const buyButton = screen.getByText('Comprar ahora');
+    const buyButton = screen.getByText('Comprar');
     fireEvent.click(buyButton);
     
     expect(handlePay).toHaveBeenCalledWith(mockProduct);
@@ -52,8 +52,8 @@ describe('ProductCard', () => {
     const outOfStockProduct = { ...mockProduct, stock: 0 };
     renderWithProviders(<ProductCard product={outOfStockProduct} onPay={jest.fn()} />);
     
-    const buyButton = screen.getByText('Comprar ahora');
+    const buyButton = screen.getByText('Comprar');
     expect(buyButton).toBeDisabled();
-    expect(screen.getByText('Out of stock')).toBeInTheDocument();
+    expect(screen.getByText('Agotado')).toBeInTheDocument();
   });
 });

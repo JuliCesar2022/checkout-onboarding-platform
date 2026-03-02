@@ -48,8 +48,8 @@ function saveDeliveryLocally(data: object) {
 }
 
 const STEPS = [
-  { number: 1, label: 'Delivery' },
-  { number: 2, label: 'Payment' },
+  { number: 1, label: 'Envío' },
+  { number: 2, label: 'Pago' },
 ];
 
 export function CheckoutPage() {
@@ -261,7 +261,7 @@ export function CheckoutPage() {
             {/* Step 1 — Delivery */}
             {currentStep === 1 ? (
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">Delivery information</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Información de envío</h2>
                 <DeliveryForm
                   onSubmit={(data) => {
                     saveDeliveryLocally(data);
@@ -291,7 +291,7 @@ export function CheckoutPage() {
                   onClick={() => dispatch(saveDeliveryAddress(null as any))}
                   className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2 cursor-pointer"
                 >
-                  Edit
+                  Editar
                 </button>
               </div>
             )}
@@ -311,7 +311,7 @@ export function CheckoutPage() {
                         {cardData.brand || 'Card'} •••• {cardData.number?.slice(-4)}
                       </p>
                       <p className="text-sm text-gray-500 mt-0.5">
-                        {cardData.holderName} · Expires {cardData.expiryMonth}/{cardData.expiryYear}
+                        {cardData.holderName} · Expira {cardData.expiryMonth}/{cardData.expiryYear}
                       </p>
                     </div>
                   </div>
@@ -319,12 +319,12 @@ export function CheckoutPage() {
                     onClick={() => dispatch(saveCardData(null as any))}
                     className="text-sm font-medium text-gray-900 hover:text-gray-600 shrink-0 underline underline-offset-2 cursor-pointer"
                   >
-                    Edit
+                    Editar
                   </button>
                 </div>
               ) : (
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Payment information</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Información de pago</h2>
                   <CardForm
                     autoFocus
                     isTokenizing={isTokenizing}
@@ -363,7 +363,7 @@ export function CheckoutPage() {
           {/* ── Right column: Order Summary (always visible) ── */}
           <section className="mt-8 lg:col-span-5 lg:mt-0 lg:sticky lg:top-8">
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-5">Order Summary</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-5">Resumen del pedido</h2>
 
               {cartItems.length > 0 ? (
                 <div className="mb-5 pb-5 border-b border-gray-200 space-y-4">
@@ -401,7 +401,7 @@ export function CheckoutPage() {
                         onClick={() => dispatch(setQuantity(quantity - 1))}
                         disabled={quantity <= 1}
                         className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                        aria-label="Decrease quantity"
+                        aria-label="Disminuir cantidad"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
                       </button>
@@ -409,7 +409,7 @@ export function CheckoutPage() {
                       <button
                         onClick={() => dispatch(setQuantity(quantity + 1))}
                         className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors"
-                        aria-label="Increase quantity"
+                        aria-label="Aumentar cantidad"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                       </button>
@@ -422,15 +422,15 @@ export function CheckoutPage() {
                 <>
                   <dl className="space-y-3 text-sm text-gray-600">
                     <div className="flex justify-between">
-                      <dt>Product amount</dt>
+                      <dt>Valor del producto</dt>
                       <dd className="font-medium text-gray-900">{formatCurrency(fees.productAmount)}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt>Base fee (Wompi)</dt>
+                      <dt>Tarifa base (Wompi)</dt>
                       <dd className="font-medium text-gray-900">{formatCurrency(fees.baseFee)}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt>Delivery fee</dt>
+                      <dt>Tarifa de envío</dt>
                       <dd className="font-medium text-gray-900">{formatCurrency(fees.deliveryFee)}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3">
@@ -448,7 +448,7 @@ export function CheckoutPage() {
                       disabled={!isFormComplete || isLoading}
                       className="w-full"
                     >
-                      {!isFormComplete ? 'Complete details to pay' : 'Pay now'}
+                      {!isFormComplete ? 'Completa los detalles para pagar' : 'Pagar ahora'}
                     </Button>
                     <Button
                       variant="secondary"
@@ -465,7 +465,7 @@ export function CheckoutPage() {
                 </>
               ) : (
                 <div className="flex items-center justify-center py-10 text-sm text-gray-400">
-                  Calculating fees...
+                  Calculando tarifas...
                 </div>
               )}
             </div>
