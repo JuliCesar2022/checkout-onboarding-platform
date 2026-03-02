@@ -14,7 +14,7 @@ import type { Env } from '../../config/env.validation';
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env>) => ({
         baseURL: config.get('WOMPI_BASE_URL', { infer: true }),
-        timeout: 10_000,
+        timeout: 30_000,
         headers: { 'Content-Type': 'application/json' },
       }),
     }),

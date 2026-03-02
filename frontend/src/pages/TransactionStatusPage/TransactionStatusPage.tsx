@@ -54,7 +54,8 @@ export function TransactionStatusPage() {
   // Wait until the store has real transaction data before animating
   if (!status || !id) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-white">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 bg-white">
+        <p className="text-lg font-semibold text-gray-700">¡Ya casi es tuyo!</p>
         <div className="flex gap-1">
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
