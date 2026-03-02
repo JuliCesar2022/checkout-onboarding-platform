@@ -125,7 +125,7 @@ const CategoryItem = memo(({ cat, icon, isActive, onSelect }: CategoryItemProps)
       >
         {cat.imageUrl ? (
           <ImageWithSkeleton
-            src={cat.imageUrl.startsWith('http') ? cat.imageUrl : `http://localhost:3000/uploads/${cat.imageUrl}`}
+            src={cat.imageUrl}
             alt={cat.name}
             className="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-300 group-hover:scale-110"
           />
