@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useScrollReveal } from '../../shared/hooks/useScrollReveal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
@@ -78,6 +79,8 @@ export function ProductDetailPage() {
 
   const isOutOfStock = product.stock === 0;
 
+  useScrollReveal([product.id]);
+
   return (
     <PageWrapper>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,6 +97,7 @@ export function ProductDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Product Images Carousel + Thumbnails */}
+          <div className="reveal">
           <ImageCarousel
             images={
               product.images?.length
@@ -106,9 +110,10 @@ export function ProductDetailPage() {
             className="w-full h-80 md:h-[28rem] rounded-2xl border border-gray-100 bg-white"
             showThumbnails
           />
+          </div>
 
           {/* Product Info */}
-          <div className="flex flex-col gap-4">
+          <div className="reveal delay-100 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{product.name}</h1>
               <StockBadge stock={product.stock} />

@@ -18,8 +18,14 @@ export function ProductGrid({ products, isLoading, onPay }: ProductGridProps) {
     >
       {isLoading
         ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={`skeleton-${i}`} />)
-        : products.map((product) => (
-            <ProductCard key={product.id} product={product} onPay={onPay} />
+        : products.map((product, i) => (
+            <div
+              key={product.id}
+              className="card-reveal"
+              style={{ animationDelay: `${(i % 8) * 55}ms` }}
+            >
+              <ProductCard product={product} onPay={onPay} />
+            </div>
           ))}
     </section>
   );
