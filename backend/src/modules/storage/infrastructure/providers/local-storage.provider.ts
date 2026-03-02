@@ -43,8 +43,8 @@ export class LocalStorageProvider implements IStorageProvider {
     return path.join(folder, filename).replace(/\\/g, '/');
   }
 
-  async delete(relativePata: string): Promise<void> {
-    const fullPath = path.join(this.uploadPath, relativePata);
+  async delete(relativePath: string): Promise<void> {
+    const fullPath = path.join(this.uploadPath, relativePath);
     try {
       await fs.unlink(fullPath);
     } catch (error) {
