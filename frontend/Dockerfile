@@ -1,6 +1,6 @@
 # ─── Stage 1: build ───────────────────────────────────────────────────────────
 # Compila el SPA de React con Vite. Node solo se usa aquí, no en producción.
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
