@@ -38,15 +38,18 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Copia schema + migraciones (prisma migrate deploy las necesita)
+# Copia schema + migraciones
 COPY prisma ./prisma
 COPY package*.json ./
 
-# Copia prisma.config.ts compilado (Prisma 7 lo necesita para leer DATABASE_URL en migrate deploy)
-COPY --from=builder /app/dist/prisma.config.js ./prisma.config.js
+# Copia prisma.config.ts + ts-node desde el builder para que migrate deploy pueda leerlo
+COPY prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/node_modules/ts-node ./node_modules/ts-node
+COPY --from=builder /app/node_modules/typescript ./node_modules/typescript
+COPY --from=builder /app/node_modules/tsconfig-paths ./node_modules/tsconfig-paths
+COPY tsconfig.json ./tsconfig.json
 
 EXPOSE 3000
 
-# prisma migrate deploy aplica migraciones pendientes de forma segura en producción.
-# Nunca crea ni modifica migraciones, solo las ejecuta.
+# prisma migrate deploy usa ts-node para leer prisma.config.ts con DATABASE_URL
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
