@@ -131,7 +131,15 @@ export function ProductsPage() {
     }, 100);
   }, [activeCategoryId, dispatch]);
 
- return (
+  const handleCategoryBySlug = useCallback((slug: string) => {
+    // Look in main categories and their children
+    const category = categories.flatMap(c => [c, ...(c.children ?? [])]).find(c => c.slug === slug);
+    if (category) {
+      handleCategorySelect(category);
+    }
+  }, [categories, handleCategorySelect]);
+
+  return (
     <PageWrapper>
       <div className="flex flex-col gap-10 pb-16">
 
@@ -185,7 +193,7 @@ export function ProductsPage() {
 
         {!activeCategoryId && !searchQuery && (
           <div>
-            <HeroBanner />
+            <HeroBanner onSelectCategory={handleCategoryBySlug} />
           </div>
         )}
 

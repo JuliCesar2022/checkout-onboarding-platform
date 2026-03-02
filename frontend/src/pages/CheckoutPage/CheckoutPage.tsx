@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import {
   proceedToSummary,
-  startProcessing,
   saveCardData,
   saveDeliveryAddress,
   completeCheckout,
@@ -59,9 +58,14 @@ export function CheckoutPage() {
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
-  // Redirect to products if no product is selected or if checkout is complete
+  // Redirect to products if no product is selected
   if (!productId && cartItems.length === 0) {
     return <Navigate to={ROUTES.PRODUCTS} replace />;
+  }
+
+  // If we already have a transaction in progress, don't allow returning to the form
+  if (loadingState === 'polling' || loadingState === 'submitting') {
+    return <Navigate to={ROUTES.TRANSACTION_STATUS} replace />;
   }
 
   // Which UI step are we on: 1 = delivery, 2 = payment
@@ -143,9 +147,14 @@ export function CheckoutPage() {
       return;
     }
 
-    payingRef.current = true;
-    setIsPaying(true);
-    dispatch(startProcessing());
+    // Prevent accidental navigation during processing
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (payingRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     try {
       // Submit the transaction — polling and stock refresh happen on /status page
@@ -173,16 +182,19 @@ export function CheckoutPage() {
 
       // Navigate immediately — /status shows PENDING then polls for final result
       dispatch(completeCheckout());
-      navigate(ROUTES.TRANSACTION_STATUS);
+      // Use replace: true to prevent back button from returning to the form
+      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
     } catch (err: any) {
       payingRef.current = false;
       setIsPaying(false);
       dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
+    } finally {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     }
   };
 
   const isFormComplete = deliveryAddress && cardData;
-  const isLoading = isPaying || loadingState === 'submitting' || loadingState === 'polling';
+  const isLoading = isPaying;
 
   return (
     <PageWrapper>

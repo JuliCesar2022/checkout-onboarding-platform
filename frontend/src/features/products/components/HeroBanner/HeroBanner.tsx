@@ -27,6 +27,7 @@ interface Panel {
   image?: string;
   isSpecial?: boolean; // For the redesigned headphones layout
   secondaryLabel?: string; // e.g. "Clear Sounds"
+  categorySlug?: string; // For linking banners to categories
 }
 
 interface Slide {
@@ -49,13 +50,14 @@ const SLIDES: Slide[] = [
         label: 'Music is Classic', 
         title: 'Sequoia Inspiring Musico.', 
         subtitle: 'Making your dream music come true stay with Sequios Sounds!', 
-        cta: 'View All Products', 
+        cta: 'Descubrir', 
         emoji: '🎧',
         localModel: '/models/auriculares.glb',
-        isSpecial: true
+        isSpecial: true,
+        categorySlug: 'ACCESORIOS'
       },
-      { area: 'top',  type: 'promo', bg: 'bg-[#f3f4f6]',                                   label: 'Bundle exclusivo', title: 'AirPods Pro',   subtitle: 'Magia para tus oídos.',                    cta: 'Comprar ahora', emoji: '🎧', image: '/airpods_new.png' },
-      { area: 'bot',  type: 'promo', bg: 'bg-[#f3f4f6]',                                   label: 'Experience',      title: 'Vive el Sonido', subtitle: 'Diseñados para tu comodidad diaria.',   cta: 'Saber más',     emoji: '✨', image: '/lifestyle_new.png' },
+      { area: 'top',  type: 'promo', bg: 'bg-[#f3f4f6]', label: 'Bundle exclusivo', title: 'AirPods Pro', subtitle: 'Magia para tus oídos.', cta: 'Descubrir', emoji: '🎧', image: '/airpods_new.png', categorySlug: 'ACCESORIOS' },
+      { area: 'bot',  type: 'promo', bg: 'bg-[#f3f4f6]', label: 'Experience', title: 'Vive el Sonido', subtitle: 'Diseñados para tu comodidad diaria.', cta: 'Descubrir', emoji: '✨', image: '/lifestyle_new.png', categorySlug: 'ACCESORIOS' },
     ],
   },
   /* ── 2 paneles lado a lado ── */
@@ -71,13 +73,14 @@ const SLIDES: Slide[] = [
         label: 'Nuevo lanzamiento', 
         title: 'iPhone 17 Pro.', 
         subtitle: 'Una nueva era de potencia y elegancia en tus manos.', 
-        cta: 'Shop Now', 
+        cta: 'Descubrir', 
         emoji: '📱', 
         localModel: '/models/iphone17.glb',
         isSpecial: true,
-        secondaryLabel: 'Pro Performance'
+        secondaryLabel: 'Pro Performance',
+        categorySlug: 'CELULARES'
       },
-      { area: 'promo', type: 'promo', bg: 'bg-[#f3f4f6]',                               label: 'Edición Especial', title: 'Estilo sin Límites', subtitle: 'El color que define una nueva era de innovación.',  cta: 'Descúbrelo',    emoji: '✨', image: '/iphone_promo_transparent.png' },
+      { area: 'promo', type: 'promo', bg: 'bg-[#f3f4f6]', label: 'Edición Especial', title: 'Estilo sin Límites', subtitle: 'El color que define una nueva era de innovación.',  cta: 'Descubrir', emoji: '✨', image: '/iphone_promo_transparent.png', categorySlug: 'CELULARES' },
     ],
   },
   /* ── panel grande (PS5 FULL WIDTH) ── */
@@ -93,11 +96,12 @@ const SLIDES: Slide[] = [
         label: 'Gaming Power',     
         title: 'Sony PlayStation 5.',   
         subtitle: 'Siente el poder de la nueva generación con carga ultrarrápida.',              
-        cta: 'Shop Consoles', 
+        cta: 'Descubrir', 
         emoji: '🎮', 
         localModel: '/models/ps5.glb', 
         isSpecial: true,
-        secondaryLabel: 'Play Has No Limits'
+        secondaryLabel: 'Play Has No Limits',
+        categorySlug: 'PLAYSTATION'
       },
     ],
   },
@@ -107,12 +111,14 @@ function BannerPanel({
   p,
   activeColor,
   setActiveColor,
-  isActive
+  isActive,
+  onSelectCategory
 }: {
   p: Panel;
   activeColor: string;
   setActiveColor: (c: string) => void;
   isActive?: boolean;
+  onSelectCategory?: (slug: string) => void;
 }) {
   const modelRef = useRef<any>(null);
 
@@ -124,15 +130,8 @@ function BannerPanel({
     { name: 'Cyan', hex: '#06b6d4' },
   ];
 
-  const IPHONE_COLORS = [
-    { name: 'Cosmic Orange', hex: '#d4632a', gradient: 'linear-gradient(135deg, #e8763a 0%, #b84e1a 60%, #d4622a 100%)' },
-    { name: 'Deep Blue',     hex: '#1e3a5f', gradient: 'linear-gradient(135deg, #2a4f7a 0%, #132840 60%, #1e3a5f 100%)' },
-    { name: 'Silver',        hex: '#c8cdd2', gradient: 'linear-gradient(135deg, #e2e6ea 0%, #a8b0b8 50%, #d0d5da 100%)' },
-  ];
-
   const isAuriculares = p.localModel?.includes('auriculares');
   const isIphone = p.localModel?.includes('iphone');
-  const COLORS = isIphone ? IPHONE_COLORS : HEADPHONE_COLORS;
 
   // Store original base colors per material index on first load
   const originalColorsRef = useRef<[number, number, number, number][]>([]);
@@ -218,11 +217,22 @@ function BannerPanel({
             environment-image="neutral"
             exposure="1.2"
             interaction-prompt="none"
+            interaction-policy="allow-when-focused"
+            disable-zoom
+            touch-action="pan-y"
             loading="lazy"
             poster={p.image || `/assets/posters/${p.localModel?.split('/').pop()?.replace('.glb', '.webp')}`}
             seamless-poster
             style={{ width: '100%', height: '100%', outline: 'none' }}
           />
+
+          {/* 360 Rotation Indicator */}
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-gray-100 transition-opacity duration-700 ${isActive ? 'opacity-100 animate-[soft-pulse_3s_infinite]' : 'opacity-0'}`}>
+            <svg className="w-3.5 h-3.5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="text-[9px] font-bold tracking-widest text-gray-900 uppercase">360° VIEW</span>
+          </div>
         </div>
 
         {/* Gradient overlay for mobile text legibility */}
@@ -243,14 +253,14 @@ function BannerPanel({
           </div>
 
           {/* Mobile color picker - above title */}
-          {(isAuriculares || isIphone) && (
+          {(isAuriculares) && (
             <div className="sm:hidden flex items-center gap-1.5 pointer-events-auto mb-3">
-              {COLORS.map((c) => (
+              {HEADPHONE_COLORS.map((c) => (
                 <button
                   key={c.hex}
-                  onClick={() => setActiveColor(c.hex)}
+                  onClick={(e) => { e.stopPropagation(); setActiveColor(c.hex); }}
                   title={c.name}
-                  className={`rounded-full transition-all shadow-sm ${activeColor === c.hex ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'hover:scale-110'} ${isIphone ? 'w-6 h-6' : 'w-5 h-5'}`}
+                  className={`rounded-full transition-all shadow-sm ${activeColor === c.hex ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'hover:scale-110'} w-5 h-5`}
                   style={{ background: (c as any).gradient ?? c.hex }}
                 />
               ))}
@@ -282,7 +292,15 @@ function BannerPanel({
 
             {/* Lime Green Button + Small Color Picker */}
             <div className={`hidden sm:flex items-center gap-4 mt-2 ${isActive ? 'animate-slide-up animate-stagger-4' : 'opacity-0'}`}>
-              <button className="pointer-events-auto flex items-center bg-[#e2ff46] hover:bg-[#d4f035] text-gray-900 font-bold text-xs pl-6 pr-1.5 py-1.5 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95">
+              <button 
+                className="pointer-events-auto flex items-center bg-[#e2ff46] hover:bg-[#d4f035] text-gray-900 font-bold text-xs pl-6 pr-1.5 py-1.5 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                onClick={(e) => {
+                  if (p.categorySlug) {
+                    e.stopPropagation();
+                    onSelectCategory?.(p.categorySlug);
+                  }
+                }}
+              >
                 {p.cta}
                 <div className="ml-4 bg-black rounded-full p-2 flex items-center justify-center">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,14 +310,14 @@ function BannerPanel({
               </button>
 
               {/* Minimalist Color Selector */}
-              {(isAuriculares || isIphone) && (
+              {(isAuriculares) && (
                 <div className="flex items-center gap-1.5 pointer-events-auto bg-white/60 backdrop-blur-sm px-3 py-2 rounded-full border border-white/40 shadow-sm ml-2">
-                  {COLORS.map((c) => (
+                  {HEADPHONE_COLORS.map((c) => (
                     <button
                       key={c.hex}
-                      onClick={() => setActiveColor(c.hex)}
+                      onClick={(e) => { e.stopPropagation(); setActiveColor(c.hex); }}
                       title={c.name}
-                      className={`rounded-full transition-all shadow-sm ${activeColor === c.hex ? 'ring-1 ring-gray-900 ring-offset-1 scale-110' : 'hover:scale-110'} ${isIphone ? 'w-5 h-5' : 'w-4 h-4'}`}
+                      className={`rounded-full transition-all shadow-sm ${activeColor === c.hex ? 'ring-1 ring-gray-900 ring-offset-1 scale-110' : 'hover:scale-110'} w-4 h-4`}
                       style={{ background: (c as any).gradient ?? c.hex }}
                     />
                   ))}
@@ -331,11 +349,22 @@ function BannerPanel({
             environment-image="neutral"
             exposure="1"
             interaction-prompt="none"
+            interaction-policy="allow-when-focused"
+            disable-zoom
+            touch-action="pan-y"
             loading="lazy"
             poster={p.image || `/assets/posters/${p.localModel?.split('/').pop()?.replace('.glb', '.webp')}`}
             seamless-poster
             style={{ width: '100%', height: '100%', outline: 'none' }}
           />
+
+          {/* 360 Rotation Indicator */}
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-gray-100 transition-opacity duration-700 ${isActive ? 'opacity-100 animate-[soft-pulse_3s_infinite]' : 'opacity-0'}`}>
+            <svg className="w-3.5 h-3.5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="text-[9px] font-bold tracking-widest text-gray-900 uppercase">360° VIEW</span>
+          </div>
         </div>
       ) : p.image ? (
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -383,7 +412,15 @@ function BannerPanel({
         <p className={`${p.bg.includes('#f3f4f6') ? 'text-gray-500' : 'text-white/70'} text-sm mt-2 max-w-[200px] ${isActive ? 'animate-slide-up animate-stagger-3' : ''}`}>{p.subtitle}</p>
       </div>
 
-      <button className={`relative z-10 self-start mt-4 ${p.bg.includes('#f3f4f6') ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md ${isActive ? 'animate-slide-up animate-stagger-4' : 'opacity-0'}`}>
+      <button 
+        className={`relative z-10 self-start mt-4 ${p.bg.includes('#f3f4f6') ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} font-semibold text-xs px-5 py-2 rounded-full hover:opacity-90 transition-colors shadow-md ${isActive ? 'animate-slide-up animate-stagger-4' : 'opacity-0'}`}
+        onClick={(e) => {
+          if (p.categorySlug) {
+            e.stopPropagation();
+            onSelectCategory?.(p.categorySlug);
+          }
+        }}
+      >
         {p.cta}
       </button>
 
@@ -392,7 +429,7 @@ function BannerPanel({
   );
 }
 
-function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
+function SlideGrid({ slide, isActive, onSelectCategory }: { slide: Slide; isActive: boolean; onSelectCategory?: (slug: string) => void }) {
   const heroPanel = slide.panels.find(p => p.type === 'hero');
   const defaultColor = heroPanel?.localModel?.includes('iphone') ? '#d4632a' : '#ffffff';
   const [activeColor, setActiveColor] = useState(defaultColor);
@@ -408,6 +445,7 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
             activeColor={activeColor}
             setActiveColor={setActiveColor}
             isActive={isActive}
+            onSelectCategory={onSelectCategory}
           />
         ))}
       </div>
@@ -428,6 +466,7 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
             activeColor={activeColor}
             setActiveColor={setActiveColor}
             isActive={isActive}
+            onSelectCategory={onSelectCategory}
           />
         ))}
       </div>
@@ -435,7 +474,7 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
   );
 }
 
-export function HeroBanner() {
+export function HeroBanner({ onSelectCategory }: { onSelectCategory?: (slug: string) => void }) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
       loop: true, 
@@ -468,7 +507,7 @@ export function HeroBanner() {
         <div className="flex touch-pan-y" style={{ backfaceVisibility: 'hidden' }}>
           {SLIDES.map((slide, i) => (
             <div key={i} style={{ flex: '0 0 100%', minWidth: 0 }}>
-              <SlideGrid slide={slide} isActive={i === selectedIndex} />
+              <SlideGrid slide={slide} isActive={i === selectedIndex} onSelectCategory={onSelectCategory} />
             </div>
           ))}
         </div>

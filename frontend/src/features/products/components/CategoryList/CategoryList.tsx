@@ -117,7 +117,7 @@ const CategoryItem = memo(({ cat, icon, isActive, onSelect }: CategoryItemProps)
       }`}
     >
       <div
-        className={`w-18 h-18 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center transition-all duration-300 overflow-hidden ${
+        className={`w-18 h-18 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center transition-all duration-300 overflow-hidden ${
           isActive
             ? 'bg-blue-50 ring-2 ring-blue-500 ring-offset-2 shadow-lg scale-105'
             : 'bg-gray-50 ring-0 ring-transparent shadow-sm group-hover:bg-gray-100 group-hover:shadow-md group-hover:ring-1 group-hover:ring-gray-200'
@@ -127,7 +127,7 @@ const CategoryItem = memo(({ cat, icon, isActive, onSelect }: CategoryItemProps)
           <ImageWithSkeleton
             src={cat.imageUrl}
             alt={cat.name}
-            className="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-300 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         ) : (
           <span className="text-3xl sm:text-4xl md:text-5xl select-none">{icon}</span>
