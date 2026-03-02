@@ -62,6 +62,7 @@ describe("productsSlice", () => {
           stock: 10,
           priceInCents: 100,
           imageUrl: "",
+          images: [],
           categoryId: "c1",
           description: "",
           isAvailable: true,

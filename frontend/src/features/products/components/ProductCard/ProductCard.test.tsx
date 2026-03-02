@@ -10,6 +10,7 @@ const mockProduct = {
   priceInCents: 10000,
   stock: 10,
   imageUrl: 'test-image.jpg',
+  images: ['test-image.jpg'],
   categoryId: 'cat1',
   isAvailable: true,
 };
