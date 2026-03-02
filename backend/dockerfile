@@ -19,7 +19,14 @@ COPY . .
 # Genera el Prisma Client antes de compilar NestJS
 RUN npx prisma generate
 
+# Compila NestJS (src/ → dist/src/)
 RUN npm run build
+
+# Compila el seed por separado a dist/prisma/
+RUN npx tsc prisma/seed.ts prisma/seeds/index.ts prisma/seeds/products.seed.ts prisma/seeds/categories.seed.ts \
+    --module nodenext --moduleResolution nodenext --target ES2023 \
+    --esModuleInterop true --skipLibCheck true --outDir dist/prisma \
+    --declaration false --sourceMap false
 
 # ─── Stage 3: runner ──────────────────────────────────────────────────────────
 # Imagen final mínima: solo el dist/ compilado + node_modules de producción.
@@ -31,7 +38,7 @@ ENV NODE_ENV=production
 # Copia dependencias de producción del stage deps
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copia el build de NestJS
+# Copia el build de NestJS + seed compilado
 COPY --from=builder /app/dist ./dist
 
 # Copia el Prisma Client generado (necesario en runtime)
@@ -51,5 +58,5 @@ COPY tsconfig.json ./tsconfig.json
 
 EXPOSE 3000
 
-# prisma migrate deploy usa ts-node para leer prisma.config.ts con DATABASE_URL
+# prisma migrate deploy corre migraciones, luego arranca la app
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
