@@ -17,6 +17,40 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: checkout_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-checkout_user}:${POSTGRES_PASSWORD:-checkout_pass}@postgres:5432/${POSTGRES_DB:-checkout_db}
+      PORT: 3000
+      FRONTEND_URL: http://localhost:5173
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-prv_stagtest_5i0ZGIGiFcDQifYsXxvsny7Y37tKqFWg}
+      WOMPI_INTEGRITY_KEY: ${WOMPI_INTEGRITY_KEY:-stagtest_integrity_nAIBuqayW70XpUqJS4qf4STYiISd89Fp}
+      WOMPI_BASE_URL: https://api-sandbox.co.uat.wompi.dev/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:3000/api
+        VITE_WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7}
+        VITE_WOMPI_BASE_URL: https://api-sandbox.co.uat.wompi.dev/v1
+    container_name: checkout_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: checkout_pgadmin
