@@ -11,7 +11,7 @@ import { Button } from '../../shared/ui/Button';
 import { Spinner } from '../../shared/ui/Spinner';
 import { formatCOP } from '../../shared/utils/currencyFormat';
 import { ROUTES } from '../../constants/routes';
-import { ImageWithSkeleton } from '../../shared/ui/ImageWithSkeleton';
+import { ImageCarousel } from '../../shared/ui/ImageCarousel/ImageCarousel';
 import { productsApi } from '../../features/products/api';
 import type { Product } from '../../shared/interfaces';
 
@@ -93,19 +93,19 @@ export function ProductDetailPage() {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Product Image */}
+          {/* Product Images Carousel */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            {product.imageUrl ? (
-              <ImageWithSkeleton
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-80 md:h-112"
-              />
-            ) : (
-              <div className="w-full h-80 md:h-112 bg-gray-50 flex items-center justify-center text-gray-300 text-8xl">
-                📦
-              </div>
-            )}
+            <ImageCarousel
+              images={
+                product.images?.length
+                  ? product.images
+                  : product.imageUrl
+                    ? [product.imageUrl]
+                    : []
+              }
+              alt={product.name}
+              className="w-full h-80 md:h-[28rem]"
+            />
           </div>
 
           {/* Product Info */}
