@@ -99,10 +99,10 @@ export function ImageCarousel({
       <div className="flex flex-col gap-3 w-full">
         {/* Main image */}
         <div
-          className={`relative overflow-hidden select-none cursor-zoom-in ${className}`}
+          className={`relative overflow-hidden select-none ${stopPropagation ? '' : 'cursor-zoom-in'} ${className}`}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          onClick={openLightbox}
+          onClick={stopPropagation ? undefined : openLightbox}
         >
           {/* Slides */}
           <div
@@ -116,27 +116,29 @@ export function ImageCarousel({
             ))}
           </div>
 
-          {/* Prev button */}
-          <button
-            onClick={(e) => { e.stopPropagation(); prev(e); }}
-            aria-label="Imagen anterior"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"
-          >
-            <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          {/* Next button */}
-          <button
-            onClick={(e) => { e.stopPropagation(); next(e); }}
-            aria-label="Siguiente imagen"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"
-          >
-            <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          {/* Prev / Next buttons — hidden inside cards (stopPropagation), visible on detail page */}
+          {!stopPropagation && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prev(e); }}
+                aria-label="Imagen anterior"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"
+              >
+                <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); next(e); }}
+                aria-label="Siguiente imagen"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"
+              >
+                <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
 
           {/* Dot indicators — only when thumbnails are NOT shown */}
           {!showThumbnails && (
