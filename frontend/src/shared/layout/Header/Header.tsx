@@ -67,10 +67,10 @@ export function Header() {
           </div>
         </form>
 
-        {/* Cart button */}
+        {/* Cart button — hidden on mobile (use bottom nav instead) */}
         <button
           onClick={() => dispatch(cartIsOpen ? closeCart() : openCart())}
-          className="relative flex-shrink-0 rounded-xl p-2.5 text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+          className="hidden sm:flex relative flex-shrink-0 rounded-xl p-2.5 text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
           aria-label={`Carrito${cartCount > 0 ? `, ${cartCount} artículos` : ''}`}
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
