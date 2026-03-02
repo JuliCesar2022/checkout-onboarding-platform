@@ -96,10 +96,10 @@ export function ImageCarousel({
 
   return (
     <>
-      <div className="flex flex-col gap-3 w-full">
+      <div className={`flex flex-col gap-3 ${className}`}>
         {/* Main image */}
         <div
-          className={`relative overflow-hidden select-none ${stopPropagation ? '' : 'cursor-zoom-in'} ${className}`}
+          className={`relative overflow-hidden select-none flex-1 min-h-0 ${stopPropagation ? '' : 'cursor-zoom-in'}`}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onClick={stopPropagation ? undefined : openLightbox}
