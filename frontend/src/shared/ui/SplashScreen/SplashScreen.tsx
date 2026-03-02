@@ -20,7 +20,7 @@ export function SplashScreen({ onDone }: SplashScreenProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white transition-opacity duration-300 ${
         fading ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -29,16 +29,16 @@ export function SplashScreen({ onDone }: SplashScreenProps) {
         <img
           src="/logo.png"
           alt="TechStore logo"
-          className="w-28 h-28 drop-shadow-2xl"
+          className="w-28 h-28 drop-shadow-xl"
         />
-        <span className="text-white text-2xl font-bold tracking-widest uppercase">
+        <span className="text-gray-900 text-2xl font-bold tracking-widest uppercase">
           TechStore
         </span>
       </div>
 
       {/* Bottom loading bar */}
-      <div className="absolute bottom-12 w-32 h-0.5 bg-white/20 rounded-full overflow-hidden">
-        <div className="h-full bg-white rounded-full animate-[loading-bar_1.6s_ease-out_forwards]" />
+      <div className="absolute bottom-12 w-32 h-0.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-full bg-gray-900 rounded-full animate-[loading-bar_1.6s_ease-out_forwards]" />
       </div>
     </div>
   );
