@@ -1,6 +1,6 @@
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import {
-  THROTTLE_TTL_MS,
+  THROTTLE_TTL,
   THROTTLE_LIMIT_PUBLIC,
   THROTTLE_LIMIT_DEFAULT,
   THROTTLE_LIMIT_STRICT,
@@ -21,13 +21,18 @@ import {
  */
 
 /** Public endpoint — relaxed limit (100 req/min). Use for GET operations, non-sensitive reads. */
-export const PublicEndpoint = () => Throttle({ default: { limit: THROTTLE_LIMIT_PUBLIC, ttl: THROTTLE_TTL_MS } });
+export const PublicEndpoint = () =>
+  Throttle({ default: { limit: THROTTLE_LIMIT_PUBLIC, ttl: THROTTLE_TTL } });
 
 /** Standard API endpoint — default limit (60 req/min). Use for normal CRUD operations. */
-export const ApiEndpoint = () => Throttle({ default: { limit: THROTTLE_LIMIT_DEFAULT, ttl: THROTTLE_TTL_MS } });
+export const ApiEndpoint = () =>
+  Throttle({
+    default: { limit: THROTTLE_LIMIT_DEFAULT, ttl: THROTTLE_TTL },
+  });
 
 /** Strict endpoint — tight limit (10 req/min). Use for sensitive operations: payment, auth. */
-export const StrictEndpoint = () => Throttle({ default: { limit: THROTTLE_LIMIT_STRICT, ttl: THROTTLE_TTL_MS } });
+export const StrictEndpoint = () =>
+  Throttle({ default: { limit: THROTTLE_LIMIT_STRICT, ttl: THROTTLE_TTL } });
 
 /** No throttling — bypass rate limiting. Use for health checks, webhooks, internal endpoints. */
 export const NoThrottle = () => SkipThrottle();

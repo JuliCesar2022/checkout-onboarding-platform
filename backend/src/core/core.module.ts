@@ -5,7 +5,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { validateEnv } from '../config/env.validation';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../modules/storage/storage.module';
-import { THROTTLE_TTL_MS, THROTTLE_LIMIT_DEFAULT } from '../common/constants/throttle.constants';
+import {
+  THROTTLE_TTL,
+  THROTTLE_LIMIT_DEFAULT,
+} from '../common/constants/throttle.constants';
 
 /**
  * CoreModule — transversal infrastructure
@@ -29,7 +32,7 @@ import { THROTTLE_TTL_MS, THROTTLE_LIMIT_DEFAULT } from '../common/constants/thr
     // See: src/common/decorators/throttle.decorators.ts
     ThrottlerModule.forRoot([
       {
-        ttl: THROTTLE_TTL_MS,
+        ttl: THROTTLE_TTL,
         limit: THROTTLE_LIMIT_DEFAULT,
       },
     ]),

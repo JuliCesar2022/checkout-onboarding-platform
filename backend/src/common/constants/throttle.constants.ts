@@ -1,5 +1,5 @@
-/** Default rate-limit window in milliseconds (60 seconds) */
-export const THROTTLE_TTL_MS = 60_000;
+/** Default rate-limit window in seconds (60 seconds) */
+export const THROTTLE_TTL = 60;
 
 /** Default max requests per window for standard endpoints */
 export const THROTTLE_LIMIT_DEFAULT = 60;

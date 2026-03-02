@@ -1,3 +1,5 @@
+import { ErrorCode } from '../constants/error-codes.constants';
+
 /**
  * Railway Oriented Programming — Result<T, E>
  *
@@ -6,12 +8,12 @@
  *
  * Usage:
  *   return Result.ok(data);
- *   return Result.fail('Something went wrong');
+ *   return Result.fail(ErrorCode.NOT_FOUND);
  *
  *   if (result.isFailure) { ... }
  *   const value = result.getValue();
  */
-export class Result<T, E = string> {
+export class Result<T, E = ErrorCode | string> {
   private readonly _isSuccess: boolean;
   private readonly _error: E | null;
   private readonly _value: T | null;

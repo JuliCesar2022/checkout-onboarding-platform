@@ -18,15 +18,14 @@ export class PaginationQueryDto {
   @IsInt()
   @Min(PAGINATION_CONSTANTS.MIN_LIMIT)
   @Max(PAGINATION_CONSTANTS.MAX_LIMIT)
-  limit: number = PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+  limit: number;
 
   @ApiPropertyOptional({
     description:
-      'ID of the last item received — pass as cursor to get the next page',
+      'ID or token of the last item received — pass as cursor to get the next page',
     example: 'uuid-of-last-seen-item',
   })
   @IsOptional()
   @IsString()
-  @IsUUID()
   cursor?: string;
 }
