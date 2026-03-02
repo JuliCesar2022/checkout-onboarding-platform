@@ -1,7 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { version } = require('../../package.json') as { version: string };
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Resolves package.json from the project root regardless of compiled output path
+const pkgPath = path.resolve(__dirname, '../../../package.json');
+const { version } = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { version: string };
 
 export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
