@@ -46,7 +46,7 @@ export function OrderSummaryBackdrop({ isOpen, fees, isLoading, error, onPay }: 
             <div className="border-t border-gray-200 pt-4 mb-8">
               <div className="flex justify-between items-center">
                 <span className="text-base font-semibold text-gray-900">Total</span>
-                <span className="text-xl font-bold text-indigo-600">{formatCurrency(fees.totalAmount)}</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(fees.totalAmount)}</span>
               </div>
             </div>
             

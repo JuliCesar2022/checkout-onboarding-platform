@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface BackdropProps {
   isOpen: boolean;
@@ -28,18 +29,18 @@ export function Backdrop({ isOpen, children, onClose }: BackdropProps) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="lg:hidden fixed inset-0 z-[1000]">
+  return createPortal(
+    <div className="lg:hidden fixed inset-0 z-[9999]">
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity"
         aria-hidden="true"
         onClick={onClose}
       />
 
       {/* Bottom Sheet */}
       <div
-        className="fixed inset-x-0 bottom-0 z-[1001] flex max-h-[90vh] flex-col rounded-t-2xl bg-white shadow-2xl animate-in slide-in-from-bottom duration-300 ease-out pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-[10000] flex max-h-[90vh] flex-col rounded-t-2xl bg-white shadow-2xl animate-in slide-in-from-bottom duration-300 ease-out pb-[env(safe-area-inset-bottom)]"
         role="region"
         aria-label="Resumen del pedido"
       >
@@ -51,6 +52,7 @@ export function Backdrop({ isOpen, children, onClose }: BackdropProps) {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
