@@ -14,14 +14,12 @@ import {
   updateCartItemQuantity,
   resetCheckout,
 } from '../../features/checkout/store/checkoutSlice';
-import { submitTransaction, pollTransactionStatus } from '../../features/transaction/store/transactionSlice';
-import { updateProductStock } from '../../features/products/store/productsSlice';
+import { submitTransaction } from '../../features/transaction/store/transactionSlice';
 import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
 import { OrderSummaryBackdrop } from '../../features/checkout/components/OrderSummaryBackdrop';
 import { checkoutApi } from '../../features/checkout/api';
-import { productsApi } from '../../features/products/api';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
@@ -148,8 +146,8 @@ export function CheckoutPage() {
     dispatch(startProcessing());
 
     try {
-      // 1. Submit the transaction (this handles acceptance tokens internally)
-      const result = await dispatch(submitTransaction({
+      // Submit the transaction — polling and stock refresh happen on /status page
+      await dispatch(submitTransaction({
         productId,
         quantity,
         cardData: {
@@ -171,27 +169,7 @@ export function CheckoutPage() {
         },
       })).unwrap();
 
-      // 2. Poll for the final status
-      const finalResult = await dispatch(pollTransactionStatus(result.id)).unwrap();
-
-      // 3. Optional: refresh stock locally if approved
-      if (finalResult.status === 'APPROVED') {
-        const productIdsToRefresh = cartItems.length > 1
-          ? cartItems.map((item) => item.productId)
-          : productId ? [productId] : [];
-
-        await Promise.allSettled(
-          productIdsToRefresh.map(async (pid) => {
-            try {
-              const fresh = await productsApi.fetchProductById(pid);
-              dispatch(updateProductStock({ productId: pid, newStock: fresh.stock }));
-            } catch {
-              // non-critical
-            }
-          })
-        );
-      }
-
+      // Navigate immediately — /status shows PENDING then polls for final result
       dispatch(completeCheckout());
       navigate(ROUTES.TRANSACTION_STATUS);
     } catch (err: any) {

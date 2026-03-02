@@ -6,6 +6,7 @@ interface TransactionResultProps {
   reference: string | null;
   amountInCents: number | null;
   onReturn: () => void;
+  isPolling?: boolean;
 }
 
 const CONFIG: Record<
@@ -72,7 +73,7 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount / 100);
 
-export function TransactionResult({ status, reference, amountInCents, onReturn }: TransactionResultProps) {
+export function TransactionResult({ status, reference, amountInCents, onReturn, isPolling = false }: TransactionResultProps) {
   const cfg = CONFIG[status ?? 'PENDING'];
 
   return (
@@ -112,12 +113,23 @@ export function TransactionResult({ status, reference, amountInCents, onReturn }
           )}
         </div>
 
-        <button
-          onClick={onReturn}
-          className="mt-4 rounded-xl border-2 border-white/80 px-8 py-3 text-sm font-semibold text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
-        >
-          Volver a la tienda
-        </button>
+        {isPolling ? (
+          <div className="mt-4 flex items-center gap-2 text-white/80 text-sm">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-white/70 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            Verificando pago...
+          </div>
+        ) : (
+          <button
+            onClick={onReturn}
+            className="mt-4 rounded-xl border-2 border-white/80 px-8 py-3 text-sm font-semibold text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
+          >
+            Volver a la tienda
+          </button>
+        )}
       </div>
     </div>
   );
