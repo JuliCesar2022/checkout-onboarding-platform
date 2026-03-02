@@ -1,4 +1,4 @@
-# Wompi Checkout Onboarding Platform
+# Checkout Onboarding Platform
 
 **Prueba técnica FullStack**: Plataforma de pagos integrada con pasarela local, diseñada con un flujo de 5 pasos y optimizada para dispositivos móviles (iOS/Safari).
 
