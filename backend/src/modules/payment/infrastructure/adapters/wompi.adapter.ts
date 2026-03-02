@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
+import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import {
   IPaymentPort,
@@ -16,32 +17,32 @@ import {
   WOMPI_ENDPOINTS,
   WOMPI_ERROR_MESSAGES,
   WOMPI_PAYMENT_METHODS,
-  WOMPI_DEFAULT_CURRENCY,
 } from '../../domain/constants/wompi.constants';
 
 @Injectable()
 export class WompiAdapter implements IPaymentPort {
   private readonly logger = new Logger(WompiAdapter.name);
-  private readonly baseUrl: string;
   private readonly privateKey: string;
   private readonly integrityKey: string;
+  private readonly publicKey: string;
 
-  constructor(private readonly config: ConfigService<Env>) {
-    this.baseUrl = this.config.get('WOMPI_BASE_URL', { infer: true })!;
+  constructor(
+    private readonly http: HttpService,
+    private readonly config: ConfigService<Env>,
+  ) {
     this.privateKey = this.config.get('WOMPI_PRIVATE_KEY', { infer: true })!;
-    this.integrityKey = this.config.get('WOMPI_INTEGRITY_KEY', {
-      infer: true,
-    })!;
+    this.integrityKey = this.config.get('WOMPI_INTEGRITY_KEY', { infer: true })!;
+    this.publicKey = this.config.get('WOMPI_PUBLIC_KEY', { infer: true })!;
   }
 
   async getAcceptanceToken(): Promise<
     Result<{ acceptanceToken: string; personalAuthToken: string }>
   > {
     try {
-      const publicKey = this.config.get('WOMPI_PUBLIC_KEY', { infer: true });
-      const { data } = await axios.get(
-        `${this.baseUrl}${WOMPI_ENDPOINTS.MERCHANTS}/${publicKey}`,
+      const { data } = await firstValueFrom(
+        this.http.get(`${WOMPI_ENDPOINTS.MERCHANTS}/${this.publicKey}`),
       );
+
       const presignedAcceptance = data.data?.presigned_acceptance;
       const presignedPersonalDataAuth = data.data?.presigned_personal_data_auth;
 
@@ -57,7 +58,7 @@ export class WompiAdapter implements IPaymentPort {
 
   async charge(input: ChargeCardInput): Promise<Result<ChargeCardOutput>> {
     try {
-      // Calculate Wompi integrity signature: SHA256(reference + amountInCents + currency + integrityKey)
+      // SHA256(reference + amountInCents + currency + integrityKey)
       const signatureInput = `${input.reference}${input.amountInCents}${input.currency}${this.integrityKey}`;
       const signature = crypto
         .createHash('sha256')
@@ -79,15 +80,10 @@ export class WompiAdapter implements IPaymentPort {
         },
       };
 
-      const { data } = await axios.post(
-        `${this.baseUrl}${WOMPI_ENDPOINTS.TRANSACTIONS}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${this.privateKey}`,
-            'Content-Type': 'application/json',
-          },
-        },
+      const { data } = await firstValueFrom(
+        this.http.post(WOMPI_ENDPOINTS.TRANSACTIONS, payload, {
+          headers: { Authorization: `Bearer ${this.privateKey}` },
+        }),
       );
 
       const transaction = data.data;
@@ -102,25 +98,17 @@ export class WompiAdapter implements IPaymentPort {
       });
     } catch (error: unknown) {
       this.logger.error('Wompi charge failed', error);
-      const message = axios.isAxiosError(error)
-        ? ((error.response?.data as { error?: { reason?: string } })?.error
-            ?.reason ?? error.message)
-        : WOMPI_ERROR_MESSAGES.PAYMENT_UNKNOWN_ERROR;
+      const message = this.extractErrorMessage(error, WOMPI_ERROR_MESSAGES.PAYMENT_UNKNOWN_ERROR);
       return Result.fail(message);
     }
   }
 
-  async getTransactionStatus(
-    wompiId: string,
-  ): Promise<Result<ChargeCardOutput>> {
+  async getTransactionStatus(wompiId: string): Promise<Result<ChargeCardOutput>> {
     try {
-      const { data } = await axios.get(
-        `${this.baseUrl}${WOMPI_ENDPOINTS.TRANSACTIONS}/${wompiId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.privateKey}`,
-          },
-        },
+      const { data } = await firstValueFrom(
+        this.http.get(`${WOMPI_ENDPOINTS.TRANSACTIONS}/${wompiId}`, {
+          headers: { Authorization: `Bearer ${this.privateKey}` },
+        }),
       );
 
       const transaction = data.data;
@@ -135,10 +123,25 @@ export class WompiAdapter implements IPaymentPort {
       });
     } catch (error: unknown) {
       this.logger.error(`Wompi status check failed for ${wompiId}`, error);
-      const message = axios.isAxiosError(error)
-        ? (JSON.stringify(error.response?.data) ?? error.message)
-        : WOMPI_ERROR_MESSAGES.STATUS_CHECK_UNKNOWN_ERROR;
+      const message = this.extractErrorMessage(error, WOMPI_ERROR_MESSAGES.STATUS_CHECK_UNKNOWN_ERROR);
       return Result.fail(message);
     }
+  }
+
+  /** Extracts a human-readable message from an axios error or unknown error. */
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    if (
+      error !== null &&
+      typeof error === 'object' &&
+      'response' in error
+    ) {
+      const axiosError = error as { response?: { data?: { error?: { reason?: string } } }; message?: string };
+      return (
+        axiosError.response?.data?.error?.reason ??
+        axiosError.message ??
+        fallback
+      );
+    }
+    return fallback;
   }
 }
