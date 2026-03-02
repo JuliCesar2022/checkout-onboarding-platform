@@ -37,7 +37,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       aria-labelledby={title ? titleId : undefined}
     >
       <div
-        className="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm"
+        className="modal-backdrop fixed inset-0 bg-black/50 lg:backdrop-blur-none backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
