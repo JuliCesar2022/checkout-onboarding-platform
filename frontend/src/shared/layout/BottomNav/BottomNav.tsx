@@ -16,9 +16,11 @@ export function BottomNav() {
 
   const isHome = location.pathname === ROUTES.PRODUCTS;
   const isProductDetail = location.pathname.startsWith('/products/');
+  const isCheckout = location.pathname === ROUTES.CHECKOUT;
+  const isStatus = location.pathname === ROUTES.TRANSACTION_STATUS;
 
-  // Hide entirely on product detail — replaced by inline action bar
-  if (isProductDetail) return null;
+  // Hide entirely on product detail, checkout and status — replaced by inline action bars or full-page flows
+  if (isProductDetail || isCheckout || isStatus) return null;
 
   return (
     <>

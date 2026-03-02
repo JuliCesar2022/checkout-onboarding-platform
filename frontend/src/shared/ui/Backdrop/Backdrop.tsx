@@ -45,9 +45,9 @@ export function Backdrop({ isOpen, children, onClose }: BackdropProps) {
 
       {/* Bottom Sheet */}
       <div
-        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col rounded-t-2xl bg-white shadow-2xl animate-in slide-in-from-bottom duration-300 ease-out"
+        className="fixed inset-x-0 bottom-0 z-[60] flex max-h-[90vh] flex-col rounded-t-2xl bg-white shadow-2xl animate-in slide-in-from-bottom duration-300 ease-out"
         role="region"
-        aria-label="Order summary"
+        aria-label="Resumen del pedido"
       >
         <div className="flex items-center justify-center pb-2 pt-3">
           <div className="h-1.5 w-12 rounded-full bg-gray-300" />

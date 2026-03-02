@@ -24,21 +24,21 @@ export function OrderSummaryBackdrop({ isOpen, fees, isLoading, error, onPay }: 
   return (
     <Backdrop isOpen={isOpen}>
       <div className="flex flex-col h-full">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Resumen del pedido</h2>
         
         {fees ? (
           <div className="flex-1">
             <div className="space-y-4 mb-6">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Product amount</span>
+                <span className="text-gray-600">Valor del producto</span>
                 <span className="font-medium text-gray-900">{formatCurrency(fees.productAmount)}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Base fee (Wompi)</span>
+                <span className="text-gray-600">Tarifa base (Wompi)</span>
                 <span className="font-medium text-gray-900">{formatCurrency(fees.baseFee)}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Delivery fee</span>
+                <span className="text-gray-600">Tarifa de envío</span>
                 <span className="font-medium text-gray-900">{formatCurrency(fees.deliveryFee)}</span>
               </div>
             </div>
@@ -58,7 +58,7 @@ export function OrderSummaryBackdrop({ isOpen, fees, isLoading, error, onPay }: 
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500 py-8">
-            Calculating fees...
+            Calculando tarifas...
           </div>
         )}
 
@@ -69,7 +69,7 @@ export function OrderSummaryBackdrop({ isOpen, fees, isLoading, error, onPay }: 
             disabled={!fees || isLoading}
             className="w-full"
           >
-            {isLoading ? 'Processing...' : 'Pay now'}
+            {isLoading ? 'Procesando...' : 'Pagar ahora'}
           </Button>
         </div>
       </div>
