@@ -33,7 +33,7 @@ export function Backdrop({ isOpen, children, onClose }: BackdropProps) {
     <div className="lg:hidden fixed inset-0 z-[9999]">
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity"
+        className="fixed inset-0 bg-black/60 transition-opacity"
         aria-hidden="true"
         onClick={onClose}
       />

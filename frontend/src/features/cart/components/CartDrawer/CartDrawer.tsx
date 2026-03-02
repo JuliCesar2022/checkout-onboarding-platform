@@ -93,7 +93,7 @@ export function CartDrawer() {
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-55 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-55 bg-black/40"
           onClick={() => dispatch(closeCart())}
           aria-hidden="true"
         />

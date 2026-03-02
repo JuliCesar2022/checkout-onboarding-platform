@@ -1,4 +1,5 @@
 import React, { useEffect, useId } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -29,17 +30,17 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center sm:p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center sm:p-4"
       role="dialog" 
       aria-modal="true" 
       aria-labelledby={title ? titleId : undefined}
     >
       <div
-        className="modal-backdrop fixed inset-0 bg-black/50 lg:backdrop-blur-none backdrop-blur-sm"
-        onClick={onClose}
+        className="fixed inset-0 bg-black/60 transition-opacity"
         aria-hidden="true"
+        onClick={onClose}
       />
 
       <div className="modal-content relative flex w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex-col bg-white sm:rounded-2xl shadow-xl overflow-hidden">
@@ -64,6 +65,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
