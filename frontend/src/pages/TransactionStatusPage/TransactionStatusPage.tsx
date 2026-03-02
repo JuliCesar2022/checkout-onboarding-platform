@@ -51,9 +51,22 @@ export function TransactionStatusPage() {
     navigate(ROUTES.PRODUCTS);
   };
 
+  // Wait until the store has real transaction data before animating
+  if (!status || !id) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-white">
+        <div className="flex gap-1">
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TransactionResult
-      key={status ?? 'loading'}
+      key={status}
       status={status}
       reference={reference}
       amountInCents={amountInCents}
