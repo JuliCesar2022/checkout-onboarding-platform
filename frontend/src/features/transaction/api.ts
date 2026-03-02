@@ -1,12 +1,15 @@
-import client from '../../lib/axios';
-import type { Transaction, TransactionStatus } from './types';
-import type { DeliveryAddress } from '../checkout/types';
+import client from "../../lib/axios";
+import type {
+  Transaction,
+  TransactionStatus,
+  DeliveryAddress,
+} from "../../shared/interfaces";
 
 interface CreateTransactionPayload {
   wompiCardToken: string;
   wompiAcceptanceToken: string;
   amountInCents: number;
-  currency: 'COP';
+  currency: "COP";
   customerEmail: string;
   reference: string;
   productId: string;
@@ -15,15 +18,21 @@ interface CreateTransactionPayload {
 }
 
 export const transactionsApi = {
-  createTransaction: async (payload: CreateTransactionPayload): Promise<Transaction> => {
+  createTransaction: async (
+    payload: CreateTransactionPayload,
+  ): Promise<Transaction> => {
     // TODO: implement
-    const response = await client.post<Transaction>('/transactions', payload);
+    const response = await client.post<Transaction>("/transactions", payload);
     return response.data;
   },
 
-  getTransactionStatus: async (id: string): Promise<{ status: TransactionStatus }> => {
+  getTransactionStatus: async (
+    id: string,
+  ): Promise<{ status: TransactionStatus }> => {
     // TODO: implement
-    const response = await client.get<{ status: TransactionStatus }>(`/transactions/${id}`);
+    const response = await client.get<{ status: TransactionStatus }>(
+      `/transactions/${id}`,
+    );
     return response.data;
   },
 };

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { DeliveryAddress } from '../../types';
+import type { DeliveryAddress } from '../../../../shared/interfaces';
 import { Input } from '../../../../shared/ui/Input';
 
 const deliverySchema = z.object({

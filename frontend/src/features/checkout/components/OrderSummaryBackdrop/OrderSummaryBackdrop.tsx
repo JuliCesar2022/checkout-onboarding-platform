@@ -1,4 +1,4 @@
-import type { FeeBreakdown } from '../../types';
+import type { FeeBreakdown } from '../../../../shared/interfaces';
 import { Backdrop } from '../../../../shared/ui/Backdrop';
 import { Button } from '../../../../shared/ui/Button';
 import { ErrorBanner } from '../../../../shared/ui/ErrorBanner';

@@ -1,7 +1,10 @@
-import { BASE_FEE_CENTS, DELIVERY_FEE_CENTS } from '../../constants/fees';
-import type { FeeBreakdown } from '../../features/checkout/types';
+import { BASE_FEE_CENTS, DELIVERY_FEE_CENTS } from "../../constants/fees";
+import type { FeeBreakdown } from "../interfaces";
 
-export function computeFees(productPriceInCents: number, quantity: number): FeeBreakdown {
+export function computeFees(
+  productPriceInCents: number,
+  quantity: number,
+): FeeBreakdown {
   const productAmount = productPriceInCents * quantity;
   return {
     productAmount,

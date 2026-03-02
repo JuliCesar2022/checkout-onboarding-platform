@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { Product, Category } from "../types";
+import type { Product, Category } from "../../../shared/interfaces";
 import { productsApi } from "../api";
 
 interface ProductsState {
@@ -21,7 +21,7 @@ const initialState: ProductsState = {
   categories: [],
   selectedProductId: null,
   activeCategoryId: null,
-  searchQuery: '',
+  searchQuery: "",
   status: "idle",
   error: null,
   lastFetchedAt: null,
@@ -65,7 +65,7 @@ const productsSlice = createSlice({
     },
     setActiveCategory(state, action: PayloadAction<string | null>) {
       state.activeCategoryId = action.payload;
-      state.searchQuery = ''; // clear search when category changes
+      state.searchQuery = ""; // clear search when category changes
     },
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
@@ -118,6 +118,10 @@ const productsSlice = createSlice({
   },
 });
 
-export const { selectProduct, setActiveCategory, setSearchQuery, updateProductStock } =
-  productsSlice.actions;
+export const {
+  selectProduct,
+  setActiveCategory,
+  setSearchQuery,
+  updateProductStock,
+} = productsSlice.actions;
 export default productsSlice.reducer;

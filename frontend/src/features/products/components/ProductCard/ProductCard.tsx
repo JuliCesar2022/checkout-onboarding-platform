@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../../shared/hooks/useAppDispatch';
 import { addToCart } from '../../../cart/store/cartSlice';
 import { formatCOP } from '../../../../shared/utils/currencyFormat';
-import type { Product } from '../../types';
+import type { Product } from '../../../../shared/interfaces';
 import { Button } from '../../../../shared/ui/Button';
 import { StockBadge } from '../StockBadge';
 import { productDetailPath } from '../../../../constants/routes';

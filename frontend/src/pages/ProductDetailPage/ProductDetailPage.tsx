@@ -13,7 +13,7 @@ import { formatCOP } from '../../shared/utils/currencyFormat';
 import { ROUTES } from '../../constants/routes';
 import { ImageWithSkeleton } from '../../shared/ui/ImageWithSkeleton';
 import { productsApi } from '../../features/products/api';
-import type { Product } from '../../features/products/types';
+import type { Product } from '../../shared/interfaces';
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();

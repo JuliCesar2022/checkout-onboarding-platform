@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { TransactionStatus } from "../types";
+import type { TransactionStatus } from "../../../shared/interfaces";
 import { checkoutApi } from "../../checkout/api";
 import type {
   SubmitTransactionPayload,

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TransactionStatus } from '../../types';
+import type { TransactionStatus } from '../../../../shared/interfaces';
 
 interface TransactionResultProps {
   status: TransactionStatus | null;

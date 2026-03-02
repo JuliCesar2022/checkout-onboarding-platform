@@ -1,5 +1,5 @@
 import client from "../../lib/axios";
-import type { CardData } from "./types";
+import type { CardData } from "../../shared/interfaces";
 import axios from "axios";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────

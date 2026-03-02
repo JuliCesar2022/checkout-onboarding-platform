@@ -17,7 +17,7 @@ import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { HeroBanner } from '../../features/products/components/HeroBanner';
 import { CategoryList } from '../../features/products/components/CategoryList';
 import { SectionHeader } from '../../features/products/components/SectionHeader';
-import type { Product, Category } from '../../features/products/types';
+import type { Product, Category } from '../../shared/interfaces';
 import { FeaturedRow } from '../../features/products/components/FeaturedRow';
 import { PromoBannersRow } from '../../features/products/components/PromoBannersRow';
 import { CategoryShowcase } from '../../features/products/components/CategoryShowcase';

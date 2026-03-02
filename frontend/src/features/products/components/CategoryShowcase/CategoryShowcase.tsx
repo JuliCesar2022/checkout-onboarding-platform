@@ -1,4 +1,4 @@
-import type { Category } from '../../types';
+import type { Category } from '../../../../shared/interfaces';
 
 interface CategoryShowcaseProps {
   categories: Category[];

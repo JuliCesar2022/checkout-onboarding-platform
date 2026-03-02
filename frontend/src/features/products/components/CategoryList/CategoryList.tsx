@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import type { Category } from '../../types';
+import type { Category } from '../../../../shared/interfaces';
 import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
 
 interface CategoryListProps {
@@ -102,10 +102,10 @@ export function CategoryList({ categories, activeCategoryId, onSelect }: Categor
 
 /* ─── Item de categoría con hover via React state ─── */
 interface CategoryItemProps {
-  cat: import('../../types').Category;
+  cat: Category;
   icon: string;
   isActive?: boolean;
-  onSelect?: (cat: import('../../types').Category) => void;
+  onSelect?: (cat: Category) => void;
 }
 
 function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {

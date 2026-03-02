@@ -1,5 +1,5 @@
 import { ProductCard } from '../ProductCard/ProductCard';
-import type { Product } from '../../types';
+import type { Product } from '../../../../shared/interfaces';
 
 interface FeaturedRowProps {
   title: string;

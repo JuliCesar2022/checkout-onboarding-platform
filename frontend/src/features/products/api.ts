@@ -1,9 +1,18 @@
 import client from "../../lib/axios";
-import type { Product, PaginatedProducts, Category } from "./types";
+import type {
+  Product,
+  PaginatedProducts,
+  Category,
+} from "../../shared/interfaces";
 
 export const productsApi = {
   fetchProducts: async (
-    params: { cursor?: string; limit?: number; categoryId?: string; search?: string } = {},
+    params: {
+      cursor?: string;
+      limit?: number;
+      categoryId?: string;
+      search?: string;
+    } = {},
   ): Promise<PaginatedProducts> => {
     const queryParams: Record<string, string | number> = {
       limit: params.limit ?? 20,
