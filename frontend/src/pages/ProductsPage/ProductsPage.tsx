@@ -26,7 +26,6 @@ import { GamingShowcase } from '../../features/products/components/GamingShowcas
 import { SmartphoneShowcase } from '../../features/products/components/SmartphoneShowcase';
 import { ProductGrid } from '../../features/products/components/ProductGrid';
 import { ROUTES } from '../../constants/routes';
-import { useScrollReveal } from '../../shared/hooks/useScrollReveal';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -73,8 +72,6 @@ export function ProductsPage() {
     if (isStale) dispatch(fetchProducts());
     if (categories.length === 0) dispatch(fetchCategories());
   }, [dispatch, lastFetchedAt, categories.length]);
-
-  useScrollReveal([products.length, categories.length]);
 
   const handlePay = useCallback((product: Product) => {
     dispatch(selectProduct(product.id));
@@ -187,13 +184,13 @@ export function ProductsPage() {
         </Modal>
 
         {!activeCategoryId && !searchQuery && (
-          <div className="reveal">
+          <div>
             <HeroBanner />
           </div>
         )}
 
         {/* Categories Section */}
-        <section className={`reveal ${activeCategoryId || searchQuery ? '' : 'delay-100'} sm:bg-white sm:rounded-2xl sm:p-6 sm:shadow-sm sm:border sm:border-gray-100`}>
+        <section className="sm:bg-white sm:rounded-2xl sm:p-6 sm:shadow-sm sm:border sm:border-gray-100">
           <SectionHeader 
             title="Explorar categorías populares" 
             actionLabel={activeCategoryId ? 'Ver todas' : 'Ver todas'} 
@@ -213,14 +210,14 @@ export function ProductsPage() {
 
         {/* Dynamic Content based on Selection */}
         {status === 'failed' && error && (
-          <div className="reveal mb-6">
+          <div className="mb-6">
             <ErrorBanner message={error} />
           </div>
         )}
 
         {searchQuery ? (
           /* ── Search results view ── */
-          <div className="reveal">
+          <div>
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
@@ -243,7 +240,9 @@ export function ProductsPage() {
               <ProductGrid isLoading={true} products={[]} onPay={handlePay} />
             ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-                <span className="text-6xl">🔍</span>
+                <svg className="w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 <h3 className="text-lg font-semibold text-gray-900">No encontramos resultados</h3>
                 <p className="text-gray-500 text-sm max-w-xs">
                   Intenta con otras palabras o explora nuestras categorías.
@@ -273,7 +272,7 @@ export function ProductsPage() {
             )}
           </div>
         ) : activeCategoryId ? (
-          <div className="reveal">
+          <div>
              <div className="mb-6">
                <h2 className="text-2xl font-bold text-gray-900">
                  {categories.flatMap((c) => [c, ...(c.children ?? [])]).find((c) => c.id === activeCategoryId)?.name || 'Productos'}
@@ -305,7 +304,7 @@ export function ProductsPage() {
           <>
             {/* Featured products row */}
             {products.length > 0 && (
-              <div className="reveal">
+              <div>
                 <FeaturedRow
                   title="⚡ Más vendidos"
                   products={products.slice(0, 8)}
@@ -315,23 +314,23 @@ export function ProductsPage() {
             )}
 
             {/* Category Showcase */}
-            <div className="reveal">
+            <div>
               <CategoryShowcase categories={categories} onSelect={handleCategorySelect} />
             </div>
 
             {/* Gaming Showcase */}
-            <div className="reveal">
+            <div>
               <GamingShowcase categories={categories} onSelect={handleCategorySelect} />
             </div>
 
             {/* Smartphone Showcase */}
-            <div className="reveal">
+            <div>
               <SmartphoneShowcase categories={categories} onSelect={handleCategorySelect} />
             </div>
 
             {/* Second featured row */}
             {products.length > 0 && (
-              <div className="reveal">
+              <div>
                 <FeaturedRow
                   title="🔥 Ofertas del día"
                   products={products.slice(3, 11)}
@@ -341,7 +340,7 @@ export function ProductsPage() {
             )}
 
             {/* All Products Grid at the bottom */}
-            <div id="product-grid-section" className="reveal mt-8">
+            <div id="product-grid-section" className="mt-8">
               <SectionHeader title="Todos los Productos" />
               {status === 'loading' && products.length === 0 ? (
                 <ProductGrid isLoading={true} products={[]} onPay={handlePay} />
