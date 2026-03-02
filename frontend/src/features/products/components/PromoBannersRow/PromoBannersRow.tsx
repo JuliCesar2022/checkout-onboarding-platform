@@ -45,7 +45,7 @@ export function PromoBannersRow() {
         {CARDS.map((card, i) => (
           <div
             key={i}
-            className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.bg} h-[22rem] flex flex-col justify-between p-6 shadow-md`}
+            className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${card.bg} h-88 flex flex-col justify-between p-6 shadow-md`}
           >
             {/* Decorative circle */}
             <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/10 pointer-events-none" />

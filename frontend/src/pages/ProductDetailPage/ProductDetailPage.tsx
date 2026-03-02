@@ -99,10 +99,10 @@ export function ProductDetailPage() {
               <ImageWithSkeleton
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-80 md:h-[28rem]"
+                className="w-full h-80 md:h-112"
               />
             ) : (
-              <div className="w-full h-80 md:h-[28rem] bg-gray-50 flex items-center justify-center text-gray-300 text-8xl">
+              <div className="w-full h-80 md:h-112 bg-gray-50 flex items-center justify-center text-gray-300 text-8xl">
                 📦
               </div>
             )}

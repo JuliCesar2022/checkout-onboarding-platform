@@ -3,7 +3,7 @@ export function PromoBanners() {
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
       {/* Banner grande izquierda — ocupa 2 filas */}
-      <div className="sm:row-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-6 flex flex-col justify-between min-h-[220px]">
+      <div className="sm:row-span-2 relative overflow-hidden rounded-2xl bg-linear-to-br from-indigo-600 to-violet-700 p-6 flex flex-col justify-between min-h-[220px]">
         <div className="relative z-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-indigo-200 mb-2">Oferta especial</p>
           <h2 className="text-3xl font-extrabold text-white leading-tight">
@@ -18,7 +18,7 @@ export function PromoBanners() {
       </div>
 
       {/* Banner superior derecha */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-5 flex flex-col justify-between min-h-[104px]">
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 p-5 flex flex-col justify-between min-h-[104px]">
         <div className="relative z-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-100 mb-1">Envío gratis</p>
           <h3 className="text-lg font-bold text-white leading-snug">En pedidos desde $100.000 COP</h3>
@@ -27,7 +27,7 @@ export function PromoBanners() {
       </div>
 
       {/* Banner inferior derecha */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 p-5 flex flex-col justify-between min-h-[104px]">
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-orange-500 to-rose-500 p-5 flex flex-col justify-between min-h-[104px]">
         <div className="relative z-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-orange-100 mb-1">Garantía total</p>
           <h3 className="text-lg font-bold text-white leading-snug">Productos 100% originales</h3>
@@ -36,8 +36,8 @@ export function PromoBanners() {
       </div>
 
       {/* Banner ancho — ocupa las 2 columnas restantes */}
-      <div className="sm:col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 to-slate-700 p-5 flex items-center gap-4 min-h-[80px]">
-        <span className="text-4xl flex-shrink-0">🔒</span>
+      <div className="sm:col-span-2 relative overflow-hidden rounded-2xl bg-linear-to-r from-slate-800 to-slate-700 p-5 flex items-center gap-4 min-h-[80px]">
+        <span className="text-4xl shrink-0">🔒</span>
         <div className="relative z-10">
           <h3 className="text-base font-bold text-white">Pagos 100% seguros</h3>
           <p className="text-slate-300 text-sm">Checkout encriptado con la mejor tecnología de pagos de Colombia</p>

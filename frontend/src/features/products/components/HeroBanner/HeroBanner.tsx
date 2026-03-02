@@ -223,7 +223,7 @@ function BannerPanel({
         </div>
 
         {/* Gradient overlay for mobile text legibility */}
-        <div className="sm:hidden absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f3f4f6] to-transparent z-10 pointer-events-none" />
+        <div className="sm:hidden absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-[#f3f4f6] to-transparent z-10 pointer-events-none" />
 
         {/* Badge — mobile only, top-left */}
         <div className={`sm:hidden absolute top-4 left-5 z-20 inline-flex items-center bg-white rounded-full px-4 py-1.5 text-[11px] font-medium text-gray-500 shadow-sm border border-gray-100 ${isActive ? 'animate-slide-up animate-stagger-1' : 'opacity-0'}`}>
