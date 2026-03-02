@@ -165,9 +165,9 @@ function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
         }}
       >
         {cat.imageUrl ? (
-          <ImageWithSkeleton 
-            src={`http://localhost:3000/uploads/${cat.imageUrl}`} 
-            alt={cat.name} 
+          <ImageWithSkeleton
+            src={cat.imageUrl.startsWith('http') ? cat.imageUrl : `http://localhost:3000/uploads/${cat.imageUrl}`}
+            alt={cat.name}
             className="w-full h-full object-contain p-2"
           />
         ) : (

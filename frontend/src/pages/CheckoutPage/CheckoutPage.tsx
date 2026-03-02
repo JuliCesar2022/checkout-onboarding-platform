@@ -15,6 +15,7 @@ import {
   resetCheckout,
 } from '../../features/checkout/store/checkoutSlice';
 import { setTransactionResult } from '../../features/transaction/store/transactionSlice';
+import { updateProductStock } from '../../features/products/store/productsSlice';
 import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
@@ -56,6 +57,7 @@ export function CheckoutPage() {
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
+  const productItems = useAppSelector((state) => state.products.items);
 
   // Redirect to products if no product is selected or if checkout is complete
   if (!productId && cartItems.length === 0) {
@@ -191,6 +193,24 @@ export function CheckoutPage() {
         reference: finalResult.reference,
         amountInCents: finalResult.amountInCents,
       }));
+
+      // Refetch stock from backend so Redux + persist reflect the real value
+      if (finalResult.status === 'APPROVED') {
+        const productIdsToRefresh = cartItems.length > 1
+          ? cartItems.map((item) => item.productId)
+          : productId ? [productId] : [];
+
+        await Promise.allSettled(
+          productIdsToRefresh.map(async (pid) => {
+            try {
+              const fresh = await productsApi.fetchProductById(pid);
+              dispatch(updateProductStock({ productId: pid, newStock: fresh.stock }));
+            } catch {
+              // non-critical: stock will be correct on next full refresh
+            }
+          })
+        );
+      }
 
       dispatch(completeCheckout());
       navigate(ROUTES.TRANSACTION_STATUS);

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Result } from '../../../../common/result/result';
 import { ITransactionsRepository } from '../../domain/repositories/transactions.repository';
 import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
+import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
 import { TransactionEntity } from '../../domain/entities/transaction.entity';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class SyncTransactionStatusUseCase {
   constructor(
     private readonly transactionsRepo: ITransactionsRepository,
     private readonly paymentPort: IPaymentPort,
+    private readonly productsRepo: IProductsRepository,
   ) {}
 
   async execute(transactionId: string): Promise<Result<TransactionEntity>> {
@@ -49,6 +51,11 @@ export class SyncTransactionStatusUseCase {
       transaction.wompiId, // still the same
       rawResponse, // latest Wompi response
     );
+
+    // Decrement stock when transitioning PENDING → APPROVED
+    if (newStatus === 'APPROVED') {
+      await this.productsRepo.decrementStock(transaction.productId, transaction.quantity);
+    }
 
     return Result.ok(updatedTransaction);
   }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
-import { fetchProducts, selectProduct } from '../../features/products/store/productsSlice';
+import { selectProduct } from '../../features/products/store/productsSlice';
 import { openCheckoutForm } from '../../features/checkout/store/checkoutSlice';
 import { addToCart } from '../../features/cart/store/cartSlice';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
@@ -12,23 +12,34 @@ import { Spinner } from '../../shared/ui/Spinner';
 import { formatCOP } from '../../shared/utils/currencyFormat';
 import { ROUTES } from '../../constants/routes';
 import { ImageWithSkeleton } from '../../shared/ui/ImageWithSkeleton';
+import { productsApi } from '../../features/products/api';
+import type { Product } from '../../features/products/types';
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
+  const [fetchError, setFetchError] = useState(false);
 
-  const { items: products, status } = useAppSelector((state) => state.products);
-  const product = products.find((p) => p.id === id);
+  const { items: products } = useAppSelector((state) => state.products);
+  const productFromStore = products.find((p) => p.id === id);
+  const product = productFromStore ?? fetchedProduct;
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setFetchedProduct(null);
+    setFetchError(false);
   }, [id]);
 
+  // If not in Redux store, fetch directly by ID
   useEffect(() => {
-    if (products.length === 0) dispatch(fetchProducts());
-  }, [dispatch, products.length]);
+    if (!id || productFromStore) return;
+    productsApi.fetchProductById(id)
+      .then(setFetchedProduct)
+      .catch(() => setFetchError(true));
+  }, [id, productFromStore]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -44,7 +55,7 @@ export function ProductDetailPage() {
     navigate(ROUTES.CHECKOUT);
   };
 
-  if (status === 'loading' && !product) {
+  if (!product && !fetchError) {
     return (
       <PageWrapper>
         <Spinner />
@@ -52,7 +63,7 @@ export function ProductDetailPage() {
     );
   }
 
-  if (!product) {
+  if (!product || fetchError) {
     return (
       <PageWrapper>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">

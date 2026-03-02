@@ -53,7 +53,7 @@ export class PrismaProductsRepository implements IProductsRepository {
         where: { id: categoryId },
         include: { children: { select: { id: true } } },
       });
-      const childIds = category?.children?.map((c) => c.id) ?? [];
+      const childIds = (category as any)?.children?.map((c: any) => c.id) ?? [];
       if (childIds.length > 0) {
         whereCondition.categoryId = { in: childIds };
       } else {

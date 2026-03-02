@@ -139,7 +139,6 @@ function BannerPanel({
 
   // Store original base colors per material index on first load
   const originalColorsRef = useRef<[number, number, number, number][]>([]);
-  const [debugMats, setDebugMats] = useState<{name:string,lum:number}[]>([]);
 
   useEffect(() => {
     if (!isAuriculares && !isIphone) return;
@@ -148,15 +147,9 @@ function BannerPanel({
     const onLoad = () => {
       const materials: any[] = mv.model?.materials;
       if (!materials?.length) return;
-      // Snapshot original colors
       originalColorsRef.current = materials.map((m: any) =>
         [...(m.pbrMetallicRoughness?.baseColorFactor ?? [1, 1, 1, 1])] as [number, number, number, number]
       );
-      setDebugMats(materials.map((m: any, i: number) => {
-        const c = originalColorsRef.current[i];
-        const lum = +(c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114).toFixed(3);
-        return { name: m.name ?? `mat_${i}`, lum };
-      }));
     };
     if (mv.model) onLoad();
     else { mv.addEventListener('load', onLoad); return () => mv.removeEventListener('load', onLoad); }
@@ -214,13 +207,6 @@ function BannerPanel({
         <div className="absolute top-20 right-40 w-3 h-3 rounded-full bg-gray-300 opacity-50" />
         <div className="absolute bottom-40 right-10 w-4 h-4 rounded-full bg-gray-400 opacity-30" />
         <div className="absolute top-10 right-10 w-2 h-2 rounded-full bg-blue-500 opacity-40" />
-
-        {/* DEBUG: material names — remove after */}
-        {debugMats.length > 0 && (
-          <div className="absolute bottom-2 left-2 z-50 bg-black/80 text-white text-[9px] p-1 rounded max-w-[200px]">
-            {debugMats.map((m, i) => <div key={i}>{i}: {m.name} (lum:{m.lum})</div>)}
-          </div>
-        )}
 
         {/* 3D Model Layer */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[85%] h-[72%] md:left-auto md:translate-x-0 md:right-0 md:w-[55%] md:h-full z-10 overflow-hidden pointer-events-auto">
@@ -412,8 +398,8 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
 
   return (
     <>
-      {/* Mobile: solo el panel hero */}
-      <div className="sm:hidden h-[420px]">
+      {/* Mobile/tablet: solo el panel hero */}
+      <div className="lg:hidden h-[420px]">
         {slide.panels.filter(p => p.type === 'hero').map((p) => (
           <BannerPanel
             key={p.area}
@@ -428,7 +414,7 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
 
       {/* Desktop: grid completo */}
       <div
-        className="hidden sm:grid gap-4 h-[540px] p-4 bg-white rounded-2xl shadow-sm"
+        className="hidden lg:grid gap-4 h-[540px] p-4 bg-white rounded-2xl shadow-sm"
         style={{
           gridTemplateAreas: slide.areas,
           gridTemplateColumns: slide.columns,

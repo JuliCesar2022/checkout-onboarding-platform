@@ -18,10 +18,11 @@ import type { Env } from '../../../../config/env.validation';
  *   1. Validate product exists and has stock
  *   2. Upsert customer
  *   3. Calculate fees
- *   4. Create PENDING transaction in DB
+ *   4. Create PENDING transaction + delivery record in DB (address captured now)
  *   5. Call Wompi to charge card
  *   6. Update transaction with Wompi result
- *   7. If APPROVED: decrement stock + create delivery record
+ *   7. If APPROVED immediately: decrement stock
+ *      (If PENDING: stock decrement happens in SyncTransactionStatusUseCase on approval)
  */
 @Injectable()
 export class CreateTransactionUseCase {
@@ -59,7 +60,9 @@ export class CreateTransactionUseCase {
     const productAmountInCents = product.priceInCents * dto.quantity;
     const totalAmountInCents = productAmountInCents + baseFeeInCents + deliveryFeeInCents;
 
-    // Step 4: Create PENDING transaction
+    // Step 4: Create PENDING transaction + delivery record
+    // Delivery is persisted now while we still have the address from the request.
+    // Stock decrement happens only on APPROVED (here if immediate, or in sync use case if polled).
     const reference = `TXN-${uuidv4()}`;
     const transaction = await this.transactionsRepo.create({
       reference,
@@ -72,6 +75,16 @@ export class CreateTransactionUseCase {
       customerId: customer.id,
       cardBrand: dto.cardData.brand,
       cardLastFour: dto.cardData.lastFour,
+    });
+
+    await this.deliveriesRepo.create({
+      transactionId: transaction.id,
+      productId: dto.productId,
+      customerId: customer.id,
+      address: dto.deliveryData.address,
+      city: dto.deliveryData.city,
+      state: dto.deliveryData.state,
+      postalCode: dto.deliveryData.postalCode,
     });
 
     // Step 5: Call Wompi
@@ -103,18 +116,10 @@ export class CreateTransactionUseCase {
       wompiResult.rawResponse,
     );
 
-    // Step 7: If approved → decrement stock + create delivery
+    // Step 7: If already APPROVED on first response → decrement stock immediately.
+    // If PENDING, the sync use case handles decrement when Wompi later confirms.
     if (finalStatus === 'APPROVED') {
       await this.productsRepo.decrementStock(dto.productId, dto.quantity);
-      await this.deliveriesRepo.create({
-        transactionId: transaction.id,
-        productId: dto.productId,
-        customerId: customer.id,
-        address: dto.deliveryData.address,
-        city: dto.deliveryData.city,
-        state: dto.deliveryData.state,
-        postalCode: dto.deliveryData.postalCode,
-      });
     }
 
     return Result.ok(TransactionResponseDto.fromEntity(updatedTransaction));
