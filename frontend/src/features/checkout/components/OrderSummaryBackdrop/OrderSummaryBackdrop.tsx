@@ -62,7 +62,7 @@ export function OrderSummaryBackdrop({ isOpen, fees, isLoading, error, onPay }: 
           </div>
         )}
 
-        <div className="mt-auto">
+        <div className="mt-auto pt-4 pb-2">
           <Button 
             onClick={onPay} 
             isLoading={isLoading}

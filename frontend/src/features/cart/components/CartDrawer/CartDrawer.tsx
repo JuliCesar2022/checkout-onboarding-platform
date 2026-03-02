@@ -202,7 +202,7 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+          <div className="border-t border-gray-100 px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3 bg-white">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">
                 Subtotal {selectedIds.size > 0 ? `(${selectedIds.size} seleccionado${selectedIds.size !== 1 ? 's' : ''})` : ''}

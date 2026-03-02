@@ -18,6 +18,7 @@ import { submitTransaction } from '../../features/transaction/store/transactionS
 import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
+import { OrderSummaryBackdrop } from '../../features/checkout/components/OrderSummaryBackdrop';
 import { checkoutApi } from '../../features/checkout/api';
 import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
@@ -54,7 +55,7 @@ const STEPS = [
 export function CheckoutPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
+  const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
@@ -339,8 +340,8 @@ export function CheckoutPage() {
             )}
           </section>
 
-          {/* ── Right column: Order Summary (always visible) ── */}
-          <section className="mt-8 lg:col-span-5 lg:mt-0 lg:sticky lg:top-8">
+          {/* ── Right column: Order Summary (desktop always, mobile depends on step) ── */}
+          <section className={`mt-8 lg:col-span-5 lg:mt-0 lg:sticky lg:top-8 pb-20 lg:pb-0 ${step === 'SUMMARY' || step === 'PROCESSING' ? 'hidden lg:block' : ''}`}>
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-5">Resumen del pedido</h2>
 
@@ -452,6 +453,14 @@ export function CheckoutPage() {
         </div>
       </div>
 
+      {/* Mobile Order Summary Backdrop */}
+      <OrderSummaryBackdrop
+        isOpen={(step === 'SUMMARY' || step === 'PROCESSING') && !!deliveryAddress && !!cardData}
+        fees={fees}
+        isLoading={isLoading}
+        error={error}
+        onPay={handlePay}
+      />
     </PageWrapper>
   );
 }
