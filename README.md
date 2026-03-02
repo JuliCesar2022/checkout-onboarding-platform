@@ -1,15 +1,46 @@
 # Wompi Checkout Onboarding Platform
 
-**Prueba técnica FullStack**: Plataforma de pagos integrada con Wompi, diseñada con un flujo de 5 pasos y optimizada para dispositivos móviles (iOS/Safari).
+**Prueba técnica FullStack**: Plataforma de pagos integrada con pasarela local, diseñada con un flujo de 5 pasos y optimizada para dispositivos móviles (iOS/Safari).
 
-## 📋 Descripción del Proyecto
+🚀 **Despliegue en vivo**: [https://dev.julio-bonifacio.com/](https://dev.julio-bonifacio.com/)
+📖 **Documentación API (Swagger)**: [https://backend-ecommerce.julio-bonifacio.com/api/docs](https://backend-ecommerce.julio-bonifacio.com/api/docs)
 
-Esta aplicación permite gestionar un proceso de compra completo:
-1.  **Catálogo**: Selección de productos con gestión de stock en tiempo real.
-2.  **Información de Envío**: Formulario validado para datos de entrega.
-3.  **Pago con Tarjeta**: Integración segura para tokenización de tarjetas.
-4.  **Resumen y Revisión**: Desglose detallado de cargos (fees) y total.
-5.  **Estado de Transacción**: Polling en tiempo real del estado en Wompi (Aprobado/Rechazado).
+---
+
+## 🎥 Demos
+
+Para una mejor visualización, puedes ver los vídeos demo aquí:
+
+- 💻 [**Ver Video Demo Desktop**](./assets/desktop-demo.mp4)
+- 📱 [**Ver Video Demo Mobile (Safari/iOS)**](./assets/mobile-demo.mp4)
+
+---
+
+## 🛠️ Guía de Instalación y Uso
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/JuliCesar2022/checkout-onboarding-platform.git
+cd checkout-onboarding-platform
+```
+
+### 2. Configuración de Variables de Entorno
+Debes crear los archivos `.env` siguiendo los ejemplos:
+- **Root**: Copia/crea un `.env` en la raíz si es necesario para Docker.
+- **Frontend**: `frontend/.env.local` (Ver [Frontend README](./frontend/README.md))
+- **Backend**: `backend/.env` (Ver [Backend README](./backend/README.md))
+
+### 3. Ejecución con Docker (Recomendado)
+Levanta todo el ecosistema (Base de datos, Backend y Frontend) con un solo comando:
+
+```bash
+docker-compose up --build
+```
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:3000/api`
+- **Swagger**: `http://localhost:3000/api/docs`
+
+---
 
 ## 🏗️ Arquitectura del Monorepo
 
@@ -17,40 +48,20 @@ Esta aplicación permite gestionar un proceso de compra completo:
 checkout-onboarding-platform/
 ├── frontend/    # React 19 SPA + Redux Toolkit + Tailwind v4
 ├── backend/     # NestJS API + TypeORM + PostgreSQL
+├── assets/      # Recursos de documentación (videos, imágenes)
 └── docker-compose.yml
 ```
 
-## 🚀 Inicio Rápido con Docker
-
-Para levantar todo el ecosistema (Base de datos, Backend y Frontend):
-
-```bash
-docker-compose up --build
-```
-
-El sistema estará disponible en:
--   **Frontend**: `http://localhost:5173`
--   **Backend API**: `http://localhost:3000/api`
-
 ---
 
-## 📚 Documentación Detallada
+## 📚 Documentación por Módulo
 
-Para detalles específicos de cada módulo, consulta sus respectivos manuales:
+Para detalles técnicos avanzados, consulta los README específicos:
 
-### 💻 [Frontend README](./frontend/README.md)
-*Arquitectura, manejo de estado con Redux, componentes UI y optimizaciones para Safari/iOS.*
+- 💻 [**Frontend README**](./frontend/README.md): React arquitectura y mobile UX.
+- ⚙️ [**Backend README**](./backend/README.md): Endpoints, Schema DB y Tests.
 
-### ⚙️ [Backend README](./backend/README.md)
-*Endpoints de la API, integración con Wompi, modelos de base de datos y lógica de polling.*
-
----
-
-## 🛠️ Tecnologías Principales
-
--   **Frontend**: React 19, Vite, Redux Toolkit, Tailwind CSS v4, Jest.
--   **Backend**: NestJS 11, TypeScript, TypeORM, PostgreSQL.
--   **Infraestructura**: Docker, Docker Compose.
+🚀 **Node.js v24** | **PostgreSQL** | **React 19** | **NestJS 11**
 
 ---
 **Desarrollado como prueba técnica | 2026**
