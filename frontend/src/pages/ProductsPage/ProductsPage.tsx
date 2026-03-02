@@ -120,14 +120,16 @@ export function ProductsPage() {
 
   const handleCategorySelect = (category: Category) => {
     if (activeCategoryId === category.id) {
-      // Toggle off
       dispatch(setActiveCategory(null));
       dispatch(fetchProducts());
     } else {
-      // Toggle on
       dispatch(setActiveCategory(category.id));
       dispatch(fetchProducts());
     }
+    // Scroll to product grid
+    setTimeout(() => {
+      document.getElementById('product-grid-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
  return (
@@ -188,16 +190,7 @@ export function ProductsPage() {
         )}
 
         {/* Categories Section */}
-        <section
-          className={`reveal ${activeCategoryId || searchQuery ? '' : 'delay-100'}`}
-          style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '1rem',
-            padding: '1.5rem',
-            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.07)',
-            border: '1px solid #f0f0f0',
-          }}
-        >
+        <section className={`reveal ${activeCategoryId || searchQuery ? '' : 'delay-100'} sm:bg-white sm:rounded-2xl sm:p-6 sm:shadow-sm sm:border sm:border-gray-100`}>
           <SectionHeader 
             title="Explore Popular Categories" 
             actionLabel={activeCategoryId ? 'Ver todas' : 'View All'} 
@@ -208,10 +201,10 @@ export function ProductsPage() {
                }
             }} 
           />
-          <CategoryList 
-            categories={categories} 
-            activeCategoryId={activeCategoryId} 
-            onSelect={handleCategorySelect} 
+          <CategoryList
+            categories={categories.flatMap((c) => (c.children ?? []).length > 0 ? (c.children ?? []) : [c])}
+            activeCategoryId={activeCategoryId}
+            onSelect={handleCategorySelect}
           />
         </section>
 
@@ -274,7 +267,7 @@ export function ProductsPage() {
           <div className="reveal">
              <div className="mb-6">
                <h2 className="text-2xl font-bold text-gray-900">
-                 {categories.find(c => c.id === activeCategoryId)?.name || 'Productos'}
+                 {categories.flatMap((c) => [c, ...(c.children ?? [])]).find((c) => c.id === activeCategoryId)?.name || 'Productos'}
                </h2>
                <p className="text-gray-500 text-sm mt-1">
                  Mostrando {products.length} {products.length === 1 ? 'producto' : 'productos'} encontrados
@@ -319,17 +312,17 @@ export function ProductsPage() {
 
             {/* Category Showcase */}
             <div className="reveal">
-              <CategoryShowcase />
+              <CategoryShowcase categories={categories} onSelect={handleCategorySelect} />
             </div>
 
             {/* Gaming Showcase */}
             <div className="reveal">
-              <GamingShowcase />
+              <GamingShowcase categories={categories} onSelect={handleCategorySelect} />
             </div>
 
             {/* Smartphone Showcase */}
             <div className="reveal">
-              <SmartphoneShowcase />
+              <SmartphoneShowcase categories={categories} onSelect={handleCategorySelect} />
             </div>
 
             {/* Second featured row */}
@@ -344,7 +337,7 @@ export function ProductsPage() {
             )}
 
             {/* All Products Grid at the bottom */}
-            <div className="reveal mt-8">
+            <div id="product-grid-section" className="reveal mt-8">
               <SectionHeader title="Todos los Productos" />
               {status === 'loading' && products.length === 0 ? (
                 <ProductGrid isLoading={true} products={[]} onPay={handlePay} />

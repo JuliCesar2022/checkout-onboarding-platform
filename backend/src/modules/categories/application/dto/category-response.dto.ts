@@ -7,6 +7,8 @@ export class CategoryResponseDto {
   @ApiProperty() name: string;
   @ApiPropertyOptional() description: string | null;
   @ApiPropertyOptional() imageUrl: string | null;
+  @ApiPropertyOptional() parentId: string | null;
+  @ApiPropertyOptional({ type: () => [CategoryResponseDto] }) children: CategoryResponseDto[];
 
   static fromEntity(entity: CategoryEntity): CategoryResponseDto {
     const dto = new CategoryResponseDto();
@@ -15,6 +17,8 @@ export class CategoryResponseDto {
     dto.name = entity.name;
     dto.description = entity.description;
     dto.imageUrl = entity.imageUrl;
+    dto.parentId = entity.parentId ?? null;
+    dto.children = (entity.children ?? []).map(CategoryResponseDto.fromEntity);
     return dto;
   }
 }

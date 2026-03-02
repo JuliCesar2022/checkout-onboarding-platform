@@ -15,6 +15,8 @@ export interface Category {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  parentId: string | null;
+  children: Category[];
 }
 
 export interface PaginatedProducts {

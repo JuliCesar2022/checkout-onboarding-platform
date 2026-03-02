@@ -74,46 +74,21 @@ export function CategoryList({ categories, activeCategoryId, onSelect }: Categor
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Row: arrow + items + arrow */}
-      <div className="relative flex items-center gap-2">
-        {/* Left arrow */}
-        <button
-          onClick={() => scroll('left')}
-          disabled={!canScrollLeft}
-          className="shrink-0 cursor-pointer w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 disabled:opacity-0 disabled:pointer-events-none transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        {/* Scrollable strip */}
-        <div
-          ref={scrollRef}
-          className="flex gap-2 overflow-x-auto"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {categories.map((cat) => (
-            <CategoryItem
-              key={cat.id}
-              cat={cat}
-              isActive={activeCategoryId === cat.id}
-              icon={CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON}
-              onSelect={onSelect}
-            />
-          ))}
-        </div>
-
-        {/* Right arrow */}
-        <button
-          onClick={() => scroll('right')}
-          disabled={!canScrollRight}
-          className="shrink-0 cursor-pointer w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-400 disabled:opacity-0 disabled:pointer-events-none transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+      {/* Scrollable strip */}
+      <div
+        ref={scrollRef}
+        className="flex gap-2 overflow-x-auto"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {categories.map((cat) => (
+          <CategoryItem
+            key={cat.id}
+            cat={cat}
+            isActive={activeCategoryId === cat.id}
+            icon={CATEGORY_ICONS[cat.slug] ?? DEFAULT_ICON}
+            onSelect={onSelect}
+          />
+        ))}
       </div>
 
       {/* Dots */}
@@ -162,7 +137,7 @@ function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
         alignItems: 'center',
         gap: '0.75rem',
         flexShrink: 0,
-        padding: '0.5rem',
+        padding: 'clamp(0.25rem, 1vw, 0.5rem)',
         background: 'none',
         border: 'none',
         cursor: 'pointer',
@@ -172,8 +147,8 @@ function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
     >
       <div
         style={{
-          width: '7rem',
-          height: '7rem',
+          width: 'clamp(4.5rem, 12vw, 7rem)',
+          height: 'clamp(4.5rem, 12vw, 7rem)',
           borderRadius: '9999px',
           backgroundColor: bgColor,
           display: 'flex',
@@ -201,7 +176,7 @@ function CategoryItem({ cat, icon, isActive, onSelect }: CategoryItemProps) {
       </div>
       <span
         style={{
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.65rem, 2vw, 0.875rem)',
           fontWeight: isActive ? 600 : 500,
           color: textColor,
           transition: 'color 0.2s ease, font-weight 0.2s ease',

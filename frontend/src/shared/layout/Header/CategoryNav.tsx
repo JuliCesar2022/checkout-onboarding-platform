@@ -31,21 +31,21 @@ export function CategoryNav() {
   return (
     <div style={{ backgroundColor: '#ffffff', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.07)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center gap-1 overflow-x-auto py-2" style={{ scrollbarWidth: 'none' }}>
+        <nav className="flex items-center gap-1 overflow-x-auto py-1.5 sm:py-2" style={{ scrollbarWidth: 'none' }}>
           {/* All Categories button */}
-          <button 
+          <button
             onClick={() => handleCategorySelect(null)}
-            className={`flex items-center gap-1.5 shrink-0 text-sm font-semibold cursor-pointer px-3 py-1.5 rounded-lg transition-colors border mr-2 ${
-              activeCategoryId === null 
-                ? 'bg-[#222] text-white border-[#222] hover:bg-[#333]' 
+            className={`flex items-center gap-1 shrink-0 text-xs sm:text-sm font-semibold cursor-pointer px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg transition-colors border mr-1.5 sm:mr-2 ${
+              activeCategoryId === null
+                ? 'bg-[#222] text-white border-[#222] hover:bg-[#333]'
                 : 'text-gray-800 hover:text-gray-600 hover:bg-gray-100 border-gray-200'
             }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
             All Categories
-            <svg className={`w-3 h-3 ${activeCategoryId === null ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${activeCategoryId === null ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
@@ -55,7 +55,7 @@ export function CategoryNav() {
             <button
               key={cat.id}
               onClick={() => handleCategorySelect(cat.id)}
-              className={`shrink-0 text-sm cursor-pointer px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
+              className={`shrink-0 text-xs sm:text-sm cursor-pointer px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                 activeCategoryId === cat.id
                   ? 'bg-blue-100 text-blue-700 font-semibold'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'

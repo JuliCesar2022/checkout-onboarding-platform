@@ -48,7 +48,17 @@ export class PrismaProductsRepository implements IProductsRepository {
     }
 
     if (categoryId) {
-      whereCondition.categoryId = categoryId;
+      // If the category has children, include products from all children too
+      const category = await this.prisma.category.findUnique({
+        where: { id: categoryId },
+        include: { children: { select: { id: true } } },
+      });
+      const childIds = category?.children?.map((c) => c.id) ?? [];
+      if (childIds.length > 0) {
+        whereCondition.categoryId = { in: childIds };
+      } else {
+        whereCondition.categoryId = categoryId;
+      }
     }
 
     // Fetch one extra to determine if there is a next page
