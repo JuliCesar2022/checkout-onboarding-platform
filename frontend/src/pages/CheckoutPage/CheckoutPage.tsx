@@ -24,6 +24,8 @@ import { PageWrapper } from '../../shared/layout/PageWrapper';
 import { Button } from '../../shared/ui/Button';
 import { ErrorBanner } from '../../shared/ui/ErrorBanner';
 import { CartItem } from '../../features/cart/components/CartItem/CartItem';
+import { productsApi } from '../../features/products/api';
+import type { Product } from '../../shared/interfaces';
 
 const BASE_FEE_IN_CENTS = 150_000;
 const DELIVERY_FEE_IN_CENTS = 1_000_000;
@@ -110,8 +112,8 @@ export function CheckoutPage() {
       );
       // Use first item as the "representative" product for display fallback
       setProduct({ name: cartItems[0].name, imageUrl: cartItems[0].imageUrl });
-    } else {
-      productsApi.fetchProductById(productId).then((p) => {
+    } else if (productId) {
+      productsApi.fetchProductById(productId).then((p: Product) => {
         const productAmountInCents = p.priceInCents * quantity;
         dispatch(
           setFees({
