@@ -1,4 +1,7 @@
-import type { TransactionEntity, TransactionStatus } from '../entities/transaction.entity';
+import type {
+  TransactionEntity,
+  TransactionStatus,
+} from '../entities/transaction.entity';
 
 export interface CreateTransactionData {
   reference: string;
@@ -16,7 +19,10 @@ export interface CreateTransactionData {
 export abstract class ITransactionsRepository {
   abstract create(data: CreateTransactionData): Promise<TransactionEntity>;
   abstract findById(id: string): Promise<TransactionEntity | null>;
-  abstract findByReference(reference: string): Promise<TransactionEntity | null>;
+  abstract findByReference(
+    reference: string,
+  ): Promise<TransactionEntity | null>;
+  abstract findPending(): Promise<TransactionEntity[]>;
   abstract updateStatus(
     id: string,
     status: TransactionStatus,

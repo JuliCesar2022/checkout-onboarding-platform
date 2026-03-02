@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { validateEnv } from '../config/env.validation';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageModule } from '../modules/storage/storage.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   THROTTLE_TTL,
   THROTTLE_LIMIT_DEFAULT,
@@ -42,6 +43,9 @@ import {
 
     // Storage — global file upload/serve service
     StorageModule,
+
+    // Background tasks (Cron)
+    ScheduleModule.forRoot(),
   ],
   providers: [
     // Apply ThrottlerGuard globally

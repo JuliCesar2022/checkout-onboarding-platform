@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
+import * as crypto from 'crypto';
 import { Result } from '../../../../common/result/result';
 import { ITransactionsRepository } from '../../domain/repositories/transactions.repository';
 import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
@@ -10,6 +10,8 @@ import { IDeliveriesRepository } from '../../../deliveries/domain/repositories/d
 import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { TransactionResponseDto } from '../dto/transaction-response.dto';
 import type { Env } from '../../../../config/env.validation';
+
+import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
 
 /**
  * ProcessPayment Use Case — Railway Oriented Programming
@@ -35,15 +37,17 @@ export class CreateTransactionUseCase {
     private readonly config: ConfigService<Env>,
   ) {}
 
-  async execute(dto: CreateTransactionDto): Promise<Result<TransactionResponseDto>> {
+  async execute(
+    dto: CreateTransactionDto,
+  ): Promise<Result<TransactionResponseDto>> {
     // Step 1: Validate product
     const product = await this.productsRepo.findById(dto.productId);
     if (!product) {
-      return Result.fail('Product not found');
+      return Result.fail(TRANSACTIONS_ERRORS.PRODUCT_NOT_FOUND);
     }
     if (product.stock < dto.quantity) {
       return Result.fail(
-        `Insufficient stock. Available: ${product.stock}, requested: ${dto.quantity}`,
+        TRANSACTIONS_ERRORS.INSUFFICIENT_STOCK(product.stock, dto.quantity),
       );
     }
 
@@ -55,15 +59,19 @@ export class CreateTransactionUseCase {
     });
 
     // Step 3: Calculate fees
-    const baseFeeInCents = this.config.get<number>('BASE_FEE_IN_CENTS', { infer: true }) ?? 150000;
-    const deliveryFeeInCents = this.config.get<number>('DELIVERY_FEE_IN_CENTS', { infer: true }) ?? 1000000;
+    const baseFeeInCents =
+      this.config.get<number>('BASE_FEE_IN_CENTS', { infer: true }) ?? 150000;
+    const deliveryFeeInCents =
+      this.config.get<number>('DELIVERY_FEE_IN_CENTS', { infer: true }) ??
+      1000000;
     const productAmountInCents = product.priceInCents * dto.quantity;
-    const totalAmountInCents = productAmountInCents + baseFeeInCents + deliveryFeeInCents;
+    const totalAmountInCents =
+      productAmountInCents + baseFeeInCents + deliveryFeeInCents;
 
     // Step 4: Create PENDING transaction + delivery record
     // Delivery is persisted now while we still have the address from the request.
     // Stock decrement happens only on APPROVED (here if immediate, or in sync use case if polled).
-    const reference = `TXN-${uuidv4()}`;
+    const reference = `TXN-${crypto.randomUUID()}`;
     const transaction = await this.transactionsRepo.create({
       reference,
       amountInCents: totalAmountInCents,
@@ -102,7 +110,9 @@ export class CreateTransactionUseCase {
     if (paymentResult.isFailure) {
       // Update transaction to ERROR so frontend knows
       await this.transactionsRepo.updateStatus(transaction.id, 'ERROR');
-      return Result.fail(`Payment failed: ${paymentResult.getError()}`);
+      return Result.fail(
+        TRANSACTIONS_ERRORS.PAYMENT_FAILED(paymentResult.getError() as string),
+      );
     }
 
     const wompiResult = paymentResult.getValue();

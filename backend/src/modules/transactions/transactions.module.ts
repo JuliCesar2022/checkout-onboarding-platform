@@ -8,6 +8,7 @@ import { ITransactionsRepository } from './domain/repositories/transactions.repo
 import { PrismaTransactionsRepository } from './infrastructure/repositories/prisma-transactions.repository';
 import { INotificationPort } from './domain/ports/notification.port';
 import { EmailNotificationAdapter } from './infrastructure/adapters/email-notification.adapter';
+import { SyncTransactionsTask } from './infrastructure/tasks/sync-transactions.task';
 import { ProductsModule } from '../products/products.module';
 import { CustomersModule } from '../customers/customers.module';
 import { DeliveriesModule } from '../deliveries/deliveries.module';
@@ -26,6 +27,7 @@ import { PaymentModule } from '../payment/payment.module';
     TransactionsService,
     CreateTransactionUseCase,
     SyncTransactionStatusUseCase,
+    SyncTransactionsTask,
     {
       provide: ITransactionsRepository,
       useClass: PrismaTransactionsRepository,

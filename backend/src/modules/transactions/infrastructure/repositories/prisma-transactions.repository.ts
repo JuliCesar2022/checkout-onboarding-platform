@@ -5,7 +5,10 @@ import {
   ITransactionsRepository,
   CreateTransactionData,
 } from '../../domain/repositories/transactions.repository';
-import { TransactionEntity, TransactionStatus } from '../../domain/entities/transaction.entity';
+import {
+  TransactionEntity,
+  TransactionStatus,
+} from '../../domain/entities/transaction.entity';
 import { TransactionMapper } from '../mappers/transaction.mapper';
 
 @Injectable()
@@ -42,6 +45,13 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
       where: { reference },
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
+  }
+
+  async findPending(): Promise<TransactionEntity[]> {
+    const transactions = await this.prisma.transaction.findMany({
+      where: { status: 'PENDING' },
+    });
+    return transactions.map(TransactionMapper.toDomain);
   }
 
   async updateStatus(

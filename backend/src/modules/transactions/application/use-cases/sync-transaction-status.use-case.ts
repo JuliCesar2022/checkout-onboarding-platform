@@ -5,6 +5,8 @@ import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
 import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
 import { TransactionEntity } from '../../domain/entities/transaction.entity';
 
+import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
+
 @Injectable()
 export class SyncTransactionStatusUseCase {
   constructor(
@@ -16,11 +18,11 @@ export class SyncTransactionStatusUseCase {
   async execute(transactionId: string): Promise<Result<TransactionEntity>> {
     const transaction = await this.transactionsRepo.findById(transactionId);
     if (!transaction) {
-      return Result.fail(`Transaction ${transactionId} not found`);
+      return Result.fail(TRANSACTIONS_ERRORS.NOT_FOUND(transactionId));
     }
 
     if (!transaction.wompiId) {
-      return Result.fail('Transaction does not have a Wompi ID to sync');
+      return Result.fail(TRANSACTIONS_ERRORS.NO_WOMPI_ID);
     }
 
     // Only sync if it's PENDING (no need to sync if already approved/declined)
@@ -54,7 +56,10 @@ export class SyncTransactionStatusUseCase {
 
     // Decrement stock when transitioning PENDING → APPROVED
     if (newStatus === 'APPROVED') {
-      await this.productsRepo.decrementStock(transaction.productId, transaction.quantity);
+      await this.productsRepo.decrementStock(
+        transaction.productId,
+        transaction.quantity,
+      );
     }
 
     return Result.ok(updatedTransaction);
