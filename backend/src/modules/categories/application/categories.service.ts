@@ -3,6 +3,7 @@ import { ICategoriesRepository } from '../domain/repositories/categories.reposit
 import { CategoryResponseDto } from './dto/category-response.dto';
 import { Result } from '../../../common/result/result';
 import { ErrorCode } from '../../../common/constants/error-codes.constants';
+import { CATEGORIES_ERRORS } from '../domain/constants/categories.constants';
 
 @Injectable()
 export class CategoriesService {
@@ -16,7 +17,7 @@ export class CategoriesService {
   async findById(id: string): Promise<Result<CategoryResponseDto>> {
     const category = await this.categoriesRepository.findById(id);
     if (!category) {
-      return Result.fail(ErrorCode.NOT_FOUND);
+      return Result.fail(CATEGORIES_ERRORS.NOT_FOUND(id));
     }
     return Result.ok(CategoryResponseDto.fromEntity(category));
   }
