@@ -87,13 +87,16 @@ export class CreateTransactionUseCase {
       cardLastFour: dto.cardData.lastFour,
     });
 
+    const normalize = (str?: string) => str?.trim().toUpperCase();
+
     await this.deliveriesRepo.create({
       transactionId: transaction.id,
       productId: dto.productId,
       customerId: customer.id,
-      address: dto.deliveryData.address,
-      city: dto.deliveryData.city,
-      state: dto.deliveryData.state,
+      address: normalize(dto.deliveryData.address)!,
+      addressDetail: normalize(dto.deliveryData.addressDetail),
+      city: normalize(dto.deliveryData.city)!,
+      state: normalize(dto.deliveryData.state)!,
       postalCode: dto.deliveryData.postalCode,
     });
 

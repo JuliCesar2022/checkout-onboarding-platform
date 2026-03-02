@@ -5,6 +5,7 @@ export interface CreateDeliveryData {
   productId: string;
   customerId: string;
   address: string;
+  addressDetail?: string;
   city: string;
   state: string;
   postalCode?: string;
@@ -12,5 +13,7 @@ export interface CreateDeliveryData {
 
 export abstract class IDeliveriesRepository {
   abstract create(data: CreateDeliveryData): Promise<DeliveryEntity>;
-  abstract findByTransactionId(transactionId: string): Promise<DeliveryEntity | null>;
+  abstract findByTransactionId(
+    transactionId: string,
+  ): Promise<DeliveryEntity | null>;
 }

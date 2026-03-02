@@ -8,6 +8,7 @@ import {
   IsOptional,
   ValidateNested,
   Min,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -38,6 +39,11 @@ export class DeliveryDataDto {
   @MinLength(5)
   address: string;
 
+  @ApiPropertyOptional({ example: 'Apartamento 502' })
+  @IsOptional()
+  @IsString()
+  addressDetail?: string;
+
   @ApiProperty({ example: 'Bogotá' })
   @IsString()
   city: string;
@@ -49,6 +55,7 @@ export class DeliveryDataDto {
   @ApiPropertyOptional({ example: '110111' })
   @IsOptional()
   @IsString()
+  @Matches(/^[0-9]{6}$/, { message: 'Postal code must be 6 digits' })
   postalCode?: string;
 }
 

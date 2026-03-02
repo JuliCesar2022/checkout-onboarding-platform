@@ -6,9 +6,10 @@ export class DeliveryMapper {
     return new DeliveryEntity({
       id: prisma.id,
       address: prisma.address,
+      addressDetail: prisma.addressDetail ?? undefined,
       city: prisma.city,
       state: prisma.state,
-      postalCode: prisma.postalCode,
+      postalCode: prisma.postalCode ?? undefined,
       country: prisma.country,
       transactionId: prisma.transactionId,
       productId: prisma.productId,

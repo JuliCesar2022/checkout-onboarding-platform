@@ -1,9 +1,10 @@
 export class DeliveryEntity {
   id: string;
   address: string;
+  addressDetail?: string;
   city: string;
   state: string;
-  postalCode: string | null;
+  postalCode?: string;
   country: string;
   transactionId: string;
   productId: string;

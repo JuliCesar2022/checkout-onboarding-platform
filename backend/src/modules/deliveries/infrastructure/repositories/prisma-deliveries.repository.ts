@@ -18,6 +18,7 @@ export class PrismaDeliveriesRepository implements IDeliveriesRepository {
         productId: data.productId,
         customerId: data.customerId,
         address: data.address,
+        addressDetail: data.addressDetail,
         city: data.city,
         state: data.state,
         postalCode: data.postalCode,
