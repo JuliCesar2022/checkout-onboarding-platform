@@ -22,10 +22,10 @@ RUN npx prisma generate
 # Compila NestJS (src/ → dist/src/)
 RUN npm run build
 
-# Compila el seed por separado a dist/prisma/
+# Compila el seed por separado → dist/seed/seed.js
 RUN npx tsc prisma/seed.ts prisma/seeds/index.ts prisma/seeds/products.seed.ts prisma/seeds/categories.seed.ts \
     --module nodenext --moduleResolution nodenext --target ES2023 \
-    --esModuleInterop true --skipLibCheck true --outDir dist/prisma \
+    --esModuleInterop true --skipLibCheck true --rootDir prisma --outDir dist/seed \
     --declaration false --sourceMap false
 
 # ─── Stage 3: runner ──────────────────────────────────────────────────────────
