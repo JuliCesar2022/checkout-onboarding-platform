@@ -75,12 +75,12 @@ export function ImageCarousel({
     return (
       <>
         <div
-          className={`cursor-zoom-in ${className}`}
-          onClick={openLightbox}
+          className={`${stopPropagation ? '' : 'cursor-zoom-in'} ${className}`}
+          onClick={stopPropagation ? undefined : openLightbox}
         >
           <ImageWithSkeleton src={images[0]} alt={alt} className="w-full h-full" />
         </div>
-        {lightboxOpen && (
+        {!stopPropagation && lightboxOpen && (
           <Lightbox
             images={images}
             current={0}
