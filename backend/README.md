@@ -11,7 +11,7 @@ API robusta construida con **NestJS 11** siguiendo principios de **Clean Archite
 ### 2. Instalación y Setup
 ```bash
 cd backend
-npm install
+npm installx1
 
 # Generar cliente de Prisma
 npx prisma generate

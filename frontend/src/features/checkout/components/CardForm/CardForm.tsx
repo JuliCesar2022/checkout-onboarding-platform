@@ -146,42 +146,73 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
       </div>
 
       {/* Card Number */}
-      <Controller
-        name="cardNumber"
-        control={control}
-        render={({ field }) => {
-          const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            handleCardNumberChange(e.target.value);
-            const raw = e.target.value.replace(/\s/g, '');
-            field.onChange(raw);
-            control._formValues.brand = detectCardBrand(raw);
-            // Auto-advance to holder name when 16 digits entered
-            if (raw.length >= 16) holderRef.current?.focus();
-          };
+      <div className="flex flex-col gap-2">
+        <Controller
+          name="cardNumber"
+          control={control}
+          render={({ field }) => {
+            const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+              handleCardNumberChange(e.target.value);
+              const raw = e.target.value.replace(/\s/g, '');
+              field.onChange(raw);
+              control._formValues.brand = detectCardBrand(raw);
+              // Auto-advance to holder name when 16 digits entered
+              if (raw.length >= 16) holderRef.current?.focus();
+            };
 
-          return (
-            <Input
-              id="card-number"
-              label="Número de tarjeta"
-              type="text"
-              inputMode="numeric"
-              maxLength={19}
-              autoFocus={autoFocus}
-              value={formattedNumber}
-              onChange={handleChange}
-              onKeyDown={onlyDigits}
-              onFocus={() => setFocused('number')}
-              placeholder="1234 5678 9012 3456"
-              error={errors.cardNumber?.message}
-              endIcon={
-                detectedBrand === 'VISA' ? <VisaIcon /> :
-                detectedBrand === 'MASTERCARD' ? <MastercardIcon /> :
-                <GenericCardIcon />
-              }
-            />
-          );
-        }}
-      />
+            return (
+              <Input
+                id="card-number"
+                label="Número de tarjeta"
+                type="text"
+                inputMode="numeric"
+                maxLength={19}
+                autoFocus={autoFocus}
+                value={formattedNumber}
+                onChange={handleChange}
+                onKeyDown={onlyDigits}
+                onFocus={() => setFocused('number')}
+                placeholder="1234 5678 9012 3456"
+                error={errors.cardNumber?.message}
+                endIcon={
+                  detectedBrand === 'VISA' ? <VisaIcon /> :
+                  detectedBrand === 'MASTERCARD' ? <MastercardIcon /> :
+                  <GenericCardIcon />
+                }
+              />
+            );
+          }}
+        />
+
+        {/* Test Cards Helper */}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+          <span className="font-medium text-gray-400">Usar tarjeta de prueba:</span>
+          <button
+            type="button"
+            onClick={() => {
+              const visa = '4111111111111111';
+              handleCardNumberChange(visa);
+              setValue('cardNumber', visa, { shouldValidate: true });
+              holderRef.current?.focus();
+            }}
+            className="rounded bg-gray-100 px-2 py-1 transition-colors hover:bg-indigo-100 hover:text-indigo-600 active:bg-indigo-200"
+          >
+            Visa (4111...)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const mc = '4242424242424242';
+              handleCardNumberChange(mc);
+              setValue('cardNumber', mc, { shouldValidate: true });
+              holderRef.current?.focus();
+            }}
+            className="rounded bg-gray-100 px-2 py-1 transition-colors hover:bg-indigo-100 hover:text-indigo-600 active:bg-indigo-200"
+          >
+            MasterCard (4242...)
+          </button>
+        </div>
+      </div>
 
       {/* Holder Name */}
       {(() => {
