@@ -9,7 +9,7 @@ const envSchema = zod.object({
   NODE_ENV: zod
     .enum(['development', 'production', 'test'])
     .default('development'),
-  PORT: zod.coerce.number().default(3000),
+  PORT: zod.coerce.number().min(1).max(65535).default(3000),
 
   // ─── Database (PostgreSQL) ───────────────────────────────────────────────
   DATABASE_URL: zod.string().url(),
@@ -28,7 +28,7 @@ const envSchema = zod.object({
   WOMPI_INTEGRITY_KEY: zod
     .string()
     .min(1)
-    .describe('Wompi integrity key for webhook verification'),
+    .describe('Wompi integrity key for signature generation on transactions'),
 
   WOMPI_BASE_URL: zod
     .string()
