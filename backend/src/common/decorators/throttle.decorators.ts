@@ -1,4 +1,10 @@
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import {
+  THROTTLE_TTL_MS,
+  THROTTLE_LIMIT_PUBLIC,
+  THROTTLE_LIMIT_DEFAULT,
+  THROTTLE_LIMIT_STRICT,
+} from '../constants/throttle.constants';
 
 /**
  * Throttle decorators for rate limiting per endpoint
@@ -6,7 +12,7 @@ import { Throttle, SkipThrottle } from '@nestjs/throttler';
  *
  * Usage:
  *   @Controller('products')
- *   @ApiEndpoint()  // 100 req/min
+ *   @PublicEndpoint()  // 100 req/min
  *   export class ProductsController { ... }
  *
  *   @Post()
@@ -14,26 +20,14 @@ import { Throttle, SkipThrottle } from '@nestjs/throttler';
  *   create() { ... }
  */
 
-/**
- * Public endpoint — relaxed limit (100 req/min)
- * Use for GET operations, non-sensitive reads
- */
-export const PublicEndpoint = () => Throttle({ default: { limit: 100, ttl: 60000 } });
+/** Public endpoint — relaxed limit (100 req/min). Use for GET operations, non-sensitive reads. */
+export const PublicEndpoint = () => Throttle({ default: { limit: THROTTLE_LIMIT_PUBLIC, ttl: THROTTLE_TTL_MS } });
 
-/**
- * Standard API endpoint — default limit (60 req/min)
- * Use for normal CRUD operations
- */
-export const ApiEndpoint = () => Throttle({ default: { limit: 60, ttl: 60000 } });
+/** Standard API endpoint — default limit (60 req/min). Use for normal CRUD operations. */
+export const ApiEndpoint = () => Throttle({ default: { limit: THROTTLE_LIMIT_DEFAULT, ttl: THROTTLE_TTL_MS } });
 
-/**
- * Strict endpoint — tight limit (10 req/min)
- * Use for sensitive operations: login, payment, account changes
- */
-export const StrictEndpoint = () => Throttle({ default: { limit: 10, ttl: 60000 } });
+/** Strict endpoint — tight limit (10 req/min). Use for sensitive operations: payment, auth. */
+export const StrictEndpoint = () => Throttle({ default: { limit: THROTTLE_LIMIT_STRICT, ttl: THROTTLE_TTL_MS } });
 
-/**
- * No throttling — bypass rate limiting
- * Use for health checks, webhooks, internal endpoints
- */
+/** No throttling — bypass rate limiting. Use for health checks, webhooks, internal endpoints. */
 export const NoThrottle = () => SkipThrottle();

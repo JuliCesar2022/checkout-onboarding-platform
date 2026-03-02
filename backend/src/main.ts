@@ -53,10 +53,13 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
+  app.enableShutdownHooks();
+
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
-  console.log(`API running on http://localhost:${port}/api`);
-  console.log(`Docs available at http://localhost:${port}/api/docs`);
+  await app.listen(port, '0.0.0.0');
+  const url = await app.getUrl();
+  console.log(`API running on ${url}/api`);
+  console.log(`Docs available at ${url}/api/docs`);
 }
 
 bootstrap();

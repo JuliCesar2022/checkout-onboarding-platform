@@ -4,6 +4,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { validateEnv } from '../config/env.validation';
 import { PrismaModule } from '../prisma/prisma.module';
+import { StorageModule } from '../modules/storage/storage.module';
+import { THROTTLE_TTL_MS, THROTTLE_LIMIT_DEFAULT } from '../common/constants/throttle.constants';
 
 /**
  * CoreModule — transversal infrastructure
@@ -27,13 +29,16 @@ import { PrismaModule } from '../prisma/prisma.module';
     // See: src/common/decorators/throttle.decorators.ts
     ThrottlerModule.forRoot([
       {
-        ttl: 60000,
-        limit: 60,
+        ttl: THROTTLE_TTL_MS,
+        limit: THROTTLE_LIMIT_DEFAULT,
       },
     ]),
 
     // Database — global Prisma service
     PrismaModule,
+
+    // Storage — global file upload/serve service
+    StorageModule,
   ],
   providers: [
     // Apply ThrottlerGuard globally
@@ -42,6 +47,6 @@ import { PrismaModule } from '../prisma/prisma.module';
       useClass: ThrottlerGuard,
     },
   ],
-  exports: [ConfigModule, PrismaModule],
+  exports: [ConfigModule, PrismaModule, ThrottlerModule],
 })
 export class CoreModule {}
