@@ -1,3 +1,14 @@
+/* Splash screen animations */
+@keyframes splash-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes loading-bar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
 /* Global animations for Modal and Backdrop transitions */
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0; }
