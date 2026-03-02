@@ -218,6 +218,9 @@ function BannerPanel({
             environment-image="neutral"
             exposure="1.2"
             interaction-prompt="none"
+            loading="lazy"
+            poster={p.image || `/assets/posters/${p.localModel?.split('/').pop()?.replace('.glb', '.webp')}`}
+            seamless-poster
             style={{ width: '100%', height: '100%', outline: 'none' }}
           />
         </div>
@@ -328,6 +331,9 @@ function BannerPanel({
             environment-image="neutral"
             exposure="1"
             interaction-prompt="none"
+            loading="lazy"
+            poster={p.image || `/assets/posters/${p.localModel?.split('/').pop()?.replace('.glb', '.webp')}`}
+            seamless-poster
             style={{ width: '100%', height: '100%', outline: 'none' }}
           />
         </div>
