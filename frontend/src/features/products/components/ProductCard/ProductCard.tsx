@@ -47,10 +47,10 @@ export const ProductCard = memo(({ product, onPay, showBuyButton = false }: Prod
       </div>
 
       <div className="flex flex-col flex-1 p-3 sm:p-4 gap-1.5 sm:gap-2">
-        <h2 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2">
+        <h2 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 h-[2.625rem] sm:h-[3rem]">
           {product.name}
         </h2>
-        <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{product.description}</p>
+        <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 h-8 sm:h-10">{product.description}</p>
         <p className="text-base sm:text-lg font-bold text-gray-900 mt-auto pt-2">
           {formatCOP(product.priceInCents)}
         </p>

@@ -29,7 +29,7 @@ export function Header() {
     <header className="bg-white sticky top-0 z-50 border-b border-gray-100">
       {/* Top bar: logo + search + cart */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-4">
-        <span className="text-xl font-bold flex-shrink-0" style={{ color: '#222222' }}>TechStore</span>
+        <span className="hidden sm:block text-xl font-bold flex-shrink-0" style={{ color: '#222222' }}>TechStore</span>
 
         <form onSubmit={handleSubmit} className="flex-1 max-w-2xl mx-auto">
           <div className="relative">
@@ -84,8 +84,10 @@ export function Header() {
         </button>
       </div>
 
-      {/* Category nav bar */}
-      <CategoryNav />
+      {/* Category nav bar — hidden on mobile */}
+      <div className="hidden sm:block">
+        <CategoryNav />
+      </div>
     </header>
   );
 }
