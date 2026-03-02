@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import type { Result } from '../result/result';
 
+import { ErrorCode } from '../constants/error-codes.constants';
+
 type HttpErrorType =
   | 'not_found'
   | 'bad_request'
@@ -20,12 +22,6 @@ type HttpErrorType =
 /**
  * Unwrap a Result<T> and return the value, or throw the appropriate HTTP exception.
  * Keeps controllers thin — no domain logic, no if/else Result checks.
- *
- * Usage:
- *   return unwrap(result);                          // → throws BadRequestException on failure
- *   return unwrap(result, 'not_found');             // → throws NotFoundException on failure
- *   return unwrap(result, 'conflict');              // → throws ConflictException on failure
- *   return unwrap(result, 'server_error');          // → throws InternalServerErrorException on failure
  */
 export function unwrap<T>(
   result: Result<T>,
@@ -35,20 +31,41 @@ export function unwrap<T>(
     return result.getValue();
   }
 
-  const message = result.getError();
+  const error = result.getError();
 
+  // If the error is a standardized ErrorCode, map it automatically
+  if (Object.values(ErrorCode).includes(error as ErrorCode)) {
+    switch (error) {
+      case ErrorCode.NOT_FOUND:
+        throw new NotFoundException(error);
+      case ErrorCode.CONFLICT:
+        throw new ConflictException(error);
+      case ErrorCode.FORBIDDEN:
+        throw new ForbiddenException(error);
+      case ErrorCode.UNAUTHORIZED:
+        throw new UnauthorizedException(error);
+      case ErrorCode.BAD_REQUEST:
+      case ErrorCode.VALIDATION_ERROR:
+        throw new BadRequestException(error);
+      case ErrorCode.INTERNAL_ERROR:
+      case ErrorCode.DATABASE_ERROR:
+        throw new InternalServerErrorException(error);
+    }
+  }
+
+  // Fallback to manual errorType or default
   switch (errorType) {
     case 'not_found':
-      throw new NotFoundException(message);
+      throw new NotFoundException(error);
     case 'conflict':
-      throw new ConflictException(message);
+      throw new ConflictException(error);
     case 'forbidden':
-      throw new ForbiddenException(message);
+      throw new ForbiddenException(error);
     case 'unauthorized':
-      throw new UnauthorizedException(message);
+      throw new UnauthorizedException(error);
     case 'server_error':
-      throw new InternalServerErrorException(message);
+      throw new InternalServerErrorException(error);
     default:
-      throw new BadRequestException(message);
+      throw new BadRequestException(error);
   }
 }

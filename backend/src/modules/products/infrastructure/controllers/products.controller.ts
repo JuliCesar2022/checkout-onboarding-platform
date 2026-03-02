@@ -40,6 +40,6 @@ export class ProductsController {
   @ApiResponse({ status: 200, type: ProductResponseDto })
   @ApiResponse({ status: 404, description: 'Product not found' })
   async findById(@Param('id') id: string): Promise<ProductResponseDto> {
-    return unwrap(await this.productsService.findById(id), 'not_found');
+    return unwrap(await this.productsService.findById(id));
   }
 }

@@ -4,6 +4,7 @@ import { ProductResponseDto } from './dto/product-response.dto';
 import { PaginatedProductsDto } from './dto/paginated-products.dto';
 import { FindProductsQueryDto } from './dto/find-products-query.dto';
 import { Result } from '../../../common/result/result';
+import { ErrorCode } from '../../../common/constants/error-codes.constants';
 import { PRODUCTS_ERRORS } from '../domain/constants/products.constants';
 
 @Injectable()

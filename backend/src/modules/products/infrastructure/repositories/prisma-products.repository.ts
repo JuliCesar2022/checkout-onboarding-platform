@@ -26,7 +26,10 @@ export class PrismaProductsRepository implements IProductsRepository {
 
   async decrementStock(id: string, quantity: number): Promise<ProductEntity> {
     const product = await this.prisma.product.update({
-      where: { id },
+      where: {
+        id,
+        stock: { gte: quantity }, // Atomic safety check
+      },
       data: { stock: { decrement: quantity } },
     });
     return ProductMapper.toDomain(product);
@@ -48,14 +51,14 @@ export class PrismaProductsRepository implements IProductsRepository {
     }
 
     if (categoryId) {
-      // If the category has children, include products from all children too
+      // If the category has children, include products from the parent and all children
       const category = await this.prisma.category.findUnique({
         where: { id: categoryId },
         include: { children: { select: { id: true } } },
       });
       const childIds = (category as any)?.children?.map((c: any) => c.id) ?? [];
       if (childIds.length > 0) {
-        whereCondition.categoryId = { in: childIds };
+        whereCondition.categoryId = { in: [categoryId, ...childIds] };
       } else {
         whereCondition.categoryId = categoryId;
       }
