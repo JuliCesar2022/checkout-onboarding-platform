@@ -8,7 +8,6 @@ interface CategoryShowcaseProps {
 export function CategoryShowcase({ categories, onSelect }: CategoryShowcaseProps) {
   const parent = categories.find((c) => c.slug === 'LAPTOPS_ACCESSORIES');
   if (!parent || (parent.children ?? []).length === 0) return null;
-  const children = parent.children ?? [];
 
   return (
     <section className="bg-white rounded-2xl p-6 shadow-sm">
@@ -23,7 +22,7 @@ export function CategoryShowcase({ categories, onSelect }: CategoryShowcaseProps
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-        {children.map((child) => (
+        {parent.children.map((child) => (
           <button
             key={child.id}
             onClick={() => onSelect(child)}

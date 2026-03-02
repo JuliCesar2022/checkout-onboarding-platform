@@ -57,7 +57,6 @@ export function CheckoutPage() {
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
-  const productItems = useAppSelector((state) => state.products.items);
 
   // Redirect to products if no product is selected or if checkout is complete
   if (!productId && cartItems.length === 0) {
@@ -161,6 +160,7 @@ export function CheckoutPage() {
         },
         deliveryData: {
           address: `${deliveryAddress.addressLine1} ${deliveryAddress.addressLine2 ?? ''}`.trim(),
+          addressDetail: deliveryAddress.addressDetail,
           city: deliveryAddress.city,
           state: deliveryAddress.department,
         },

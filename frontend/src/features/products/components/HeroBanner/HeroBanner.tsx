@@ -105,19 +105,16 @@ const SLIDES: Slide[] = [
 
 function BannerPanel({
   p,
-  modelRef: externalModelRef,
   activeColor,
   setActiveColor,
   isActive
 }: {
   p: Panel;
-  modelRef: React.RefObject<any>;
   activeColor: string;
   setActiveColor: (c: string) => void;
   isActive?: boolean;
 }) {
-  const internalModelRef = useRef<any>(null);
-  const modelRef = externalModelRef.current ? externalModelRef : internalModelRef;
+  const modelRef = useRef<any>(null);
 
   const HEADPHONE_COLORS = [
     { name: 'Blue', hex: '#3b82f6' },
@@ -142,7 +139,7 @@ function BannerPanel({
 
   useEffect(() => {
     if (!isAuriculares && !isIphone) return;
-    const mv = internalModelRef.current;
+    const mv = modelRef.current;
     if (!mv) return;
     const onLoad = () => {
       const materials: any[] = mv.model?.materials;
@@ -157,7 +154,7 @@ function BannerPanel({
 
   useEffect(() => {
     if (!isAuriculares && !isIphone) return;
-    const mv = internalModelRef.current;
+    const mv = modelRef.current;
     if (!mv) return;
     const applyColor = () => {
       const materials: any[] = mv.model?.materials;
@@ -169,10 +166,9 @@ function BannerPanel({
         const originals = originalColorsRef.current;
         // Find the brightest material — that's the body/back panel
         let maxLum = -1;
-        let maxIdx = 0;
-        originals.forEach((orig, i) => {
+        originals.forEach((orig) => {
           const lum = orig[0] * 0.299 + orig[1] * 0.587 + orig[2] * 0.114;
-          if (lum > maxLum) { maxLum = lum; maxIdx = i; }
+          if (lum > maxLum) { maxLum = lum; }
         });
         // Only paint the brightest material (body back) plus any others with similar color
         originals.forEach((orig, i) => {
@@ -211,7 +207,7 @@ function BannerPanel({
         {/* 3D Model Layer */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[85%] h-[72%] md:left-auto md:translate-x-0 md:right-0 md:w-[55%] md:h-full z-10 overflow-hidden pointer-events-auto">
           <model-viewer
-            ref={internalModelRef}
+            ref={modelRef}
             src={p.localModel}
             alt={p.title}
             auto-rotate
@@ -391,7 +387,6 @@ function BannerPanel({
 }
 
 function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
-  const modelRef = useRef<any>(null);
   const heroPanel = slide.panels.find(p => p.type === 'hero');
   const defaultColor = heroPanel?.localModel?.includes('iphone') ? '#d4632a' : '#ffffff';
   const [activeColor, setActiveColor] = useState(defaultColor);
@@ -404,7 +399,6 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
           <BannerPanel
             key={p.area}
             p={p}
-            modelRef={modelRef}
             activeColor={activeColor}
             setActiveColor={setActiveColor}
             isActive={isActive}
@@ -425,7 +419,6 @@ function SlideGrid({ slide, isActive }: { slide: Slide; isActive: boolean }) {
           <BannerPanel
             key={p.area}
             p={p}
-            modelRef={modelRef}
             activeColor={activeColor}
             setActiveColor={setActiveColor}
             isActive={isActive}

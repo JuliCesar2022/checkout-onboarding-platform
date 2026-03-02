@@ -30,8 +30,6 @@ export function CategoryList({ categories, activeCategoryId, onSelect }: Categor
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activePage, setActivePage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Calcula cuántos items caben visibles y el total de "páginas"
   const recalcPages = useCallback(() => {
@@ -42,8 +40,6 @@ export function CategoryList({ categories, activeCategoryId, onSelect }: Categor
     setTotalPages(pages);
     const current = Math.round(el.scrollLeft / pageWidth);
     setActivePage(current);
-    setCanScrollLeft(el.scrollLeft > 1);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }, []);
 
   useEffect(() => {
@@ -61,13 +57,6 @@ export function CategoryList({ categories, activeCategoryId, onSelect }: Categor
     const el = scrollRef.current;
     if (!el) return;
     el.scrollTo({ left: page * el.clientWidth, behavior: 'smooth' });
-  };
-
-  const scroll = (dir: 'left' | 'right') => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const pageWidth = el.clientWidth;
-    el.scrollBy({ left: dir === 'left' ? -pageWidth : pageWidth, behavior: 'smooth' });
   };
 
   if (categories.length === 0) return null;

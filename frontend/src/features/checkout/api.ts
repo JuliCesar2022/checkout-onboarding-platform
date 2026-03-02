@@ -29,6 +29,7 @@ export interface SubmitTransactionPayload {
   };
   deliveryData: {
     address: string;
+    addressDetail?: string;
     city: string;
     state: string;
     postalCode?: string;

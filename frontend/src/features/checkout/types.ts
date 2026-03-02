@@ -15,6 +15,7 @@ export interface DeliveryAddress {
   email: string;
   addressLine1: string;
   addressLine2?: string;
+  addressDetail?: string;
   city: string;
   department: string;
   phoneNumber: string;

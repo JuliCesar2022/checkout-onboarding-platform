@@ -10,6 +10,7 @@ const deliverySchema = z.object({
   email: z.string().email('Correo electrónico inválido'),
   addressLine1: z.string().min(5, 'Dirección requerida'),
   addressLine2: z.string().optional(),
+  addressDetail: z.string().optional(),
   city: z.string().min(2, 'Ciudad requerida'),
   department: z.string().min(2, 'Departamento requerido'),
   phoneNumber: z.string().min(7, 'Teléfono inválido').max(15, 'Teléfono muy largo'),
@@ -18,7 +19,7 @@ const deliverySchema = z.object({
 export type DeliveryFormData = z.infer<typeof deliverySchema>;
 
 interface DeliveryFormProps {
-  onSubmit: (data: DeliveryAddress & { email: string }) => void;
+  onSubmit: (data: DeliveryAddress) => void;
   defaultValues?: Partial<DeliveryFormData>;
   autoFocus?: boolean;
 }
@@ -37,6 +38,7 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
       email: '',
       addressLine1: '',
       addressLine2: '',
+      addressDetail: '',
       city: '',
       department: '',
       phoneNumber: '',
@@ -99,6 +101,15 @@ export function DeliveryForm({ onSubmit, defaultValues, autoFocus }: DeliveryFor
         placeholder="Apt, Suite, Bldg. (optional)"
         {...register('addressLine2')}
         error={errors.addressLine2?.message}
+      />
+
+      <Input
+        id="addressDetail"
+        label="Detalles adicionales (Torre, Apto, etc.)"
+        type="text"
+        placeholder="ej. Torre 2, Apto 402"
+        {...register('addressDetail')}
+        error={errors.addressDetail?.message}
       />
 
       <div className="flex gap-4">
