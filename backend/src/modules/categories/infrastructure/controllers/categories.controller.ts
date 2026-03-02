@@ -25,6 +25,6 @@ export class CategoriesController {
   @ApiResponse({ status: 200, type: CategoryResponseDto })
   @ApiResponse({ status: 404, description: 'Category not found' })
   async findById(@Param('id') id: string): Promise<CategoryResponseDto> {
-    return unwrap(await this.categoriesService.findById(id), 'not_found');
+    return unwrap(await this.categoriesService.findById(id));
   }
 }

@@ -25,9 +25,4 @@ export class PrismaCategoriesRepository implements ICategoriesRepository {
     });
     return category ? CategoryMapper.toDomain(category) : null;
   }
-
-  async findBySlug(slug: string): Promise<CategoryEntity | null> {
-    const category = await this.prisma.category.findUnique({ where: { slug } });
-    return category ? CategoryMapper.toDomain(category) : null;
-  }
 }
