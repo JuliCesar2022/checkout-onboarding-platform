@@ -9,6 +9,7 @@ export class ProductResponseDto {
   @ApiProperty() priceInCents: number;
   @ApiProperty() stock: number;
   @ApiProperty() isAvailable: boolean;
+  @ApiProperty() sku: string;
   @ApiProperty() categoryId: string;
 
   static fromEntity(entity: ProductEntity): ProductResponseDto {
@@ -20,6 +21,7 @@ export class ProductResponseDto {
     dto.priceInCents = entity.priceInCents;
     dto.stock = entity.stock;
     dto.isAvailable = entity.isAvailable;
+    dto.sku = entity.sku;
     dto.categoryId = entity.categoryId;
     return dto;
   }

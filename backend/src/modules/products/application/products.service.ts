@@ -11,11 +11,6 @@ import { PRODUCTS_ERRORS } from '../domain/constants/products.constants';
 export class ProductsService {
   constructor(private readonly productsRepository: IProductsRepository) {}
 
-  async findAll(): Promise<ProductResponseDto[]> {
-    const products = await this.productsRepository.findAll();
-    return products.map(ProductResponseDto.fromEntity);
-  }
-
   async findPaginated(
     query: FindProductsQueryDto,
   ): Promise<PaginatedProductsDto> {
@@ -36,7 +31,7 @@ export class ProductsService {
   async findById(id: string): Promise<Result<ProductResponseDto>> {
     const product = await this.productsRepository.findById(id);
     if (!product) {
-      return Result.fail(PRODUCTS_ERRORS.NOT_FOUND(id));
+      return Result.fail(ErrorCode.NOT_FOUND);
     }
     return Result.ok(ProductResponseDto.fromEntity(product));
   }
@@ -47,7 +42,7 @@ export class ProductsService {
   ): Promise<Result<ProductResponseDto>> {
     const product = await this.productsRepository.findById(id);
     if (!product) {
-      return Result.fail(PRODUCTS_ERRORS.NOT_FOUND(id));
+      return Result.fail(ErrorCode.NOT_FOUND);
     }
     if (product.stock < quantity) {
       return Result.fail(
