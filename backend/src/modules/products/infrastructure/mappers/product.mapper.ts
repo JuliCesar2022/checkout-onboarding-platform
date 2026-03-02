@@ -9,6 +9,7 @@ export class ProductMapper {
       description: prisma.description,
       categoryId: prisma.categoryId,
       imageUrl: prisma.imageUrl,
+      images: prisma.images,
       priceInCents: prisma.priceInCents,
       stock: prisma.stock,
       createdAt: prisma.createdAt,

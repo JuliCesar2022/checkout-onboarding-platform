@@ -1,0 +1,127 @@
+import { useState, useRef, useCallback } from 'react';
+import { ImageWithSkeleton } from '../ImageWithSkeleton';
+
+interface ImageCarouselProps {
+  images: string[];
+  alt: string;
+  className?: string;
+  /** Stop click propagation on nav controls (e.g. inside a clickable card) */
+  stopPropagation?: boolean;
+}
+
+export function ImageCarousel({ images, alt, className = '', stopPropagation = false }: ImageCarouselProps) {
+  const [current, setCurrent] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const total = images.length;
+
+  const prev = useCallback((e?: React.MouseEvent) => {
+    if (stopPropagation) e?.stopPropagation();
+    setCurrent((c) => (c - 1 + total) % total);
+  }, [total, stopPropagation]);
+
+  const next = useCallback((e?: React.MouseEvent) => {
+    if (stopPropagation) e?.stopPropagation();
+    setCurrent((c) => (c + 1) % total);
+  }, [total, stopPropagation]);
+
+  const goTo = useCallback((e: React.MouseEvent, idx: number) => {
+    if (stopPropagation) e.stopPropagation();
+    setCurrent(idx);
+  }, [stopPropagation]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    // Only swipe horizontally if horizontal movement is dominant
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+      if (dx < 0) setCurrent((c) => (c + 1) % total);
+      else setCurrent((c) => (c - 1 + total) % total);
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  if (total === 0) {
+    return (
+      <div className={`w-full h-full flex items-center justify-center text-gray-300 text-5xl bg-gray-50 ${className}`}>
+        📦
+      </div>
+    );
+  }
+
+  if (total === 1) {
+    return (
+      <ImageWithSkeleton
+        src={images[0]}
+        alt={alt}
+        className={`w-full h-full ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`relative w-full h-full overflow-hidden select-none ${className}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Slides */}
+      <div
+        className="flex h-full transition-transform duration-300 ease-out will-change-transform"
+        style={{ transform: `translateX(-${current * 100}%)` }}
+      >
+        {images.map((src, i) => (
+          <div key={i} className="shrink-0 w-full h-full">
+            <ImageWithSkeleton src={src} alt={`${alt} ${i + 1}`} className="w-full h-full" />
+          </div>
+        ))}
+      </div>
+
+      {/* Prev button */}
+      <button
+        onClick={prev}
+        aria-label="Imagen anterior"
+        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center shadow transition-colors z-10"
+      >
+        <svg className="w-3 h-3 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      {/* Next button */}
+      <button
+        onClick={next}
+        aria-label="Siguiente imagen"
+        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center shadow transition-colors z-10"
+      >
+        <svg className="w-3 h-3 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      {/* Dot indicators */}
+      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+        {images.map((_, i) => (
+          <button
+            key={i}
+            onClick={(e) => goTo(e, i)}
+            aria-label={`Ir a imagen ${i + 1}`}
+            className={`rounded-full transition-all duration-200 ${
+              i === current
+                ? 'bg-white w-3.5 h-1.5'
+                : 'bg-white/50 w-1.5 h-1.5 hover:bg-white/80'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

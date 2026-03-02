@@ -21,7 +21,6 @@ import { CategoryList } from '../../features/products/components/CategoryList';
 import { SectionHeader } from '../../features/products/components/SectionHeader';
 import type { Product, Category } from '../../shared/interfaces';
 import { FeaturedRow } from '../../features/products/components/FeaturedRow';
-import { PromoBannersRow } from '../../features/products/components/PromoBannersRow';
 import { CategoryShowcase } from '../../features/products/components/CategoryShowcase';
 import { GamingShowcase } from '../../features/products/components/GamingShowcase';
 import { SmartphoneShowcase } from '../../features/products/components/SmartphoneShowcase';
@@ -314,11 +313,6 @@ export function ProductsPage() {
                 />
               </div>
             )}
-
-            {/* Promo Banners Row */}
-            <div className="reveal">
-              <PromoBannersRow />
-            </div>
 
             {/* Category Showcase */}
             <div className="reveal">

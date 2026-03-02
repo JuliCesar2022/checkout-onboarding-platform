@@ -3,6 +3,7 @@ export interface Product {
   name: string;
   description: string;
   imageUrl: string | null;
+  images: string[];
   priceInCents: number;
   stock: number;
   isAvailable: boolean;

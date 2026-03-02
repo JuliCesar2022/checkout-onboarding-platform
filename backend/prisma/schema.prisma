@@ -31,6 +31,7 @@ model Product {
   category   Category @relation(fields: [categoryId], references: [id])
 
   imageUrl     String?
+  images       String[] // Additional product images for carousel
   priceInCents Int // Price in COP cents
   stock        Int      @default(0)
   createdAt    DateTime @default(now())

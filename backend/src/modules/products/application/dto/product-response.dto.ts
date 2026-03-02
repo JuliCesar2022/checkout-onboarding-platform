@@ -6,6 +6,7 @@ export class ProductResponseDto {
   @ApiProperty() name: string;
   @ApiProperty() description: string;
   @ApiProperty({ nullable: true }) imageUrl: string | null;
+  @ApiProperty({ type: [String] }) images: string[];
   @ApiProperty() priceInCents: number;
   @ApiProperty() stock: number;
   @ApiProperty() isAvailable: boolean;
@@ -18,6 +19,7 @@ export class ProductResponseDto {
     dto.name = entity.name;
     dto.description = entity.description;
     dto.imageUrl = entity.imageUrl;
+    dto.images = entity.images ?? [];
     dto.priceInCents = entity.priceInCents;
     dto.stock = entity.stock;
     dto.isAvailable = entity.isAvailable;

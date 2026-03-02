@@ -5,6 +5,7 @@ export class ProductEntity {
   description: string;
   categoryId: string;
   imageUrl: string | null;
+  images: string[];
   priceInCents: number;
   stock: number;
   createdAt: Date;

@@ -7,7 +7,7 @@ import type { Product } from '../../../../shared/interfaces';
 import { Button } from '../../../../shared/ui/Button';
 import { StockBadge } from '../StockBadge';
 import { productDetailPath } from '../../../../constants/routes';
-import { ImageWithSkeleton } from '../../../../shared/ui/ImageWithSkeleton';
+import { ImageCarousel } from '../../../../shared/ui/ImageCarousel';
 
 interface ProductCardProps {
   product: Product;
@@ -19,6 +19,13 @@ export const ProductCard = memo(({ product, onPay }: ProductCardProps) => {
   const dispatch = useAppDispatch();
   const isOutOfStock = product.stock === 0;
 
+  // Build image list: prefer images[], fallback to imageUrl, fallback to []
+  const images = product.images?.length
+    ? product.images
+    : product.imageUrl
+      ? [product.imageUrl]
+      : [];
+
   return (
     <article
       aria-label={product.name}
@@ -26,18 +33,12 @@ export const ProductCard = memo(({ product, onPay }: ProductCardProps) => {
       onClick={() => navigate(productDetailPath(product.id))}
     >
       <div className="relative h-36 sm:h-48 bg-gray-50 shrink-0">
-        {product.imageUrl ? (
-          <ImageWithSkeleton
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-full"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
-            📦
-          </div>
-        )}
-        <div className="absolute top-2 right-2">
+        <ImageCarousel
+          images={images}
+          alt={product.name}
+          stopPropagation
+        />
+        <div className="absolute top-2 right-2 z-10">
           <StockBadge stock={product.stock} />
         </div>
       </div>
