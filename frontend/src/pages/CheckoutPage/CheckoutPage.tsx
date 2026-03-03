@@ -189,10 +189,11 @@ export function CheckoutPage() {
       dispatch(completeCheckout());
       // Use replace: true to prevent back button from returning to the form
       navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
-    } catch (err: any) {
+    } catch {
       payingRef.current = false;
       setIsPaying(false);
-      dispatch(setCheckoutError(err.message || 'Error inesperado al procesar el pago'));
+      dispatch(completeCheckout());
+      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
     } finally {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     }
