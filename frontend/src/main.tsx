@@ -10,8 +10,14 @@ import './styles/globals.css'
 import App from './App'
 
 function Root() {
-  const [splashDone, setSplashDone] = useState(false);
-  const handleSplashDone = useCallback(() => setSplashDone(true), []);
+  const [splashDone, setSplashDone] = useState(() => {
+    return sessionStorage.getItem('splash_shown') === 'true';
+  });
+
+  const handleSplashDone = useCallback(() => {
+    sessionStorage.setItem('splash_shown', 'true');
+    setSplashDone(true);
+  }, []);
 
   return (
     <>
