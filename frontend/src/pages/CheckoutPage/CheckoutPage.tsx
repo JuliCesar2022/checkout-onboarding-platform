@@ -56,19 +56,7 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
-  const { loadingState } = useAppSelector((state) => state.transaction);
-
-  // Redirect to products if no product is selected
-  if (!productId && cartItems.length === 0) {
-    return <Navigate to={ROUTES.PRODUCTS} replace />;
-  }
-
-  // If we already have a transaction in progress, don't allow returning to the form
-  useEffect(() => {
-    if (loadingState === 'polling' || loadingState === 'submitting') {
-      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
-    }
-  }, [loadingState, navigate]);
+  const { loadingState, error: transactionError } = useAppSelector((state) => state.transaction);
 
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
@@ -77,6 +65,22 @@ export function CheckoutPage() {
   // and also seed from localStorage so returning users don't re-type their info.
   const lastDeliveryRef = useRef(deliveryAddress ?? loadSavedDelivery());
   if (deliveryAddress) lastDeliveryRef.current = deliveryAddress;
+
+  const lastCardRef = useRef(cardData);
+  if (cardData) lastCardRef.current = cardData;
+
+  const payingRef = useRef(false);
+  const [isTokenizing, setIsTokenizing] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+
+  const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
+
+  // If we already have a transaction in progress, don't allow returning to the form
+  useEffect(() => {
+    if (loadingState === 'polling' || loadingState === 'submitting') {
+      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
+    }
+  }, [loadingState, navigate]);
 
   // Auto-confirm delivery from localStorage when starting a new checkout.
   // openCheckoutForm resets deliveryAddress to null, so if localStorage has
@@ -90,22 +94,13 @@ export function CheckoutPage() {
     }
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const lastCardRef = useRef(cardData);
-  if (cardData) lastCardRef.current = cardData;
-
-  const payingRef = useRef(false);
-  const [isTokenizing, setIsTokenizing] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
-
-  const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
-
   useEffect(() => {
-    if (!productId) return;
+    if (!productId && (!cartItems || cartItems.length === 0)) return;
 
-    if (cartItems.length > 1) {
+    if (cartItems && cartItems.length > 1) {
       // Multi-item from cart: sum all selected items, no need for API call
       const productAmountInCents = cartItems.reduce(
-        (sum, i) => sum + i.priceInCents * i.quantity,
+        (sum, i) => sum + (i.priceInCents || 0) * (i.quantity || 0),
         0
       );
       dispatch(
@@ -133,6 +128,11 @@ export function CheckoutPage() {
       }).catch(console.error);
     }
   }, [productId, quantity, cartItems, dispatch]);
+
+  // Redirect to products if no product is selected
+  if (!productId && (!cartItems || cartItems.length === 0)) {
+    return <Navigate to={ROUTES.PRODUCTS} replace />;
+  }
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('es-CO', {
@@ -162,10 +162,14 @@ export function CheckoutPage() {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     try {
-      // Submit the transaction — polling and stock refresh happen on /status page
-      await dispatch(submitTransaction({
+      // Submit the transaction
+      const resultAction = await dispatch(submitTransaction({
         productId,
         quantity,
+        items: (cartItems && cartItems.length > 0) ? cartItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity
+        })) : undefined,
         cardData: {
           token: cardData.token,
           brand: cardData.brand ?? 'VISA',
@@ -183,17 +187,22 @@ export function CheckoutPage() {
           name: deliveryAddress.recipientName,
           phone: deliveryAddress.phoneNumber,
         },
-      })).unwrap();
+      }));
 
-      // Navigate immediately — /status shows PENDING then polls for final result
+      // If it failed (e.g. 400 Insufficient Stock), stay here so user sees the error
+      if (submitTransaction.rejected.match(resultAction)) {
+        payingRef.current = false;
+        setIsPaying(false);
+        return;
+      }
+
+      // If it's PENDING or APPROVED, navigate to status
       dispatch(completeCheckout());
-      // Use replace: true to prevent back button from returning to the form
       navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
-    } catch {
+    } catch (err) {
+      console.error('Checkout error:', err);
       payingRef.current = false;
       setIsPaying(false);
-      dispatch(completeCheckout());
-      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
     } finally {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     }
@@ -363,7 +372,7 @@ export function CheckoutPage() {
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-5">Resumen del pedido</h2>
 
-              {cartItems.length > 0 ? (
+              {cartItems && cartItems.length > 0 ? (
                 <div className="mb-5 pb-5 border-b border-gray-200 space-y-4">
                   {cartItems.map((item) => (
                     <CartItem
@@ -437,7 +446,11 @@ export function CheckoutPage() {
                     </div>
                   </dl>
 
-                  {error && <div className="mt-4"><ErrorBanner message={error} /></div>}
+                  {(error || transactionError) && (
+                    <div className="mt-4">
+                      <ErrorBanner message={error || transactionError!} />
+                    </div>
+                  )}
 
                   <div className="mt-6 space-y-3">
                     <Button
@@ -476,7 +489,7 @@ export function CheckoutPage() {
         isOpen={(step === 'SUMMARY' || step === 'PROCESSING') && !!deliveryAddress && !!cardData}
         fees={fees}
         isLoading={isLoading}
-        error={error}
+        error={error || transactionError}
         onPay={handlePay}
       />
     </PageWrapper>

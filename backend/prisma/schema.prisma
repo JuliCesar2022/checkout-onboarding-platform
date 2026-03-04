@@ -92,9 +92,13 @@ model Transaction {
   baseFeeInCents       Int
   deliveryFeeInCents   Int
 
+  // Primary product (kept for backward-compat with Delivery and single-product flow)
   productId String
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int     @default(1)
+
+  // Multi-product line items (populated when cart has >1 product type)
+  items TransactionItem[]
 
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
@@ -107,6 +111,17 @@ model Transaction {
   delivery Delivery?
 
   @@map("transactions")
+}
+
+model TransactionItem {
+  id               String      @id @default(uuid())
+  transactionId    String
+  transaction      Transaction @relation(fields: [transactionId], references: [id])
+  productId        String
+  quantity         Int
+  unitPriceInCents Int
+
+  @@map("transaction_items")
 }
 
 model Delivery {

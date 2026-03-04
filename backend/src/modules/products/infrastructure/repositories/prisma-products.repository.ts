@@ -28,6 +28,14 @@ export class PrismaProductsRepository implements IProductsRepository {
     return ProductMapper.toDomain(product);
   }
 
+  async incrementStock(id: string, quantity: number): Promise<ProductEntity> {
+    const product = await this.prisma.product.update({
+      where: { id },
+      data: { stock: { increment: quantity } },
+    });
+    return ProductMapper.toDomain(product);
+  }
+
   async findPaginated({
     search,
     limit,

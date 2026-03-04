@@ -16,26 +16,49 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateTransactionData): Promise<TransactionEntity> {
-    const transaction = await this.prisma.transaction.create({
-      data: {
-        reference: data.reference,
-        amountInCents: data.amountInCents,
-        productAmountInCents: data.productAmountInCents,
-        baseFeeInCents: data.baseFeeInCents,
-        deliveryFeeInCents: data.deliveryFeeInCents,
-        productId: data.productId,
-        quantity: data.quantity,
-        customerId: data.customerId,
-        cardBrand: data.cardBrand,
-        cardLastFour: data.cardLastFour,
-      },
+    const created = await this.prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.create({
+        data: {
+          reference: data.reference,
+          amountInCents: data.amountInCents,
+          productAmountInCents: data.productAmountInCents,
+          baseFeeInCents: data.baseFeeInCents,
+          deliveryFeeInCents: data.deliveryFeeInCents,
+          productId: data.productId,
+          quantity: data.quantity,
+          customerId: data.customerId,
+          cardBrand: data.cardBrand,
+          cardLastFour: data.cardLastFour,
+        },
+        include: { items: true },
+      });
+
+      if (data.items && data.items.length > 0) {
+        await tx.transactionItem.createMany({
+          data: data.items.map((item) => ({
+            transactionId: transaction.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPriceInCents: item.unitPriceInCents,
+          })),
+        });
+        // We need to re-fetch or manually add items to the object because createMany won't add them.
+        // Let's just re-fetch inside the transaction for safety
+        return tx.transaction.findUnique({
+          where: { id: transaction.id },
+          include: { items: true },
+        });
+      }
+
+      return transaction;
     });
-    return TransactionMapper.toDomain(transaction);
+    return TransactionMapper.toDomain(created!);
   }
 
   async findById(id: string): Promise<TransactionEntity | null> {
     const transaction = await this.prisma.transaction.findUnique({
       where: { id },
+      include: { items: true },
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
   }
@@ -43,6 +66,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   async findByReference(reference: string): Promise<TransactionEntity | null> {
     const transaction = await this.prisma.transaction.findUnique({
       where: { reference },
+      include: { items: true },
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
   }
@@ -50,6 +74,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   async findPending(): Promise<TransactionEntity[]> {
     const transactions = await this.prisma.transaction.findMany({
       where: { status: 'PENDING' },
+      include: { items: true },
     });
     return transactions.map(TransactionMapper.toDomain);
   }
@@ -67,6 +92,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
         wompiId,
         wompiResponse: wompiResponse as Prisma.InputJsonValue | undefined,
       },
+      include: { items: true },
     });
     return TransactionMapper.toDomain(transaction);
   }

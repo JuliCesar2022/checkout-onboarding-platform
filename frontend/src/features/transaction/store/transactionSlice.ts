@@ -27,24 +27,35 @@ const initialState: TransactionState = {
   error: null,
 };
 
-export const submitTransaction = createAsyncThunk(
+export const submitTransaction = createAsyncThunk<
+  TransactionResult,
+  Omit<SubmitTransactionPayload, "acceptanceToken" | "acceptPersonalAuth">,
+  { rejectValue: string }
+>(
   "transaction/submit",
   async (
     payload: Omit<
       SubmitTransactionPayload,
       "acceptanceToken" | "acceptPersonalAuth"
     >,
+    { rejectWithValue },
   ) => {
-    const { acceptanceToken, personalAuthToken } =
-      await checkoutApi.fetchAcceptanceToken();
+    try {
+      const { acceptanceToken, personalAuthToken } =
+        await checkoutApi.fetchAcceptanceToken();
 
-    const response = await checkoutApi.submitTransaction({
-      ...payload,
-      acceptanceToken,
-      acceptPersonalAuth: personalAuthToken,
-    });
+      const response = await checkoutApi.submitTransaction({
+        ...payload,
+        acceptanceToken,
+        acceptPersonalAuth: personalAuthToken,
+      });
 
-    return response;
+      return response;
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || err.message || "Transaction failed";
+      return rejectWithValue(message);
+    }
   },
 );
 
@@ -116,7 +127,8 @@ const transactionSlice = createSlice({
       .addCase(submitTransaction.rejected, (state, action) => {
         state.loadingState = "settled";
         state.status = "ERROR";
-        state.error = action.error.message ?? "Transaction failed";
+        state.error =
+          action.payload || action.error.message || "Transaction failed";
       })
       .addCase(pollTransactionStatus.fulfilled, (state, action) => {
         state.status = action.payload.status as TransactionStatus;

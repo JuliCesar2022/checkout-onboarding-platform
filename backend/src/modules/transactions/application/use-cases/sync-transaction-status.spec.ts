@@ -41,7 +41,7 @@ describe('SyncTransactionStatusUseCase', () => {
     expect(paymentPort.getTransactionStatus).not.toHaveBeenCalled();
   });
 
-  it('should update status and decrement stock on transition from PENDING to APPROVED', async () => {
+  it('should update status and decrement stock using fallback on transition from PENDING to APPROVED', async () => {
     const tx = new TransactionEntity({
       id: '1',
       status: 'PENDING',
@@ -66,5 +66,38 @@ describe('SyncTransactionStatusUseCase', () => {
     expect(result.isSuccess).toBe(true);
     expect(repo.updateStatus).toHaveBeenCalledWith('1', 'APPROVED', 'w-1', {});
     expect(productsRepo.decrementStock).toHaveBeenCalledWith('p-1', 2);
+  });
+
+  it('should decrement stock for ALL items on transition from PENDING to APPROVED', async () => {
+    const tx = new TransactionEntity({
+      id: '2',
+      status: 'PENDING',
+      wompiId: 'w-2',
+      productId: 'p-1', // main product for reference
+      quantity: 1,
+      items: [
+        { productId: 'p-1', quantity: 2 },
+        { productId: 'p-2', quantity: 3 },
+      ],
+    });
+    repo.findById.mockResolvedValue(tx);
+    paymentPort.getTransactionStatus.mockResolvedValue(
+      Result.ok({
+        wompiId: 'w-2',
+        status: PaymentStatus.SUCCESS,
+        rawResponse: {},
+      }),
+    );
+    repo.updateStatus.mockResolvedValue(
+      new TransactionEntity({ ...tx, status: 'APPROVED' }),
+    );
+
+    const result = await useCase.execute('2');
+
+    expect(result.isSuccess).toBe(true);
+    // Both items must have had their stock decremented
+    expect(productsRepo.decrementStock).toHaveBeenCalledWith('p-1', 2);
+    expect(productsRepo.decrementStock).toHaveBeenCalledWith('p-2', 3);
+    expect(productsRepo.decrementStock).toHaveBeenCalledTimes(2);
   });
 });
