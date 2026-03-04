@@ -27,7 +27,7 @@ import { SmartphoneShowcase } from '../../features/products/components/Smartphon
 import { ProductGrid } from '../../features/products/components/ProductGrid';
 import { ROUTES } from '../../constants/routes';
 
-const CACHE_TTL_MS = 5 * 60 * 1000;
+// Cache logic removed to ensure freshness on every navigation
 
 export function ProductsPage() {
   const dispatch = useAppDispatch();
@@ -68,10 +68,10 @@ export function ProductsPage() {
   }, []);
 
   useEffect(() => {
-    const isStale = !lastFetchedAt || Date.now() - lastFetchedAt > CACHE_TTL_MS;
-    if (isStale) dispatch(fetchProducts());
+    // Fetch products on every mount/navigation to ensure real-time stock
+    dispatch(fetchProducts());
     if (categories.length === 0) dispatch(fetchCategories());
-  }, [dispatch, lastFetchedAt, categories.length]);
+  }, [dispatch, categories.length]);
 
   const handlePay = useCallback((product: Product) => {
     dispatch(selectProduct(product.id));

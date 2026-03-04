@@ -38,11 +38,12 @@ export function ProductDetailPage() {
 
   // If not in Redux store, fetch directly by ID
   useEffect(() => {
-    if (!id || productFromStore) return;
+    if (!id) return;
+    // Always fetch from API to get the most recent stock, even if we have it in Redux
     productsApi.fetchProductById(id)
       .then(setFetchedProduct)
       .catch(() => setFetchError(true));
-  }, [id, productFromStore]);
+  }, [id]);
 
   const handleAddToCart = () => {
     if (!product) return;
