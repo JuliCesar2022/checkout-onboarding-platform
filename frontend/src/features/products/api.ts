@@ -22,12 +22,23 @@ export const productsApi = {
     if (params.search) queryParams.search = params.search;
     const response = await client.get<PaginatedProducts>("/products", {
       params: queryParams,
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     });
     return response.data;
   },
 
   fetchProductById: async (id: string): Promise<Product> => {
-    const response = await client.get<Product>(`/products/${id}`);
+    const response = await client.get<Product>(`/products/${id}`, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
     return response.data;
   },
 

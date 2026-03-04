@@ -5,6 +5,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from '../../application/products.service';
@@ -22,6 +23,8 @@ export class ProductsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate')
+  @Header('Pragma', 'no-cache')
   @ApiOperation({
     summary: 'Get paginated products with optional search',
     description:
@@ -36,6 +39,8 @@ export class ProductsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate')
+  @Header('Pragma', 'no-cache')
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiResponse({ status: 200, type: ProductResponseDto })
   @ApiResponse({ status: 404, description: 'Product not found' })

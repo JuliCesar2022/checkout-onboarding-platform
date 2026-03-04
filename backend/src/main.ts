@@ -27,6 +27,7 @@ async function bootstrap() {
     process.env.FRONTEND_URL,
     'http://localhost:5173',
     'http://localhost:4173',
+    'https://dev-techstore.julio-bonifacio.com'
   ].filter(Boolean) as string[];
 
   app.enableCors({
