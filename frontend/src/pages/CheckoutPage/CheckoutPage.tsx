@@ -56,7 +56,7 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
-  const { loadingState } = useAppSelector((state) => state.transaction);
+  const { loadingState, error: transactionError } = useAppSelector((state) => state.transaction);
 
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
@@ -162,8 +162,8 @@ export function CheckoutPage() {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     try {
-      // Submit the transaction — polling and stock refresh happen on /status page
-      await dispatch(submitTransaction({
+      // Submit the transaction
+      const resultAction = await dispatch(submitTransaction({
         productId,
         quantity,
         items: (cartItems && cartItems.length > 0) ? cartItems.map(item => ({
@@ -187,17 +187,22 @@ export function CheckoutPage() {
           name: deliveryAddress.recipientName,
           phone: deliveryAddress.phoneNumber,
         },
-      })).unwrap();
+      }));
 
-      // Navigate immediately — /status shows PENDING then polls for final result
+      // If it failed (e.g. 400 Insufficient Stock), stay here so user sees the error
+      if (submitTransaction.rejected.match(resultAction)) {
+        payingRef.current = false;
+        setIsPaying(false);
+        return;
+      }
+
+      // If it's PENDING or APPROVED, navigate to status
       dispatch(completeCheckout());
-      // Use replace: true to prevent back button from returning to the form
       navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
-    } catch {
+    } catch (err) {
+      console.error('Checkout error:', err);
       payingRef.current = false;
       setIsPaying(false);
-      dispatch(completeCheckout());
-      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
     } finally {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     }
@@ -441,7 +446,11 @@ export function CheckoutPage() {
                     </div>
                   </dl>
 
-                  {error && <div className="mt-4"><ErrorBanner message={error} /></div>}
+                  {(error || transactionError) && (
+                    <div className="mt-4">
+                      <ErrorBanner message={error || transactionError!} />
+                    </div>
+                  )}
 
                   <div className="mt-6 space-y-3">
                     <Button
@@ -480,7 +489,7 @@ export function CheckoutPage() {
         isOpen={(step === 'SUMMARY' || step === 'PROCESSING') && !!deliveryAddress && !!cardData}
         fees={fees}
         isLoading={isLoading}
-        error={error}
+        error={error || transactionError}
         onPay={handlePay}
       />
     </PageWrapper>
