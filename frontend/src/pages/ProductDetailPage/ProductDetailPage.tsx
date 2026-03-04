@@ -28,6 +28,8 @@ export function ProductDetailPage() {
   const productFromStore = products.find((p) => p.id === id);
   const product = productFromStore ?? fetchedProduct;
 
+  useScrollReveal(product ? [product.id] : []);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     setFetchedProduct(null);
@@ -78,8 +80,6 @@ export function ProductDetailPage() {
   }
 
   const isOutOfStock = product.stock === 0;
-
-  useScrollReveal([product.id]);
 
   return (
     <PageWrapper>

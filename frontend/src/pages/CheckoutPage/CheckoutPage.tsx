@@ -58,18 +58,6 @@ export function CheckoutPage() {
     useAppSelector((state) => state.checkout);
   const { loadingState } = useAppSelector((state) => state.transaction);
 
-  // Redirect to products if no product is selected
-  if (!productId && cartItems.length === 0) {
-    return <Navigate to={ROUTES.PRODUCTS} replace />;
-  }
-
-  // If we already have a transaction in progress, don't allow returning to the form
-  useEffect(() => {
-    if (loadingState === 'polling' || loadingState === 'submitting') {
-      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
-    }
-  }, [loadingState, navigate]);
-
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
 
@@ -77,6 +65,22 @@ export function CheckoutPage() {
   // and also seed from localStorage so returning users don't re-type their info.
   const lastDeliveryRef = useRef(deliveryAddress ?? loadSavedDelivery());
   if (deliveryAddress) lastDeliveryRef.current = deliveryAddress;
+
+  const lastCardRef = useRef(cardData);
+  if (cardData) lastCardRef.current = cardData;
+
+  const payingRef = useRef(false);
+  const [isTokenizing, setIsTokenizing] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+
+  const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
+
+  // If we already have a transaction in progress, don't allow returning to the form
+  useEffect(() => {
+    if (loadingState === 'polling' || loadingState === 'submitting') {
+      navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
+    }
+  }, [loadingState, navigate]);
 
   // Auto-confirm delivery from localStorage when starting a new checkout.
   // openCheckoutForm resets deliveryAddress to null, so if localStorage has
@@ -90,17 +94,8 @@ export function CheckoutPage() {
     }
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const lastCardRef = useRef(cardData);
-  if (cardData) lastCardRef.current = cardData;
-
-  const payingRef = useRef(false);
-  const [isTokenizing, setIsTokenizing] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
-
-  const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
-
   useEffect(() => {
-    if (!productId) return;
+    if (!productId && cartItems.length === 0) return;
 
     if (cartItems.length > 1) {
       // Multi-item from cart: sum all selected items, no need for API call
@@ -133,6 +128,11 @@ export function CheckoutPage() {
       }).catch(console.error);
     }
   }, [productId, quantity, cartItems, dispatch]);
+
+  // Redirect to products if no product is selected
+  if (!productId && cartItems.length === 0) {
+    return <Navigate to={ROUTES.PRODUCTS} replace />;
+  }
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('es-CO', {

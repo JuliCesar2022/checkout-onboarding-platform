@@ -30,6 +30,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
           cardBrand: data.cardBrand,
           cardLastFour: data.cardLastFour,
         },
+        include: { items: true },
       });
 
       if (data.items && data.items.length > 0) {
@@ -41,11 +42,17 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
             unitPriceInCents: item.unitPriceInCents,
           })),
         });
+        // We need to re-fetch or manually add items to the object because createMany won't add them.
+        // Let's just re-fetch inside the transaction for safety
+        return tx.transaction.findUnique({
+          where: { id: transaction.id },
+          include: { items: true },
+        });
       }
 
       return transaction;
     });
-    return TransactionMapper.toDomain(created);
+    return TransactionMapper.toDomain(created!);
   }
 
   async findById(id: string): Promise<TransactionEntity | null> {
@@ -85,6 +92,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
         wompiId,
         wompiResponse: wompiResponse as Prisma.InputJsonValue | undefined,
       },
+      include: { items: true },
     });
     return TransactionMapper.toDomain(transaction);
   }
