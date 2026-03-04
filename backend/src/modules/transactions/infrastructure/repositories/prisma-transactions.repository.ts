@@ -16,21 +16,36 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateTransactionData): Promise<TransactionEntity> {
-    const transaction = await this.prisma.transaction.create({
-      data: {
-        reference: data.reference,
-        amountInCents: data.amountInCents,
-        productAmountInCents: data.productAmountInCents,
-        baseFeeInCents: data.baseFeeInCents,
-        deliveryFeeInCents: data.deliveryFeeInCents,
-        productId: data.productId,
-        quantity: data.quantity,
-        customerId: data.customerId,
-        cardBrand: data.cardBrand,
-        cardLastFour: data.cardLastFour,
-      },
+    const created = await this.prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.create({
+        data: {
+          reference: data.reference,
+          amountInCents: data.amountInCents,
+          productAmountInCents: data.productAmountInCents,
+          baseFeeInCents: data.baseFeeInCents,
+          deliveryFeeInCents: data.deliveryFeeInCents,
+          productId: data.productId,
+          quantity: data.quantity,
+          customerId: data.customerId,
+          cardBrand: data.cardBrand,
+          cardLastFour: data.cardLastFour,
+        },
+      });
+
+      if (data.items && data.items.length > 0) {
+        await tx.transactionItem.createMany({
+          data: data.items.map((item) => ({
+            transactionId: transaction.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPriceInCents: item.unitPriceInCents,
+          })),
+        });
+      }
+
+      return transaction;
     });
-    return TransactionMapper.toDomain(transaction);
+    return TransactionMapper.toDomain(created);
   }
 
   async findById(id: string): Promise<TransactionEntity | null> {

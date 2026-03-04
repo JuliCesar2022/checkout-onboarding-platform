@@ -9,8 +9,20 @@ import {
   ValidateNested,
   Min,
   Matches,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export class CartItemDto {
+  @ApiProperty({ example: 'uuid-del-producto' })
+  @IsString()
+  productId: string;
+
+  @ApiProperty({ example: 2, minimum: 1 })
+  @IsInt()
+  @Min(1)
+  quantity: number;
+}
 
 export class CardDataDto {
   @ApiProperty({ example: 'tok_stagtest_...' })
@@ -84,6 +96,17 @@ export class CreateTransactionDto {
   @IsInt()
   @Min(1)
   quantity: number;
+
+  /**
+   * Optional list of cart items for multi-product checkouts.
+   * When present, stock is decremented for each item individually.
+   */
+  @ApiPropertyOptional({ type: [CartItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CartItemDto)
+  items?: CartItemDto[];
 
   @ApiProperty({ type: CardDataDto })
   @ValidateNested()

@@ -3,17 +3,26 @@ import type {
   TransactionStatus,
 } from '../entities/transaction.entity';
 
+export interface CartItemData {
+  productId: string;
+  quantity: number;
+  unitPriceInCents: number;
+}
+
 export interface CreateTransactionData {
   reference: string;
   amountInCents: number;
   productAmountInCents: number;
   baseFeeInCents: number;
   deliveryFeeInCents: number;
+  /** Primary product (used for Delivery relation and single-product flow) */
   productId: string;
   quantity: number;
   customerId: string;
   cardBrand?: string;
   cardLastFour?: string;
+  /** Line items — populated when cart has >1 distinct product type */
+  items?: CartItemData[];
 }
 
 export abstract class ITransactionsRepository {

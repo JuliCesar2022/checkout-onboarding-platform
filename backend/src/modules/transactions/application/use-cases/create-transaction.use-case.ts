@@ -14,18 +14,20 @@ import type { Env } from '../../../../config/env.validation';
 import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum';
 import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
 import { TransactionStatus } from '../../domain/entities/transaction.entity';
+import type { CartItemData } from '../../domain/repositories/transactions.repository';
 
 /**
  * ProcessPayment Use Case — Railway Oriented Programming
  *
  * Steps (each returns Result, stops on failure):
- *   1. Validate product exists and has stock
- *   2. Upsert customer
- *   3. Calculate fees
- *   4. Create PENDING transaction + delivery record in DB (address captured now)
- *   5. Call Wompi to charge card
- *   6. Update transaction with Wompi result
- *   7. If APPROVED immediately: decrement stock
+ *   1. Resolve item list (single product OR cart items)
+ *   2. Validate every product exists and has sufficient stock
+ *   3. Upsert customer
+ *   4. Calculate fees
+ *   5. Create PENDING transaction + delivery record in DB
+ *   6. Call Wompi to charge card
+ *   7. Update transaction with Wompi result
+ *   8. If APPROVED immediately: decrement stock for ALL items
  *      (If PENDING: stock decrement happens in SyncTransactionStatusUseCase on approval)
  */
 @Injectable()
@@ -42,37 +44,60 @@ export class CreateTransactionUseCase {
   async execute(
     dto: CreateTransactionDto,
   ): Promise<Result<TransactionResponseDto>> {
-    // Step 1: Validate product
-    const product = await this.productsRepo.findById(dto.productId);
-    if (!product) {
-      return Result.fail(TRANSACTIONS_ERRORS.PRODUCT_NOT_FOUND);
-    }
-    if (product.stock < dto.quantity) {
-      return Result.fail(
-        TRANSACTIONS_ERRORS.INSUFFICIENT_STOCK(product.stock, dto.quantity),
-      );
+    // Step 1: Resolve items list.
+    // If `items` array is provided (multi-product cart), use it.
+    // Otherwise fall back to the classic single-product fields.
+    const cartItems: Array<{ productId: string; quantity: number }> =
+      dto.items && dto.items.length > 0
+        ? dto.items
+        : [{ productId: dto.productId, quantity: dto.quantity }];
+
+    // Step 2: Validate every product and check stock
+    const resolvedItems: CartItemData[] = [];
+    for (const item of cartItems) {
+      const product = await this.productsRepo.findById(item.productId);
+      if (!product) {
+        return Result.fail(TRANSACTIONS_ERRORS.PRODUCT_NOT_FOUND);
+      }
+      if (product.stock < item.quantity) {
+        return Result.fail(
+          TRANSACTIONS_ERRORS.INSUFFICIENT_STOCK(product.stock, item.quantity),
+        );
+      }
+      resolvedItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPriceInCents: product.priceInCents,
+      });
     }
 
-    // Step 2: Upsert customer
+    // Primary product for Delivery relation (first item or the explicit productId)
+    const primaryProductId = cartItems[0].productId;
+    const primaryQuantity = cartItems[0].quantity;
+
+    // Step 3: Upsert customer
     const customer = await this.customersRepo.upsertByEmail({
       email: dto.customerData.email,
       name: dto.customerData.name,
       phone: dto.customerData.phone,
     });
 
-    // Step 3: Calculate fees
+    // Step 4: Calculate fees
     const baseFeeInCents =
       this.config.get<number>('BASE_FEE_IN_CENTS', { infer: true }) ?? 150000;
     const deliveryFeeInCents =
       this.config.get<number>('DELIVERY_FEE_IN_CENTS', { infer: true }) ??
       1000000;
-    const productAmountInCents = product.priceInCents * dto.quantity;
+
+    // Sum product amount across ALL items
+    const productAmountInCents = resolvedItems.reduce(
+      (sum, i) => sum + i.unitPriceInCents * i.quantity,
+      0,
+    );
     const totalAmountInCents =
       productAmountInCents + baseFeeInCents + deliveryFeeInCents;
 
-    // Step 4: Create PENDING transaction + delivery record
-    // Delivery is persisted now while we still have the address from the request.
-    // Stock decrement happens only on APPROVED (here if immediate, or in sync use case if polled).
+    // Step 5: Create PENDING transaction + delivery record
     const reference = `TXN-${crypto.randomUUID()}`;
     const transaction = await this.transactionsRepo.create({
       reference,
@@ -80,18 +105,21 @@ export class CreateTransactionUseCase {
       productAmountInCents,
       baseFeeInCents,
       deliveryFeeInCents,
-      productId: dto.productId,
-      quantity: dto.quantity,
+      // Primary product (for Delivery FK and single-product backward-compat)
+      productId: primaryProductId,
+      quantity: primaryQuantity,
       customerId: customer.id,
       cardBrand: dto.cardData.brand,
       cardLastFour: dto.cardData.lastFour,
+      // Full item list for multi-product support
+      items: resolvedItems.length > 1 ? resolvedItems : undefined,
     });
 
     const normalize = (str?: string) => str?.trim().toUpperCase();
 
     await this.deliveriesRepo.create({
       transactionId: transaction.id,
-      productId: dto.productId,
+      productId: primaryProductId,
       customerId: customer.id,
       address: normalize(dto.deliveryData.address)!,
       addressDetail: normalize(dto.deliveryData.addressDetail),
@@ -100,7 +128,7 @@ export class CreateTransactionUseCase {
       postalCode: dto.deliveryData.postalCode,
     });
 
-    // Step 5: Call Wompi
+    // Step 6: Call Wompi
     const paymentResult = await this.paymentPort.charge({
       amountInCents: totalAmountInCents,
       currency: 'COP',
@@ -113,7 +141,6 @@ export class CreateTransactionUseCase {
     });
 
     if (paymentResult.isFailure) {
-      // Update transaction to ERROR so frontend knows
       await this.transactionsRepo.updateStatus(transaction.id, 'ERROR');
       return Result.fail(
         TRANSACTIONS_ERRORS.PAYMENT_FAILED(paymentResult.getError() as string),
@@ -129,7 +156,7 @@ export class CreateTransactionUseCase {
     if (paymentStatus === PaymentStatus.DECLINED) finalStatus = 'DECLINED';
     if (paymentStatus === PaymentStatus.PENDING) finalStatus = 'PENDING';
 
-    // Step 6: Update transaction with Wompi result
+    // Step 7: Update transaction with Wompi result
     const updatedTransaction = await this.transactionsRepo.updateStatus(
       transaction.id,
       finalStatus,
@@ -137,10 +164,12 @@ export class CreateTransactionUseCase {
       wompiResult.rawResponse,
     );
 
-    // Step 7: If already APPROVED on first response → decrement stock immediately.
+    // Step 8: If already APPROVED on first response → decrement stock for ALL items.
     // If PENDING, the sync use case handles decrement when Wompi later confirms.
     if (finalStatus === 'APPROVED') {
-      await this.productsRepo.decrementStock(dto.productId, dto.quantity);
+      for (const item of resolvedItems) {
+        await this.productsRepo.decrementStock(item.productId, item.quantity);
+      }
     }
 
     return Result.ok(TransactionResponseDto.fromEntity(updatedTransaction));
