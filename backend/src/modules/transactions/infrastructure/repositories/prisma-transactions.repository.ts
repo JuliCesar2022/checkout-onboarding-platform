@@ -51,6 +51,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   async findById(id: string): Promise<TransactionEntity | null> {
     const transaction = await this.prisma.transaction.findUnique({
       where: { id },
+      include: { items: true },
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
   }
@@ -58,6 +59,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   async findByReference(reference: string): Promise<TransactionEntity | null> {
     const transaction = await this.prisma.transaction.findUnique({
       where: { reference },
+      include: { items: true },
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
   }
@@ -65,6 +67,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
   async findPending(): Promise<TransactionEntity[]> {
     const transactions = await this.prisma.transaction.findMany({
       where: { status: 'PENDING' },
+      include: { items: true },
     });
     return transactions.map(TransactionMapper.toDomain);
   }

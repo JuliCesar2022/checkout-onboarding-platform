@@ -17,6 +17,8 @@ export interface Transaction {
 export interface SubmitTransactionPayload {
   productId: string;
   quantity: number;
+  /** Optional multi-product cart items — when present, backend processes each one */
+  items?: Array<{ productId: string; quantity: number }>;
   cardData: {
     token: string;
     brand: string;

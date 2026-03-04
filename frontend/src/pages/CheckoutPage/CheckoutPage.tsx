@@ -166,6 +166,10 @@ export function CheckoutPage() {
       await dispatch(submitTransaction({
         productId,
         quantity,
+        items: cartItems.length > 0 ? cartItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity
+        })) : undefined,
         cardData: {
           token: cardData.token,
           brand: cardData.brand ?? 'VISA',

@@ -21,6 +21,7 @@ export class TransactionEntity {
   quantity: number;
   customerId: string;
   wompiResponse: Record<string, unknown> | null;
+  items?: { productId: string; quantity: number }[];
   createdAt: Date;
   updatedAt: Date;
 

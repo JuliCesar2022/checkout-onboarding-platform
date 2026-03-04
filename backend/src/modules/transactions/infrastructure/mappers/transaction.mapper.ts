@@ -3,7 +3,7 @@ import { TransactionEntity } from '../../domain/entities/transaction.entity';
 import type { TransactionStatus } from '../../domain/entities/transaction.entity';
 
 export class TransactionMapper {
-  static toDomain(prisma: PrismaTransaction): TransactionEntity {
+  static toDomain(prisma: any): TransactionEntity {
     return new TransactionEntity({
       id: prisma.id,
       reference: prisma.reference,
@@ -20,6 +20,10 @@ export class TransactionMapper {
       quantity: prisma.quantity,
       customerId: prisma.customerId,
       wompiResponse: prisma.wompiResponse as Record<string, unknown> | null,
+      items: prisma.items?.map((item: any) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
       createdAt: prisma.createdAt,
       updatedAt: prisma.updatedAt,
     });

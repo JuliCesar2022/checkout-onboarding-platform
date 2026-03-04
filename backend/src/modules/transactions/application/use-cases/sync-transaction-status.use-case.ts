@@ -64,10 +64,17 @@ export class SyncTransactionStatusUseCase {
 
     // Decrement stock when transitioning PENDING → APPROVED
     if (newStatus === 'APPROVED') {
-      await this.productsRepo.decrementStock(
-        transaction.productId,
-        transaction.quantity,
-      );
+      if (updatedTransaction.items && updatedTransaction.items.length > 0) {
+        for (const item of updatedTransaction.items) {
+          await this.productsRepo.decrementStock(item.productId, item.quantity);
+        }
+      } else {
+        // Fallback for older transactions without recorded items
+        await this.productsRepo.decrementStock(
+          updatedTransaction.productId,
+          updatedTransaction.quantity,
+        );
+      }
     }
 
     return Result.ok(updatedTransaction);
