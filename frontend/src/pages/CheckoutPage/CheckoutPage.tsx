@@ -117,7 +117,13 @@ export function CheckoutPage() {
 
       const mins = Math.floor(diff / 1000 / 60);
       const secs = Math.floor((diff / 1000) % 60);
-      setTimeLeft(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+      
+      let timeStr = "";
+      if (mins > 0) timeStr += `${mins} ${mins === 1 ? 'minuto' : 'minutos'}`;
+      if (secs > 0) timeStr += `${timeStr ? ' y ' : ''}${secs} ${secs === 1 ? 'segundo' : 'segundos'}`;
+      if (mins === 0 && secs === 0) timeStr = "0 segundos";
+      
+      setTimeLeft(timeStr);
     };
 
     updateTimer();
@@ -314,20 +320,20 @@ export function CheckoutPage() {
           </div>
         </div>
 
-        {/* ── Reservation Timer (Centered below steps, single line) ── */}
+        {/* ── Reservation Timer (Minimalist, centered below steps) ── */}
         {timeLeft && (
           <div className="flex justify-center animate-in fade-in slide-in-from-top-2 duration-700">
-            <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl border shadow-sm transition-colors duration-500 ${
+            <div className={`flex items-center gap-2.5 px-4 py-1.5 rounded-full transition-colors duration-500 ${
               reservationStatus === 'error' 
-                ? 'bg-red-50 border-red-100 text-red-600' 
-                : 'bg-amber-50 border-amber-100 text-amber-800'
+                ? 'text-red-500' 
+                : 'text-gray-500'
             }`}>
-              <svg className={`w-4 h-4 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className={`w-4 h-4 opacity-70 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                 <circle cx="12" cy="12" r="9" />
               </svg>
               <p className="text-sm font-medium">
-                Tienes <span className="font-bold tabular-nums text-base mx-0.5">{timeLeft}</span> para finalizar la compra
+                Tienes <span className="font-bold text-gray-700 underline decoration-gray-300 underline-offset-4">{timeLeft}</span> para finalizar la compra
               </p>
             </div>
           </div>
