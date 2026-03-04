@@ -110,7 +110,7 @@ const data = [
     images: [
       'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=600&q=80',
       'https://images.unsplash.com/photo-1585620385456-4759f9b5c7d9?w=600&q=80',
-      'https://images.unsplash.com/photo-1619364726002-a2b8f5657ae4?w=600&q=80',
+      'https://images.unsplash.com/photo-1612036781124-847f8939b154?q=80&w=1170&auto=format&fit=crop',
     ],
     priceInCents: 150000000,
     stock: 15,
@@ -122,9 +122,9 @@ const data = [
     description:
       'Neon red and blue Joy-Con controllers with HD rumble and motion controls.',
     imageUrl:
-      'https://images.unsplash.com/photo-1619364726002-a2b8f5657ae4?w=600&q=80',
+      'https://images.unsplash.com/photo-1612036781124-847f8939b154?q=80&w=1170&auto=format&fit=crop',
     images: [
-      'https://images.unsplash.com/photo-1619364726002-a2b8f5657ae4?w=600&q=80',
+      'https://images.unsplash.com/photo-1612036781124-847f8939b154?q=80&w=1170&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=600&q=80',
     ],
     priceInCents: 28000000,
@@ -315,7 +315,7 @@ const CATEGORY_IMAGE_POOL = {
   ],
   NINTENDO: [
     'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=600&q=80',
-    'https://images.unsplash.com/photo-1619364726002-a2b8f5657ae4?w=600&q=80',
+    'https://images.unsplash.com/photo-1612036781124-847f8939b154?q=80&w=1170&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1585620385456-4759f9b5c7d9?w=600&q=80',
   ],
   'GAMING LAPTOPS': [
