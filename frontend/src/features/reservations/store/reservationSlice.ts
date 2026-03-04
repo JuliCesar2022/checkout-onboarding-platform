@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
 import { reservationsApi } from "../api";
 import type { ReserveItem } from "../api";
 
@@ -84,7 +83,7 @@ const reservationSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createReservation.pending, (state, action) => {
+      .addCase(createReservation.pending, (state) => {
         state.status = "reserving";
         state.error = null;
         // Ensure sessionId is set even before the response

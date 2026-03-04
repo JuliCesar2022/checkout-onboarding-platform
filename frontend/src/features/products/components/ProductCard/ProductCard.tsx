@@ -34,7 +34,7 @@ export const ProductCard = memo(({ product, onPay, showBuyButton = false }: Prod
       onClick={() => navigate(productDetailPath(product.id))}
     >
       {/* Image — aspect-ratio scales with card width */}
-      <div className="relative aspect-[4/3] bg-gray-50 shrink-0 w-full">
+      <div className="relative aspect-4/3 bg-gray-50 shrink-0 w-full">
         <ImageCarousel
           images={images}
           alt={product.name}
@@ -54,7 +54,7 @@ export const ProductCard = memo(({ product, onPay, showBuyButton = false }: Prod
       </div>
 
       <div className="flex flex-col flex-1 p-3 sm:p-4 gap-1.5 sm:gap-2">
-        <h2 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 h-[2.625rem] sm:h-[3rem]">
+        <h2 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 h-10.5 sm:h-12">
           {product.name}
         </h2>
         <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 h-8 sm:h-10">{product.description}</p>

@@ -32,7 +32,13 @@ export const productsApi = {
   },
 
   fetchCategories: async (): Promise<Category[]> => {
-    const response = await client.get<Category[]>("/categories");
+    const response = await client.get<Category[]>("/categories", {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
     return response.data;
   },
 };

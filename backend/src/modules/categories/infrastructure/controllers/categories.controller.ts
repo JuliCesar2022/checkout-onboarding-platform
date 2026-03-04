@@ -1,4 +1,11 @@
-import { Controller, Get, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  HttpCode,
+  HttpStatus,
+  Header,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CategoriesService } from '../../application/categories.service';
 import { CategoryResponseDto } from '../../application/dto/category-response.dto';
@@ -13,6 +20,8 @@ export class CategoriesController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate')
+  @Header('Pragma', 'no-cache')
   @ApiOperation({ summary: 'Get all product categories' })
   @ApiResponse({ status: 200, type: [CategoryResponseDto] })
   async findAll(): Promise<CategoryResponseDto[]> {
@@ -21,6 +30,8 @@ export class CategoriesController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate')
+  @Header('Pragma', 'no-cache')
   @ApiOperation({ summary: 'Get a category by ID' })
   @ApiResponse({ status: 200, type: CategoryResponseDto })
   @ApiResponse({ status: 404, description: 'Category not found' })

@@ -67,10 +67,10 @@ export function ProductsPage() {
   }, []);
 
   useEffect(() => {
-    // Fetch products on every mount/navigation to ensure real-time stock
+    // Fetch products and categories on every mount/navigation to ensure real-time data
     dispatch(fetchProducts());
-    if (categories.length === 0) dispatch(fetchCategories());
-  }, [dispatch, categories.length]);
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handlePay = useCallback((product: Product) => {
     dispatch(selectProduct(product.id));

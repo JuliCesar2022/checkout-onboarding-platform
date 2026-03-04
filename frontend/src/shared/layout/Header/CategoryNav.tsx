@@ -12,11 +12,9 @@ export function CategoryNav() {
   const { categories, status, activeCategoryId } = useAppSelector((state) => state.products);
 
   useEffect(() => {
-    if (categories.length === 0 && (status === 'idle' || status === 'succeeded')) {
-      // Solo fetch si realmente no hay nada
-      dispatch(fetchCategories());
-    }
-  }, [dispatch, categories.length, status]);
+    // Refresh categories on every mount to ensure navigation is always up to date
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handleCategorySelect = (categoryId: string | null) => {
     dispatch(setActiveCategory(categoryId));
