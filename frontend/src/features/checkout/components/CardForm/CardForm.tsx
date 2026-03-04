@@ -117,6 +117,17 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
     },
   });
 
+  const cardNumberInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => {
+        cardNumberInputRef.current?.focus();
+      }, 500); // Wait for the transition animation
+      return () => clearTimeout(timer);
+    }
+  }, [autoFocus]);
+
   // When editing (pre-filled data), validate immediately so the button is enabled
   useEffect(() => {
     if (defaultValues?.cardNumber) {
@@ -167,7 +178,7 @@ export function CardForm({ onSubmit, autoFocus, defaultValues, isTokenizing = fa
                 type="text"
                 inputMode="numeric"
                 maxLength={19}
-                autoFocus={autoFocus}
+                ref={mergeRef(field.ref, cardNumberInputRef)}
                 value={formattedNumber}
                 onChange={handleChange}
                 onKeyDown={onlyDigits}

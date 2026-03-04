@@ -314,20 +314,25 @@ export function CheckoutPage() {
           </div>
         </div>
 
-        {/* ── Reservation Timer ── */}
+        {/* ── Reservation Timer (Centered below steps) ── */}
         {timeLeft && (
-          <div className="ml-auto flex flex-col items-end gap-1">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Reserva expira en</span>
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${reservationStatus === 'error' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-amber-50 border-amber-100 text-amber-700 shadow-sm shadow-amber-100/50'}`}>
-              <svg className={`w-3.5 h-3.5 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <div className="flex justify-center mt-6 mb-8 animate-in fade-in slide-in-from-top-2 duration-700">
+            <div className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border shadow-sm transition-colors duration-500 ${
+              reservationStatus === 'error' 
+                ? 'bg-red-50 border-red-100 text-red-600' 
+                : 'bg-amber-50 border-amber-100 text-amber-800'
+            }`}>
+              <svg className={`w-4 h-4 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                 <circle cx="12" cy="12" r="9" />
               </svg>
-              <span className="text-sm font-bold tabular-nums tracking-tight">{timeLeft}</span>
+              <p className="text-sm font-medium">
+                Tienes <span className="font-bold tabular-nums text-base mx-0.5">{timeLeft}</span> para finalizar la compra
+              </p>
             </div>
           </div>
         )}
-        </div>{/* end top bar */}
+        </div>{/* end top bar wrapper */}
 
         <div className="lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-8">
 
