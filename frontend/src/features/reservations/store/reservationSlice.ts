@@ -103,7 +103,14 @@ const reservationSlice = createSlice({
         state.status = "idle";
         state.expiresAt = null;
         state.expiresInMs = null;
-      });
+      })
+      // Reset reservation state when starting a new checkout or resetting it
+      .addMatcher(
+        (action) =>
+          action.type === "checkout/openCheckoutForm" ||
+          action.type === "checkout/resetCheckout",
+        () => initialState,
+      );
   },
 });
 

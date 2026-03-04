@@ -489,7 +489,7 @@ export function CheckoutPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => dispatch(setQuantity(quantity - 1))}
-                          disabled={quantity <= 1}
+                          disabled={quantity <= 1 || isLoading}
                           className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           aria-label="Disminuir cantidad"
                         >
@@ -498,7 +498,7 @@ export function CheckoutPage() {
                         <span className="w-6 text-center text-sm font-semibold text-gray-900">{quantity}</span>
                         <button
                           onClick={() => dispatch(setQuantity(quantity + 1))}
-                          disabled={reservationStatus === 'error'}
+                          disabled={isLoading}
                           className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           aria-label="Aumentar cantidad"
                         >
