@@ -472,23 +472,32 @@ export function CheckoutPage() {
                         {formatCurrency(fees.productAmount / quantity)} × {quantity} = <span className="text-gray-900">{formatCurrency(fees.productAmount)}</span>
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() => dispatch(setQuantity(quantity - 1))}
-                        disabled={quantity <= 1}
-                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                        aria-label="Disminuir cantidad"
-                      >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
-                      </button>
-                      <span className="w-6 text-center text-sm font-semibold text-gray-900">{quantity}</span>
-                      <button
-                        onClick={() => dispatch(setQuantity(quantity + 1))}
-                        className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors"
-                        aria-label="Aumentar cantidad"
-                      >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                      </button>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => dispatch(setQuantity(quantity - 1))}
+                          disabled={quantity <= 1}
+                          className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                          aria-label="Disminuir cantidad"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                        </button>
+                        <span className="w-6 text-center text-sm font-semibold text-gray-900">{quantity}</span>
+                        <button
+                          onClick={() => dispatch(setQuantity(quantity + 1))}
+                          disabled={reservationStatus === 'error'}
+                          className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                          aria-label="Aumentar cantidad"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                      </div>
+                      
+                      {reservationError && (
+                        <span className="text-[10px] leading-tight text-red-600 font-medium max-w-[150px]">
+                          {reservationError}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -515,9 +524,9 @@ export function CheckoutPage() {
                     </div>
                   </dl>
 
-                  {(error || transactionError || reservationError) && (
+                  {(error || transactionError) && (
                     <div className="mt-4">
-                      <ErrorBanner message={error || transactionError || reservationError!} />
+                      <ErrorBanner message={error || transactionError!} />
                     </div>
                   )}
 
@@ -525,10 +534,10 @@ export function CheckoutPage() {
                     <Button
                       onClick={handlePay}
                       isLoading={isLoading}
-                      disabled={!isFormComplete || isLoading}
+                      disabled={!isFormComplete || isLoading || reservationStatus === 'error'}
                       className="w-full"
                     >
-                      {!isFormComplete ? 'Completa los detalles para pagar' : 'Pagar ahora'}
+                      {reservationStatus === 'error' ? 'Stock insuficiente' : (!isFormComplete ? 'Completa los detalles para pagar' : 'Pagar ahora')}
                     </Button>
                     <Button
                       variant="secondary"
