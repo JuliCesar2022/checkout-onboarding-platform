@@ -62,15 +62,16 @@ export class SyncTransactionStatusUseCase {
       rawResponse, // latest Wompi response
     );
 
-    // Decrement stock when transitioning PENDING → APPROVED
-    if (newStatus === 'APPROVED') {
+    // IF APPROVED: Nothing to do, stock was already reserved at creation.
+    // IF DECLINED or ERROR: Rollback (increment) stock so others can buy it.
+    if (newStatus === 'DECLINED' || newStatus === 'ERROR') {
       if (updatedTransaction.items && updatedTransaction.items.length > 0) {
         for (const item of updatedTransaction.items) {
-          await this.productsRepo.decrementStock(item.productId, item.quantity);
+          await this.productsRepo.incrementStock(item.productId, item.quantity);
         }
       } else {
         // Fallback for older transactions without recorded items
-        await this.productsRepo.decrementStock(
+        await this.productsRepo.incrementStock(
           updatedTransaction.productId,
           updatedTransaction.quantity,
         );

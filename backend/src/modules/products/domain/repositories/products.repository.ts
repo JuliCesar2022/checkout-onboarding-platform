@@ -14,6 +14,7 @@ export interface FindProductsPaginatedParams extends FindPaginatedParams {
 export abstract class IProductsRepository {
   abstract findById(id: string): Promise<ProductEntity | null>;
   abstract decrementStock(id: string, quantity: number): Promise<ProductEntity>;
+  abstract incrementStock(id: string, quantity: number): Promise<ProductEntity>;
   abstract findPaginated(
     params: FindProductsPaginatedParams,
   ): Promise<PaginatedResult<ProductEntity>>;

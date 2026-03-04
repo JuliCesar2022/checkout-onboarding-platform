@@ -64,6 +64,10 @@ export class CreateTransactionUseCase {
           TRANSACTIONS_ERRORS.INSUFFICIENT_STOCK(product.stock, item.quantity),
         );
       }
+      // ATOMIC RESERVATION: Decrement stock right now.
+      // This will throw if stock is insufficient due to the `gte` check in repo.
+      await this.productsRepo.decrementStock(item.productId, item.quantity);
+
       resolvedItems.push({
         productId: item.productId,
         quantity: item.quantity,
@@ -142,6 +146,10 @@ export class CreateTransactionUseCase {
 
     if (paymentResult.isFailure) {
       await this.transactionsRepo.updateStatus(transaction.id, 'ERROR');
+      // ROLLBACK STOCK: Return items to inventory if payment fails
+      for (const item of resolvedItems) {
+        await this.productsRepo.incrementStock(item.productId, item.quantity);
+      }
       return Result.fail(
         TRANSACTIONS_ERRORS.PAYMENT_FAILED(paymentResult.getError() as string),
       );
@@ -156,6 +164,13 @@ export class CreateTransactionUseCase {
     if (paymentStatus === PaymentStatus.DECLINED) finalStatus = 'DECLINED';
     if (paymentStatus === PaymentStatus.PENDING) finalStatus = 'PENDING';
 
+    // If DECLINED immediately by Wompi, also rollback stock
+    if (finalStatus === 'DECLINED' || finalStatus === 'ERROR') {
+      for (const item of resolvedItems) {
+        await this.productsRepo.incrementStock(item.productId, item.quantity);
+      }
+    }
+
     // Step 7: Update transaction with Wompi result
     const updatedTransaction = await this.transactionsRepo.updateStatus(
       transaction.id,
@@ -164,13 +179,8 @@ export class CreateTransactionUseCase {
       wompiResult.rawResponse,
     );
 
-    // Step 8: If already APPROVED on first response → decrement stock for ALL items.
-    // If PENDING, the sync use case handles decrement when Wompi later confirms.
-    if (finalStatus === 'APPROVED') {
-      for (const item of resolvedItems) {
-        await this.productsRepo.decrementStock(item.productId, item.quantity);
-      }
-    }
+    // Step 8: Decrement stock logic was moved to Step 2 (Atomic Reservation)
+    // No action needed here as stock is already reserved.
 
     return Result.ok(TransactionResponseDto.fromEntity(updatedTransaction));
   }
