@@ -221,7 +221,7 @@ function BannerPanel({
             disable-zoom
             touch-action="pan-y"
             loading="lazy"
-            poster={p.image || `/assets/posters/${p.localModel?.split('/').pop()?.replace('.glb', '.webp')}`}
+            poster={p.image}
             seamless-poster
             style={{ width: '100%', height: '100%', outline: 'none' }}
           />
@@ -353,7 +353,7 @@ function BannerPanel({
             disable-zoom
             touch-action="pan-y"
             loading="lazy"
-            poster={p.image || `/assets/posters/${p.localModel?.split('/').pop()?.replace('.glb', '.webp')}`}
+            poster={p.image}
             seamless-poster
             style={{ width: '100%', height: '100%', outline: 'none' }}
           />

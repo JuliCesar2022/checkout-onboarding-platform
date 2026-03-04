@@ -62,11 +62,6 @@ export const checkoutApi = {
       card_holder: payload.cardHolder,
     };
 
-    console.log(
-      "🔐 Tokenizando tarjeta con Wompi...",
-      `**** ${wompiPayload.number.slice(-4)}`,
-    );
-
     try {
       const response = await axios.post(
         `${wompiUrl}/tokens/cards`,
@@ -78,8 +73,6 @@ export const checkoutApi = {
 
       const data = response.data.data;
 
-      console.log("✅ Token generado:", data.id);
-
       return {
         token: data.id,
         brand: data.brand.toUpperCase() as CardData["brand"],
@@ -87,7 +80,6 @@ export const checkoutApi = {
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("❌ Wompi Tokenization Error:", error.response?.data);
         throw new Error(
           error.response?.data?.error?.messages?.number?.[0] ||
             "Error al tokenizar la tarjeta",
@@ -104,22 +96,10 @@ export const checkoutApi = {
   submitTransaction: async (
     payload: SubmitTransactionPayload,
   ): Promise<TransactionResult> => {
-    console.log("🚀 Enviando transacción al backend...", {
-      productId: payload.productId,
-      card: `${payload.cardData.brand} **** ${payload.cardData.lastFour}`,
-      customer: payload.customerData.email,
-    });
-
     const response = await client.post<TransactionResult>(
       "/transactions",
       payload,
     );
-
-    console.log("✅ Respuesta del backend:", {
-      id: response.data.id,
-      status: response.data.status,
-      reference: response.data.reference,
-    });
 
     return response.data;
   },
