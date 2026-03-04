@@ -13,13 +13,17 @@ export class ProductsService {
 
   async findPaginated(
     query: FindProductsQueryDto,
+    sessionId?: string,
   ): Promise<PaginatedProductsDto> {
-    const { items, nextCursor } = await this.productsRepository.findPaginated({
-      search: query.search,
-      limit: query.limit,
-      cursor: query.cursor,
-      categoryId: query.categoryId,
-    });
+    const { items, nextCursor } = await this.productsRepository.findPaginated(
+      {
+        search: query.search,
+        limit: query.limit,
+        cursor: query.cursor,
+        categoryId: query.categoryId,
+      },
+      sessionId,
+    );
 
     return {
       data: items.map(ProductResponseDto.fromEntity),
@@ -28,8 +32,11 @@ export class ProductsService {
     };
   }
 
-  async findById(id: string): Promise<Result<ProductResponseDto>> {
-    const product = await this.productsRepository.findById(id);
+  async findById(
+    id: string,
+    sessionId?: string,
+  ): Promise<Result<ProductResponseDto>> {
+    const product = await this.productsRepository.findById(id, sessionId);
     if (!product) {
       return Result.fail(ErrorCode.NOT_FOUND);
     }

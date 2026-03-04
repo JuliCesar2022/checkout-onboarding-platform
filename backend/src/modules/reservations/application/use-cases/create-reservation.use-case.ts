@@ -31,17 +31,18 @@ export class CreateReservationUseCase {
     const created: StockReservationEntity[] = [];
 
     for (const item of items) {
-      const product = await this.productsRepo.findById(item.productId);
+      const product = await this.productsRepo.findById(
+        item.productId,
+        sessionId,
+      );
       if (!product) {
         // Rollback reservations already made in this loop
         await this.reservationsRepo.deleteBySessionId(sessionId);
         return Result.fail(RESERVATIONS_ERRORS.PRODUCT_NOT_FOUND);
       }
 
-      // Available stock = actual stock - total currently reserved by OTHERS
-      const totalReserved =
-        await this.reservationsRepo.getTotalReservedForProduct(item.productId);
-      const availableStock = Math.max(0, product.stock - totalReserved);
+      // Available stock is already calculated by the repo (physical - others)
+      const availableStock = product.stock;
 
       if (availableStock < item.quantity) {
         await this.reservationsRepo.deleteBySessionId(sessionId);

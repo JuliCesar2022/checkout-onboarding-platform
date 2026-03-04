@@ -12,10 +12,14 @@ export interface FindProductsPaginatedParams extends FindPaginatedParams {
 
 /** Port — abstract interface. Prisma implementation lives in infrastructure. */
 export abstract class IProductsRepository {
-  abstract findById(id: string): Promise<ProductEntity | null>;
+  abstract findById(
+    id: string,
+    sessionId?: string,
+  ): Promise<ProductEntity | null>;
   abstract decrementStock(id: string, quantity: number): Promise<ProductEntity>;
   abstract incrementStock(id: string, quantity: number): Promise<ProductEntity>;
   abstract findPaginated(
     params: FindProductsPaginatedParams,
+    sessionId?: string,
   ): Promise<PaginatedResult<ProductEntity>>;
 }

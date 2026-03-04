@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Header,
+  Headers,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from '../../application/products.service';
@@ -33,8 +34,9 @@ export class ProductsController {
   @ApiResponse({ status: 200, type: PaginatedProductsDto })
   async findAll(
     @Query() query: FindProductsQueryDto,
+    @Headers('x-session-id') sessionId?: string,
   ): Promise<PaginatedProductsDto> {
-    return this.productsService.findPaginated(query);
+    return this.productsService.findPaginated(query, sessionId);
   }
 
   @Get(':id')
@@ -44,7 +46,10 @@ export class ProductsController {
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiResponse({ status: 200, type: ProductResponseDto })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  async findById(@Param('id') id: string): Promise<ProductResponseDto> {
-    return unwrap(await this.productsService.findById(id));
+  async findById(
+    @Param('id') id: string,
+    @Headers('x-session-id') sessionId?: string,
+  ): Promise<ProductResponseDto> {
+    return unwrap(await this.productsService.findById(id, sessionId));
   }
 }

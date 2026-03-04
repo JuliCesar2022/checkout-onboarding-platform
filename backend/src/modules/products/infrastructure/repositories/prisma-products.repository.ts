@@ -17,23 +17,33 @@ export class PrismaProductsRepository implements IProductsRepository {
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
-  async findById(id: string): Promise<ProductEntity | null> {
+  async findById(
+    id: string,
+    sessionId?: string,
+  ): Promise<ProductEntity | null> {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) return null;
-    const reserved = await this.getReservedQty(id);
+    const reserved = await this.getReservedQty(id, sessionId);
     return ProductMapper.toDomain({
       ...product,
       stock: Math.max(0, product.stock - reserved),
     });
   }
 
-  /** Sum active Redis reservations for a product */
-  private async getReservedQty(productId: string): Promise<number> {
+  /** Sum active Redis reservations for a product, optionally excluding current session */
+  private async getReservedQty(
+    productId: string,
+    excludeSessionId?: string,
+  ): Promise<number> {
     try {
       const keys = await this.redis.keys(`reserved:${productId}:*`);
       if (!keys.length) return 0;
       let total = 0;
       for (const key of keys) {
+        // key format: "reserved:{productId}:{sessionId}"
+        if (excludeSessionId && key.endsWith(`:${excludeSessionId}`)) {
+          continue;
+        }
         const qty = await this.redis.get(key);
         if (qty !== null) total += parseInt(qty, 10);
       }
@@ -63,12 +73,10 @@ export class PrismaProductsRepository implements IProductsRepository {
     return ProductMapper.toDomain(product);
   }
 
-  async findPaginated({
-    search,
-    limit,
-    cursor,
-    categoryId,
-  }: FindProductsPaginatedParams): Promise<PaginatedResult<ProductEntity>> {
+  async findPaginated(
+    { search, limit, cursor, categoryId }: FindProductsPaginatedParams,
+    sessionId?: string,
+  ): Promise<PaginatedResult<ProductEntity>> {
     const whereCondition: any = {};
 
     if (search) {
@@ -108,7 +116,7 @@ export class PrismaProductsRepository implements IProductsRepository {
     // Subtract active Redis reservations from stock for each product
     const itemsWithRealStock = await Promise.all(
       items.map(async (row) => {
-        const reserved = await this.getReservedQty(row.id);
+        const reserved = await this.getReservedQty(row.id, sessionId);
         return { ...row, stock: Math.max(0, row.stock - reserved) };
       }),
     );

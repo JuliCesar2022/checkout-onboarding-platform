@@ -270,8 +270,8 @@ export function CheckoutPage() {
     <PageWrapper>
       <div className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6">
 
-        {/* ── Top bar: stepper ── */}
-        <div className="flex items-center gap-4 mb-10">
+        {/* ── Top bar: stepper & timer ── */}
+        <div className="flex flex-col gap-6 mb-12">
 
         {/* ── Stepper ── */}
         <div className="flex-1">
@@ -314,23 +314,20 @@ export function CheckoutPage() {
           </div>
         </div>
 
-        {/* ── Reservation Timer (Centered below steps) ── */}
+        {/* ── Reservation Timer (Centered below steps, single line) ── */}
         {timeLeft && (
-          <div className="flex justify-center mt-6 mb-10 animate-in fade-in slide-in-from-top-2 duration-700">
-            <div className={`flex flex-col items-center gap-2 px-8 py-4 rounded-3xl border shadow-sm transition-colors duration-500 ${
+          <div className="flex justify-center animate-in fade-in slide-in-from-top-2 duration-700">
+            <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl border shadow-sm transition-colors duration-500 ${
               reservationStatus === 'error' 
                 ? 'bg-red-50 border-red-100 text-red-600' 
                 : 'bg-amber-50 border-amber-100 text-amber-800'
             }`}>
-              <div className="flex items-center gap-2">
-                <svg className={`w-5 h-5 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-                  <circle cx="12" cy="12" r="9" />
-                </svg>
-                <span className="text-xl font-bold tabular-nums tracking-tight">{timeLeft}</span>
-              </div>
-              <p className="text-sm font-medium opacity-90">
-                para finalizar la compra
+              <svg className={`w-4 h-4 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+              <p className="text-sm font-medium">
+                Tienes <span className="font-bold tabular-nums text-base mx-0.5">{timeLeft}</span> para finalizar la compra
               </p>
             </div>
           </div>
