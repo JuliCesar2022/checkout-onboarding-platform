@@ -316,18 +316,21 @@ export function CheckoutPage() {
 
         {/* ── Reservation Timer (Centered below steps) ── */}
         {timeLeft && (
-          <div className="flex justify-center mt-6 mb-8 animate-in fade-in slide-in-from-top-2 duration-700">
-            <div className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border shadow-sm transition-colors duration-500 ${
+          <div className="flex justify-center mt-6 mb-10 animate-in fade-in slide-in-from-top-2 duration-700">
+            <div className={`flex flex-col items-center gap-2 px-8 py-4 rounded-3xl border shadow-sm transition-colors duration-500 ${
               reservationStatus === 'error' 
                 ? 'bg-red-50 border-red-100 text-red-600' 
                 : 'bg-amber-50 border-amber-100 text-amber-800'
             }`}>
-              <svg className={`w-4 h-4 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-                <circle cx="12" cy="12" r="9" />
-              </svg>
-              <p className="text-sm font-medium">
-                Tienes <span className="font-bold tabular-nums text-base mx-0.5">{timeLeft}</span> para finalizar la compra
+              <div className="flex items-center gap-2">
+                <svg className={`w-5 h-5 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                  <circle cx="12" cy="12" r="9" />
+                </svg>
+                <span className="text-xl font-bold tabular-nums tracking-tight">{timeLeft}</span>
+              </div>
+              <p className="text-sm font-medium opacity-90">
+                para finalizar la compra
               </p>
             </div>
           </div>
