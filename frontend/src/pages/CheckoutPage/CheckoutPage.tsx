@@ -95,12 +95,12 @@ export function CheckoutPage() {
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!productId && cartItems.length === 0) return;
+    if (!productId && (!cartItems || cartItems.length === 0)) return;
 
-    if (cartItems.length > 1) {
+    if (cartItems && cartItems.length > 1) {
       // Multi-item from cart: sum all selected items, no need for API call
       const productAmountInCents = cartItems.reduce(
-        (sum, i) => sum + i.priceInCents * i.quantity,
+        (sum, i) => sum + (i.priceInCents || 0) * (i.quantity || 0),
         0
       );
       dispatch(
@@ -130,7 +130,7 @@ export function CheckoutPage() {
   }, [productId, quantity, cartItems, dispatch]);
 
   // Redirect to products if no product is selected
-  if (!productId && cartItems.length === 0) {
+  if (!productId && (!cartItems || cartItems.length === 0)) {
     return <Navigate to={ROUTES.PRODUCTS} replace />;
   }
 
@@ -166,7 +166,7 @@ export function CheckoutPage() {
       await dispatch(submitTransaction({
         productId,
         quantity,
-        items: cartItems.length > 0 ? cartItems.map(item => ({
+        items: (cartItems && cartItems.length > 0) ? cartItems.map(item => ({
           productId: item.productId,
           quantity: item.quantity
         })) : undefined,
@@ -367,7 +367,7 @@ export function CheckoutPage() {
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-5">Resumen del pedido</h2>
 
-              {cartItems.length > 0 ? (
+              {cartItems && cartItems.length > 0 ? (
                 <div className="mb-5 pb-5 border-b border-gray-200 space-y-4">
                   {cartItems.map((item) => (
                     <CartItem

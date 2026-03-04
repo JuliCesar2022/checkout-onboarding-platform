@@ -93,7 +93,7 @@ const data = [
       'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&q=80',
     images: [
       'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&q=80',
-      'https://images.unsplash.com/photo-1621259182978-f09e5e2ca791?w=600&q=80',
+      'https://images.unsplash.com/photo-1602610411365-76e8c2a88e18?w=600&q=80',
     ],
     priceInCents: 45000000,
     stock: 12,
