@@ -44,15 +44,22 @@ const envSchema = zod.object({
     .describe('Frontend URL for CORS configuration'),
 
   // ─── Business Rules / Fees ──────────────────────────────────────────────
-  BASE_FEE_IN_CENTS: zod
-    .coerce.number()
+  BASE_FEE_IN_CENTS: zod.coerce
+    .number()
     .default(150000)
     .describe('Base transaction fee in COP cents (1,500 COP)'),
 
-  DELIVERY_FEE_IN_CENTS: zod
-    .coerce.number()
+  DELIVERY_FEE_IN_CENTS: zod.coerce
+    .number()
     .default(1000000)
     .describe('Delivery fee in COP cents (10,000 COP)'),
+
+  // ─── Redis (Stock Reservations) ─────────────────────────────────────────
+  REDIS_URL: zod
+    .string()
+    .url()
+    .default('redis://localhost:6379')
+    .describe('Redis connection URL for stock reservations TTL cache'),
 });
 
 export type Env = zod.infer<typeof envSchema>;
@@ -69,9 +76,7 @@ export function validateEnv(config: Record<string, unknown>): Env {
       .map((issue) => `  • ${issue.path.join('.')}: ${issue.message}`)
       .join('\n');
 
-    throw new Error(
-      `\n❌ Environment validation failed:\n${issues}\n`,
-    );
+    throw new Error(`\n❌ Environment validation failed:\n${issues}\n`);
   }
 
   return result.data;

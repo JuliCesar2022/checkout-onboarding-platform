@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
-import { resetCheckout } from '../../features/checkout/store/checkoutSlice';
+import { resetCheckout, completeCheckout } from '../../features/checkout/store/checkoutSlice';
 import { pollTransactionStatus, resetTransaction } from '../../features/transaction/store/transactionSlice';
 import { fetchProducts, updateProductStock } from '../../features/products/store/productsSlice';
 import { productsApi } from '../../features/products/api';
@@ -24,14 +24,20 @@ export function TransactionStatusPage() {
     dispatch(pollTransactionStatus(id))
       .unwrap()
       .then(async (finalResult) => {
-        if (finalResult.status === 'APPROVED') {
-          const productIdsToRefresh =
-            cartItems.length > 1
-              ? cartItems.map((item) => item.productId)
-              : selectedProductId ? [selectedProductId] : [];
+        // Capture context before resetting
+        const pids = cartItems.length > 1
+          ? cartItems.map((item) => item.productId)
+          : selectedProductId ? [selectedProductId] : [];
 
+        // CRITICAL: Reset checkout state here.
+        // If the user presses "Back" now, they land on an empty Checkout
+        // which will redirect them to PRODUCTS instead of looping back to STATUS.
+        dispatch(completeCheckout());
+        dispatch(resetCheckout());
+
+        if (finalResult.status === 'APPROVED') {
           await Promise.allSettled(
-            productIdsToRefresh.map(async (pid) => {
+            pids.map(async (pid) => {
               try {
                 const fresh = await productsApi.fetchProductById(pid);
                 dispatch(updateProductStock({ productId: pid, newStock: fresh.stock }));
@@ -40,7 +46,10 @@ export function TransactionStatusPage() {
           );
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Even on error, we might want to allow back navigation
+        // so we don't call resetCheckout here to let the user "try again" or "see the error"
+      });
   }, [id, loadingState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleReturn = () => {

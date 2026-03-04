@@ -5,11 +5,14 @@ import { ProductsModule } from './modules/products/products.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
+import { RedisModule } from './modules/storage/redis/redis.module';
 
 @Module({
   imports: [
     // Infrastructure: config, rate limiting, database, storage
     CoreModule,
+    RedisModule,
 
     // Business feature modules
     CategoriesModule,
@@ -17,6 +20,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     CustomersModule,
     TransactionsModule,
     PaymentModule,
+    ReservationsModule,
   ],
 })
 export class AppModule {}

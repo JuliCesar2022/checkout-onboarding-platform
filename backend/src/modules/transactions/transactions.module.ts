@@ -13,6 +13,7 @@ import { ProductsModule } from '../products/products.module';
 import { CustomersModule } from '../customers/customers.module';
 import { DeliveriesModule } from '../deliveries/deliveries.module';
 import { PaymentModule } from '../payment/payment.module';
+import { ReservationsModule } from '../reservations/reservations.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PaymentModule } from '../payment/payment.module';
     CustomersModule,
     DeliveriesModule,
     PaymentModule,
+    ReservationsModule,
   ],
   controllers: [TransactionsController],
   providers: [

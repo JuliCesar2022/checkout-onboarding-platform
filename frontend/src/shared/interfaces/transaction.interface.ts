@@ -39,6 +39,7 @@ export interface SubmitTransactionPayload {
   };
   acceptanceToken: string;
   acceptPersonalAuth: string;
+  sessionId?: string;
 }
 
 export interface TransactionResult {

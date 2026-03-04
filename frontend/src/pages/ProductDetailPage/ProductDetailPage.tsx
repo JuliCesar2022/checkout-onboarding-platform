@@ -108,7 +108,7 @@ export function ProductDetailPage() {
                   : []
             }
             alt={product.name}
-            className="w-full h-80 md:h-[28rem] rounded-2xl border border-gray-100 bg-white"
+            className={`w-full h-80 md:h-112 rounded-2xl border border-gray-100 bg-white transition-opacity duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : 'opacity-100'}`}
             showThumbnails
           />
           </div>

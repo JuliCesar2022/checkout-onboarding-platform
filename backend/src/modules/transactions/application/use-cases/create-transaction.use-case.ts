@@ -7,6 +7,7 @@ import { IProductsRepository } from '../../../products/domain/repositories/produ
 import { ICustomersRepository } from '../../../customers/domain/repositories/customers.repository';
 import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
 import { IDeliveriesRepository } from '../../../deliveries/domain/repositories/deliveries.repository';
+import { IReservationsRepository } from '../../../reservations/domain/repositories/reservations.repository';
 import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { TransactionResponseDto } from '../dto/transaction-response.dto';
 import type { Env } from '../../../../config/env.validation';
@@ -39,6 +40,7 @@ export class CreateTransactionUseCase {
     private readonly deliveriesRepo: IDeliveriesRepository,
     private readonly paymentPort: IPaymentPort,
     private readonly config: ConfigService<Env>,
+    private readonly reservationsRepo: IReservationsRepository,
   ) {}
 
   async execute(
@@ -179,8 +181,14 @@ export class CreateTransactionUseCase {
       wompiResult.rawResponse,
     );
 
-    // Step 8: Decrement stock logic was moved to Step 2 (Atomic Reservation)
-    // No action needed here as stock is already reserved.
+    // Step 8: Release Redis reservation once stock is committed or confirmed
+    if (dto.sessionId) {
+      try {
+        await this.reservationsRepo.deleteBySessionId(dto.sessionId);
+      } catch {
+        /* non-critical: reservation TTL will expire on its own */
+      }
+    }
 
     return Result.ok(TransactionResponseDto.fromEntity(updatedTransaction));
   }

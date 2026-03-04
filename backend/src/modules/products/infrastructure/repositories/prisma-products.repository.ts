@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import Redis from 'ioredis';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
   IProductsRepository,
@@ -7,14 +8,40 @@ import {
 import type { PaginatedResult } from '../../../../common/interfaces/paginated-result.interface';
 import { ProductEntity } from '../../domain/entities/product.entity';
 import { ProductMapper } from '../mappers/product.mapper';
+import { REDIS_CLIENT } from '../../../storage/redis/redis.module';
 
 @Injectable()
 export class PrismaProductsRepository implements IProductsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+  ) {}
 
   async findById(id: string): Promise<ProductEntity | null> {
     const product = await this.prisma.product.findUnique({ where: { id } });
-    return product ? ProductMapper.toDomain(product) : null;
+    if (!product) return null;
+    const reserved = await this.getReservedQty(id);
+    return ProductMapper.toDomain({
+      ...product,
+      stock: Math.max(0, product.stock - reserved),
+    });
+  }
+
+  /** Sum active Redis reservations for a product */
+  private async getReservedQty(productId: string): Promise<number> {
+    try {
+      const keys = await this.redis.keys(`reserved:${productId}:*`);
+      if (!keys.length) return 0;
+      let total = 0;
+      for (const key of keys) {
+        const qty = await this.redis.get(key);
+        if (qty !== null) total += parseInt(qty, 10);
+      }
+      return total;
+    } catch {
+      // Redis unavailable — serve physical stock, don't fail
+      return 0;
+    }
   }
 
   async decrementStock(id: string, quantity: number): Promise<ProductEntity> {
@@ -78,8 +105,16 @@ export class PrismaProductsRepository implements IProductsRepository {
     const items = hasMore ? rows.slice(0, limit) : rows;
     const nextCursor = hasMore ? items[items.length - 1].id : null;
 
+    // Subtract active Redis reservations from stock for each product
+    const itemsWithRealStock = await Promise.all(
+      items.map(async (row) => {
+        const reserved = await this.getReservedQty(row.id);
+        return { ...row, stock: Math.max(0, row.stock - reserved) };
+      }),
+    );
+
     return {
-      items: items.map(ProductMapper.toDomain),
+      items: itemsWithRealStock.map(ProductMapper.toDomain),
       nextCursor,
     };
   }

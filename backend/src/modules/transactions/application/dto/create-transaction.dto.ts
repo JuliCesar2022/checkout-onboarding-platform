@@ -131,4 +131,10 @@ export class CreateTransactionDto {
   @ApiProperty()
   @IsString()
   acceptPersonalAuth: string;
+
+  /** Frontend session ID used to release the Redis stock reservation after payment */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  sessionId?: string;
 }

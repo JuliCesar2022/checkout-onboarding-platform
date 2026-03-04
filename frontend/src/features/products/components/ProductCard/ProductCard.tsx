@@ -39,8 +39,15 @@ export const ProductCard = memo(({ product, onPay, showBuyButton = false }: Prod
           images={images}
           alt={product.name}
           stopPropagation
-          className="absolute inset-0"
+          className={`absolute inset-0 transition-opacity duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : 'opacity-100'}`}
         />
+        {isOutOfStock && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-sm">
+              Agotado
+            </span>
+          </div>
+        )}
         <div className="absolute top-2 right-2 z-10">
           <StockBadge stock={product.stock} />
         </div>

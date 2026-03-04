@@ -14,6 +14,7 @@ import {
   resetCheckout,
 } from '../../features/checkout/store/checkoutSlice';
 import { submitTransaction } from '../../features/transaction/store/transactionSlice';
+import { createReservation, releaseReservation, markExpired, resetReservation } from '../../features/reservations/store/reservationSlice';
 import { ROUTES } from '../../constants/routes';
 import { CardForm } from '../../features/checkout/components/CardForm';
 import { DeliveryForm } from '../../features/checkout/components/DeliveryForm';
@@ -57,6 +58,10 @@ export function CheckoutPage() {
   const { step, fees, error, deliveryAddress, cardData, selectedProductId: productId, quantity, cartItems } =
     useAppSelector((state) => state.checkout);
   const { loadingState, error: transactionError } = useAppSelector((state) => state.transaction);
+  const { sessionId, expiresAt, status: reservationStatus, error: reservationError } = useAppSelector((state) => state.reservation);
+
+  const [timeLeft, setTimeLeft] = useState<string>('');
+  const timerRef = useRef<any>(null);
 
   // Which UI step are we on: 1 = delivery, 2 = payment
   const currentStep = !deliveryAddress ? 1 : 2;
@@ -74,6 +79,54 @@ export function CheckoutPage() {
   const [isPaying, setIsPaying] = useState(false);
 
   const [product, setProduct] = useState<{ name: string; imageUrl: string | null } | null>(null);
+
+  // ─── Stock Reservation Logic ───
+  useEffect(() => {
+    if (!productId && (!cartItems || cartItems.length === 0)) return;
+
+    const items = cartItems && cartItems.length > 0
+      ? cartItems.map(i => ({ productId: i.productId, quantity: i.quantity }))
+      : [{ productId: productId!, quantity }];
+
+    dispatch(createReservation({ items }));
+
+    // Cleanup reservation on unmount if transaction didn't start
+    return () => {
+      if (payingRef.current === false && loadingState !== 'polling' && loadingState !== 'submitting') {
+        dispatch(releaseReservation());
+      }
+    };
+  }, [dispatch, productId, quantity, cartItems]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Countdown Timer ───
+  useEffect(() => {
+    if (!expiresAt || reservationStatus !== 'active') return;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const end = new Date(expiresAt).getTime();
+      const diff = end - now;
+
+      if (diff <= 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        dispatch(markExpired());
+        dispatch(setCheckoutError('Tu tiempo de reserva ha expirado. Por favor, inicia el proceso de nuevo.'));
+        navigate(ROUTES.PRODUCTS, { replace: true });
+        return;
+      }
+
+      const mins = Math.floor(diff / 1000 / 60);
+      const secs = Math.floor((diff / 1000) % 60);
+      setTimeLeft(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+    };
+
+    updateTimer();
+    timerRef.current = setInterval(updateTimer, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [expiresAt, reservationStatus, dispatch, navigate]);
 
   // If we already have a transaction in progress, don't allow returning to the form
   useEffect(() => {
@@ -176,6 +229,7 @@ export function CheckoutPage() {
           lastFour: cardData.number?.slice(-4) ?? '0000',
           installments: 1,
         },
+        sessionId: sessionId || undefined,
         deliveryData: {
           address: `${deliveryAddress.addressLine1} ${deliveryAddress.addressLine2 ?? ''}`.trim(),
           addressDetail: deliveryAddress.addressDetail,
@@ -198,6 +252,7 @@ export function CheckoutPage() {
 
       // If it's PENDING or APPROVED, navigate to status
       dispatch(completeCheckout());
+      dispatch(resetReservation());
       navigate(ROUTES.TRANSACTION_STATUS, { replace: true });
     } catch (err) {
       console.error('Checkout error:', err);
@@ -258,6 +313,20 @@ export function CheckoutPage() {
             })}
           </div>
         </div>
+
+        {/* ── Reservation Timer ── */}
+        {timeLeft && (
+          <div className="ml-auto flex flex-col items-end gap-1">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Reserva expira en</span>
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${reservationStatus === 'error' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-amber-50 border-amber-100 text-amber-700 shadow-sm shadow-amber-100/50'}`}>
+              <svg className={`w-3.5 h-3.5 ${reservationStatus === 'active' ? 'animate-pulse' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+              <span className="text-sm font-bold tabular-nums tracking-tight">{timeLeft}</span>
+            </div>
+          </div>
+        )}
         </div>{/* end top bar */}
 
         <div className="lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-8">
@@ -446,9 +515,9 @@ export function CheckoutPage() {
                     </div>
                   </dl>
 
-                  {(error || transactionError) && (
+                  {(error || transactionError || reservationError) && (
                     <div className="mt-4">
-                      <ErrorBanner message={error || transactionError!} />
+                      <ErrorBanner message={error || transactionError || reservationError!} />
                     </div>
                   )}
 
@@ -464,7 +533,9 @@ export function CheckoutPage() {
                     <Button
                       variant="secondary"
                       onClick={() => {
+                        dispatch(releaseReservation());
                         dispatch(resetCheckout());
+                        dispatch(resetReservation());
                         navigate(ROUTES.PRODUCTS);
                       }}
                       disabled={isLoading}
