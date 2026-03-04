@@ -38,7 +38,6 @@ export function ProductsPage() {
     categories,
     activeCategoryId,
     searchQuery,
-    lastFetchedAt,
     status,
     hasMore,
     nextCursor,
