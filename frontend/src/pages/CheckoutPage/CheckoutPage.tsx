@@ -399,7 +399,7 @@ export function CheckoutPage() {
                   </button>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 animate-slide-down">
                   <h2 className="text-lg font-semibold text-gray-900 mb-6">Información de pago</h2>
                   <CardForm
                     autoFocus
