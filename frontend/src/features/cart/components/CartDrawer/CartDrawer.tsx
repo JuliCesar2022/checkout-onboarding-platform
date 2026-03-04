@@ -24,6 +24,7 @@ export function CartDrawer() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items, isOpen } = useAppSelector((state) => state.cart);
+  const { status: reservationStatus, error: reservationError } = useAppSelector((state) => state.reservation);
 
   // Local selection state — all items selected by default
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -185,6 +186,8 @@ export function CartDrawer() {
                     isSelected={selectedIds.has(item.productId)}
                     showCheckbox
                     onToggleSelect={() => toggleItem(item.productId)}
+                    error={reservationStatus === 'error' ? reservationError : null}
+                    disableIncrement={reservationStatus === 'error'}
                     onUpdateQuantity={(newQty: number) => {
                       if (newQty < 1) {
                         dispatch(removeFromCart(item.productId));

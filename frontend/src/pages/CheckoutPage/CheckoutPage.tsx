@@ -448,6 +448,8 @@ export function CheckoutPage() {
                       key={item.productId}
                       item={item}
                       compact
+                      error={reservationStatus === 'error' ? reservationError : null}
+                      disableIncrement={reservationStatus === 'error'}
                       onUpdateQuantity={(newQty: number) => 
                         dispatch(updateCartItemQuantity({ productId: item.productId, quantity: newQty }))
                       }

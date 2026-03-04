@@ -9,6 +9,8 @@ interface CartItemProps {
   isSelected?: boolean;
   showCheckbox?: boolean;
   compact?: boolean;
+  error?: string | null;
+  disableIncrement?: boolean;
 }
 
 export function CartItem({
@@ -19,6 +21,8 @@ export function CartItem({
   isSelected = true,
   showCheckbox = false,
   compact = false,
+  error = null,
+  disableIncrement = false,
 }: CartItemProps) {
   return (
     <div
@@ -83,7 +87,8 @@ export function CartItem({
           <span className="w-7 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
           <button
             onClick={() => onUpdateQuantity(item.quantity + 1)}
-            className="w-6 h-6 rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
+            disabled={disableIncrement}
+            className="w-6 h-6 rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Aumentar cantidad"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -91,6 +96,12 @@ export function CartItem({
             </svg>
           </button>
         </div>
+
+        {error && (
+          <span className="text-[10px] leading-tight text-red-600 font-medium max-w-[120px]">
+            {error}
+          </span>
+        )}
       </div>
     </div>
   );

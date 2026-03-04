@@ -41,7 +41,7 @@ export class CreateReservationUseCase {
       // Available stock = actual stock - total currently reserved by OTHERS
       const totalReserved =
         await this.reservationsRepo.getTotalReservedForProduct(item.productId);
-      const availableStock = product.stock - totalReserved;
+      const availableStock = Math.max(0, product.stock - totalReserved);
 
       if (availableStock < item.quantity) {
         await this.reservationsRepo.deleteBySessionId(sessionId);
