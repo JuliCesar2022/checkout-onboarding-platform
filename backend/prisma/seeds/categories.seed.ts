@@ -72,7 +72,7 @@ const CHILD_CATEGORIES: Array<{
     slug: 'XBOX',
     description: 'Microsoft Xbox consoles and accessories',
     imageUrl:
-      'https://images.unsplash.com/photo-1628277611952-bb60845a3eeb?w=400&q=80',
+      'https://images.unsplash.com/photo-1603163768210-60e522c7e1a5?w=400&q=80',
     parentSlug: 'GAMING',
   },
   {
