@@ -29,6 +29,7 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
           customerId: data.customerId,
           cardBrand: data.cardBrand,
           cardLastFour: data.cardLastFour,
+          sessionId: data.sessionId,
         },
         include: { items: true },
       });
@@ -62,13 +63,20 @@ export class PrismaTransactionsRepository implements ITransactionsRepository {
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
   }
-
   async findByReference(reference: string): Promise<TransactionEntity | null> {
     const transaction = await this.prisma.transaction.findUnique({
       where: { reference },
       include: { items: true },
     });
     return transaction ? TransactionMapper.toDomain(transaction) : null;
+  }
+
+  async findBySessionId(sessionId: string): Promise<TransactionEntity[]> {
+    const transactions = await this.prisma.transaction.findMany({
+      where: { sessionId },
+      include: { items: true },
+    });
+    return transactions.map(TransactionMapper.toDomain);
   }
 
   async findPending(): Promise<TransactionEntity[]> {

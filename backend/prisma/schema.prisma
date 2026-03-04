@@ -103,6 +103,8 @@ model Transaction {
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
 
+  sessionId String? // Idempotency key from frontend
+
   wompiResponse Json? // Raw Wompi response for audit
 
   createdAt DateTime @default(now())
@@ -110,6 +112,7 @@ model Transaction {
 
   delivery Delivery?
 
+  @@index([sessionId])
   @@map("transactions")
 }
 

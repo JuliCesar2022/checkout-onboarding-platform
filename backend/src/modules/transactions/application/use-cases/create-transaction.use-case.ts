@@ -54,6 +54,21 @@ export class CreateTransactionUseCase {
         ? dto.items
         : [{ productId: dto.productId, quantity: dto.quantity }];
 
+    // Step 1.5: Idempotency check.
+    // If we have a sessionId, look for existing PENDING or APPROVED transactions.
+    if (dto.sessionId) {
+      const existing = await this.transactionsRepo.findBySessionId(
+        dto.sessionId,
+      );
+
+      const approved = existing.find((t) => t.status === 'APPROVED');
+      if (approved)
+        return Result.ok(TransactionResponseDto.fromEntity(approved));
+
+      const pending = existing.find((t) => t.status === 'PENDING');
+      if (pending) return Result.ok(TransactionResponseDto.fromEntity(pending));
+    }
+
     // Step 2: Validate every product and check stock
     const resolvedItems: CartItemData[] = [];
     for (const item of cartItems) {

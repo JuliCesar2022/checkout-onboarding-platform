@@ -20,6 +20,7 @@ export class TransactionEntity {
   productId: string;
   quantity: number;
   customerId: string;
+  sessionId: string | null;
   wompiResponse: Record<string, unknown> | null;
   items?: { productId: string; quantity: number }[];
   createdAt: Date;

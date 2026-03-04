@@ -23,6 +23,7 @@ export interface CreateTransactionData {
   cardLastFour?: string;
   /** Line items — populated when cart has >1 distinct product type */
   items?: CartItemData[];
+  sessionId?: string;
 }
 
 export abstract class ITransactionsRepository {
@@ -31,6 +32,7 @@ export abstract class ITransactionsRepository {
   abstract findByReference(
     reference: string,
   ): Promise<TransactionEntity | null>;
+  abstract findBySessionId(sessionId: string): Promise<TransactionEntity[]>;
   abstract findPending(): Promise<TransactionEntity[]>;
   abstract updateStatus(
     id: string,

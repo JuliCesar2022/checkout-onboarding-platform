@@ -19,6 +19,7 @@ export class TransactionMapper {
       productId: prisma.productId,
       quantity: prisma.quantity,
       customerId: prisma.customerId,
+      sessionId: prisma.sessionId,
       wompiResponse: prisma.wompiResponse as Record<string, unknown> | null,
       items: prisma.items?.map((item: any) => ({
         productId: item.productId,
