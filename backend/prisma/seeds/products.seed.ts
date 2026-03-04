@@ -78,7 +78,7 @@ const data = [
     images: [
       'https://images.unsplash.com/photo-1683823362932-6f7599661d22?w=600&q=80',
       'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&q=80',
-      'https://images.unsplash.com/photo-1593640408182-31c228b29976?w=600&q=80',
+      'https://images.unsplash.com/photo-1602610411365-76e8c2a88e18?w=600&q=80',
     ],
     priceInCents: 230000000,
     stock: 8,
@@ -311,7 +311,7 @@ const CATEGORY_IMAGE_POOL = {
   XBOX: [
     'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&q=80',
     'https://images.unsplash.com/photo-1612801799890-4ba4760b6590?w=600&q=80',
-    'https://images.unsplash.com/photo-1593640408182-31c228b29976?w=600&q=80',
+    'https://images.unsplash.com/photo-1602610411365-76e8c2a88e18?w=600&q=80',
   ],
   NINTENDO: [
     'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=600&q=80',
