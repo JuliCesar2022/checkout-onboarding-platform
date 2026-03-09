@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as crypto from 'crypto';
 import { Result } from '../../../../common/result/result';
 import { ITransactionsRepository } from '../../domain/repositories/transactions.repository';
 import { IProductsRepository } from '../../../products/domain/repositories/products.repository';
@@ -16,6 +14,9 @@ import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum
 import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
 import { TransactionStatus } from '../../domain/entities/transaction.entity';
 import type { CartItemData } from '../../domain/repositories/transactions.repository';
+import { FINANCIAL_CONSTANTS } from '../../domain/constants/financial.constant';
+import { IUuidGenerator } from '../../../../common/interfaces/uuid-generator.interface';
+import { IFinancialConfig } from '../../domain/ports/financial-config.port';
 
 /**
  * ProcessPayment Use Case — Railway Oriented Programming
@@ -39,45 +40,100 @@ export class CreateTransactionUseCase {
     private readonly customersRepo: ICustomersRepository,
     private readonly deliveriesRepo: IDeliveriesRepository,
     private readonly paymentPort: IPaymentPort,
-    private readonly config: ConfigService<Env>,
+    private readonly config: IFinancialConfig,
     private readonly reservationsRepo: IReservationsRepository,
+    private readonly uuidGenerator: IUuidGenerator,
   ) {}
 
   async execute(
     dto: CreateTransactionDto,
   ): Promise<Result<TransactionResponseDto>> {
-    // Step 1: Resolve items list — always use the items array
-    const cartItems = dto.items;
+    const {
+      items: cartItems,
+      sessionId,
+      customerData,
+      deliveryData,
+      cardData,
+    } = dto;
 
-    // Step 1.5: Idempotency check.
-    // If we have a sessionId, look for existing PENDING or APPROVED transactions.
-    if (dto.sessionId) {
-      const existing = await this.transactionsRepo.findBySessionId(
-        dto.sessionId,
-      );
-
-      const approved = existing.find((t) => t.status === 'APPROVED');
-      if (approved)
-        return Result.ok(TransactionResponseDto.fromEntity(approved));
-
-      const pending = existing.find((t) => t.status === 'PENDING');
-      if (pending) return Result.ok(TransactionResponseDto.fromEntity(pending));
-    }
+    const idempotency = await this.checkIdempotency(sessionId);
+    if (idempotency) return idempotency;
 
     // Step 2: Validate every product and check stock
+    const itemsResult = await this.resolveAndReserveItems(cartItems);
+    if (itemsResult.isFailure) return Result.fail(itemsResult.getError());
+
+    const resolvedItems = itemsResult.getValue();
+
+    // Step 3: Upsert customer
+    const customer = await this.customersRepo.upsertByEmail({
+      ...customerData,
+    });
+
+    // Step 4: Calculate fees & breakdown
+    const financials = this.calculateFinancials(resolvedItems);
+
+    // Step 5: Create PENDING transaction + delivery record
+    const reference = `TXN-${this.uuidGenerator.generate()}`;
+    const transaction = await this.transactionsRepo.create({
+      reference,
+      customerId: customer.id,
+      items: resolvedItems,
+      sessionId,
+      ...financials,
+      paymentDetails: {
+        cardBrand: cardData.brand,
+        cardLastFour: cardData.lastFour,
+      },
+    });
+
+    await this.createDeliveryRecord(
+      transaction.id,
+      customer.id,
+      resolvedItems[0].productId,
+      deliveryData,
+    );
+
+    // Step 6: Process Payment (Wompi)
+    const paymentResult = await this.processPayment(
+      transaction,
+      financials.totalAmountInCents,
+      dto,
+    );
+
+    return this.finalize(paymentResult, resolvedItems, sessionId);
+  }
+
+  private async checkIdempotency(
+    sessionId?: string,
+  ): Promise<Result<TransactionResponseDto> | null> {
+    if (!sessionId) return null;
+
+    const existing = await this.transactionsRepo.findBySessionId(sessionId);
+    const approved = existing.find((t) => t.status === 'APPROVED');
+    if (approved) return Result.ok(TransactionResponseDto.fromEntity(approved));
+
+    const pending = existing.find((t) => t.status === 'PENDING');
+    if (pending) return Result.ok(TransactionResponseDto.fromEntity(pending));
+
+    return null;
+  }
+
+  private async resolveAndReserveItems(
+    cartItems: CreateTransactionDto['items'],
+  ): Promise<Result<CartItemData[]>> {
     const resolvedItems: CartItemData[] = [];
+
     for (const item of cartItems) {
       const product = await this.productsRepo.findById(item.productId);
-      if (!product) {
-        return Result.fail(TRANSACTIONS_ERRORS.PRODUCT_NOT_FOUND);
-      }
+      if (!product) return Result.fail(TRANSACTIONS_ERRORS.PRODUCT_NOT_FOUND);
+
       if (product.stock < item.quantity) {
         return Result.fail(
           TRANSACTIONS_ERRORS.INSUFFICIENT_STOCK(product.stock, item.quantity),
         );
       }
-      // ATOMIC RESERVATION: Decrement stock right now.
-      // This will throw if stock is insufficient due to the `gte` check in repo.
+
       await this.productsRepo.decrementStock(item.productId, item.quantity);
 
       resolvedItems.push({
@@ -87,65 +143,44 @@ export class CreateTransactionUseCase {
       });
     }
 
-    // Primary product for Delivery relation (first item or the explicit productId)
-    const primaryProductId = cartItems[0].productId;
-    const primaryQuantity = cartItems[0].quantity;
+    return Result.ok(resolvedItems);
+  }
 
-    // Step 3: Upsert customer
-    const customer = await this.customersRepo.upsertByEmail({
-      email: dto.customerData.email,
-      name: dto.customerData.name,
-      phone: dto.customerData.phone,
-    });
+  private calculateFinancials(resolvedItems: CartItemData[]) {
+    const transactionFeeInCents = this.config.getTransactionFeeInCents();
+    const deliveryFeeInCents = this.config.getDeliveryFeeInCents();
 
-    // Step 4: Calculate fees
-    const baseFeeInCents =
-      this.config.get<number>('BASE_FEE_IN_CENTS', { infer: true }) ?? 150000;
-    const deliveryFeeInCents =
-      this.config.get<number>('DELIVERY_FEE_IN_CENTS', { infer: true }) ??
-      1000000;
-
-    // Sum product amount across ALL items
-    const productAmountInCents = resolvedItems.reduce(
-      (sum, i) => sum + i.unitPriceInCents * i.quantity,
+    const subtotal = resolvedItems.reduce(
+      (sum, item) => sum + item.unitPriceInCents * item.quantity,
       0,
     );
+
     const totalAmountInCents =
-      productAmountInCents + baseFeeInCents + deliveryFeeInCents;
+      subtotal + transactionFeeInCents + deliveryFeeInCents;
 
-    // Step 5: Create PENDING transaction + delivery record
-    const reference = `TXN-${crypto.randomUUID()}`;
-    const transaction = await this.transactionsRepo.create({
-      reference,
+    return {
       totalAmountInCents,
-      customerId: customer.id,
       breakdown: [
-        { concept: 'SUBTOTAL', amountInCents: productAmountInCents },
+        { concept: 'SUBTOTAL', amountInCents: subtotal },
         { concept: 'SHIPPING', amountInCents: deliveryFeeInCents },
-        { concept: 'PLATFORM_COMMISSION', amountInCents: baseFeeInCents },
+        { concept: 'TRANSACTION_FEE', amountInCents: transactionFeeInCents },
       ],
-      paymentDetails: {
-        cardBrand: dto.cardData.brand,
-        cardLastFour: dto.cardData.lastFour,
-      },
-      items: resolvedItems,
-      sessionId: dto.sessionId,
-    });
+    };
+  }
 
-    const normalize = (str?: string) => str?.trim().toUpperCase();
+  private async rollbackStock(items: CartItemData[]) {
+    for (const item of items) {
+      await this.productsRepo.incrementStock(item.productId, item.quantity);
+    }
+  }
 
-    await this.deliveriesRepo.create({
-      transactionId: transaction.id,
-      productId: primaryProductId,
-      customerId: customer.id,
-      address: normalize(dto.deliveryData.address)!,
-      addressDetail: normalize(dto.deliveryData.addressDetail),
-      city: normalize(dto.deliveryData.city)!,
-      state: normalize(dto.deliveryData.state)!,
-      postalCode: dto.deliveryData.postalCode,
-    });
+  private async processPayment(
+    transaction: any,
+    totalAmountInCents: number,
+    dto: CreateTransactionDto,
+  ): Promise<Result<any>> {
+    const reference = transaction.reference;
 
-    // Step 6: Call Wompi
     const paymentResult = await this.paymentPort.charge({
       amountInCents: totalAmountInCents,
       currency: 'COP',
@@ -158,33 +193,17 @@ export class CreateTransactionUseCase {
     });
 
     if (paymentResult.isFailure) {
-      await this.transactionsRepo.updateStatus(transaction.id, 'ERROR');
-      // ROLLBACK STOCK: Return items to inventory if payment fails
-      for (const item of resolvedItems) {
-        await this.productsRepo.incrementStock(item.productId, item.quantity);
-      }
-      return Result.fail(
-        TRANSACTIONS_ERRORS.PAYMENT_FAILED(paymentResult.getError() as string),
-      );
+      return Result.fail(paymentResult.getError());
     }
 
     const wompiResult = paymentResult.getValue();
     const paymentStatus = wompiResult.status;
 
-    // Map PaymentStatus -> TransactionStatus
     let finalStatus: TransactionStatus = 'ERROR';
     if (paymentStatus === PaymentStatus.SUCCESS) finalStatus = 'APPROVED';
     if (paymentStatus === PaymentStatus.DECLINED) finalStatus = 'DECLINED';
     if (paymentStatus === PaymentStatus.PENDING) finalStatus = 'PENDING';
 
-    // If DECLINED immediately by Wompi, also rollback stock
-    if (finalStatus === 'DECLINED' || finalStatus === 'ERROR') {
-      for (const item of resolvedItems) {
-        await this.productsRepo.incrementStock(item.productId, item.quantity);
-      }
-    }
-
-    // Step 7: Update transaction with Wompi result
     const updatedTransaction = await this.transactionsRepo.updateStatus(
       transaction.id,
       finalStatus,
@@ -194,12 +213,58 @@ export class CreateTransactionUseCase {
       },
     );
 
-    // Step 8: Release Redis reservation once stock is committed or confirmed
-    if (dto.sessionId) {
+    return Result.ok(updatedTransaction);
+  }
+
+  private async createDeliveryRecord(
+    transactionId: string,
+    customerId: string,
+    productId: string,
+    deliveryData: CreateTransactionDto['deliveryData'],
+  ) {
+    const normalize = (str?: string) => str?.trim().toUpperCase();
+
+    return this.deliveriesRepo.create({
+      transactionId,
+      productId,
+      customerId,
+      address: normalize(deliveryData.address)!,
+      addressDetail: normalize(deliveryData.addressDetail),
+      city: normalize(deliveryData.city)!,
+      state: normalize(deliveryData.state)!,
+      postalCode: deliveryData.postalCode,
+    });
+  }
+
+  private async finalize(
+    paymentResult: Result<any>,
+    resolvedItems: CartItemData[],
+    sessionId?: string,
+  ): Promise<Result<TransactionResponseDto>> {
+    // 1. Technical Failure Handling
+    if (paymentResult.isFailure) {
+      await this.rollbackStock(resolvedItems);
+      return Result.fail(
+        TRANSACTIONS_ERRORS.PAYMENT_FAILED(paymentResult.getError() as string),
+      );
+    }
+
+    const updatedTransaction = paymentResult.getValue();
+
+    // 2. Business Failure Handling (Declined/Error status)
+    if (
+      updatedTransaction.status === 'DECLINED' ||
+      updatedTransaction.status === 'ERROR'
+    ) {
+      await this.rollbackStock(resolvedItems);
+    }
+
+    // 3. Cleanup Persistence Logic (Session)
+    if (sessionId) {
       try {
-        await this.reservationsRepo.deleteBySessionId(dto.sessionId);
+        await this.reservationsRepo.deleteBySessionId(sessionId);
       } catch {
-        /* non-critical: reservation TTL will expire on its own */
+        /* non-critical */
       }
     }
 

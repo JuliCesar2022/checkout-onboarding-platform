@@ -44,7 +44,7 @@ const envSchema = zod.object({
     .describe('Frontend URL for CORS configuration'),
 
   // ─── Business Rules / Fees ──────────────────────────────────────────────
-  BASE_FEE_IN_CENTS: zod.coerce
+  TRANSACTION_FEE_IN_CENTS: zod.coerce
     .number()
     .default(150000)
     .describe('Base transaction fee in COP cents (1,500 COP)'),
