@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { TransactionEntity, TransactionStatus } from '../../domain/entities/transaction.entity';
+import type {
+  TransactionEntity,
+  TransactionStatus,
+} from '../../domain/entities/transaction.entity';
 
 export class TransactionResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() reference: string;
-  @ApiProperty({ nullable: true }) wompiId: string | null;
+  @ApiProperty({ nullable: true }) gatewayId: string | null;
   @ApiProperty() status: TransactionStatus;
-  @ApiProperty() amountInCents: number;
+  @ApiProperty() totalAmountInCents: number;
   @ApiProperty() currency: string;
   @ApiProperty({ nullable: true }) cardBrand: string | null;
   @ApiProperty({ nullable: true }) cardLastFour: string | null;
-  @ApiProperty() productAmountInCents: number;
-  @ApiProperty() baseFeeInCents: number;
-  @ApiProperty() deliveryFeeInCents: number;
-  @ApiProperty() productId: string;
-  @ApiProperty() quantity: number;
+  /** Concepts like SUBTOTAL, SHIPPING, etc. */
+  @ApiProperty() breakdown: { concept: string; amountInCents: number }[];
   @ApiProperty() customerId: string;
   @ApiProperty() createdAt: Date;
 
@@ -22,17 +22,17 @@ export class TransactionResponseDto {
     const dto = new TransactionResponseDto();
     dto.id = entity.id;
     dto.reference = entity.reference;
-    dto.wompiId = entity.wompiId;
+    dto.gatewayId = entity.payment?.gatewayId ?? null;
     dto.status = entity.status;
-    dto.amountInCents = entity.amountInCents;
+    dto.totalAmountInCents = entity.totalAmountInCents;
     dto.currency = entity.currency;
-    dto.cardBrand = entity.cardBrand;
-    dto.cardLastFour = entity.cardLastFour;
-    dto.productAmountInCents = entity.productAmountInCents;
-    dto.baseFeeInCents = entity.baseFeeInCents;
-    dto.deliveryFeeInCents = entity.deliveryFeeInCents;
-    dto.productId = entity.productId;
-    dto.quantity = entity.quantity;
+    dto.cardBrand = entity.payment?.cardBrand ?? null;
+    dto.cardLastFour = entity.payment?.cardLastFour ?? null;
+    dto.breakdown =
+      entity.breakdown?.map((b) => ({
+        concept: b.concept,
+        amountInCents: b.amountInCents,
+      })) ?? [];
     dto.customerId = entity.customerId;
     dto.createdAt = entity.createdAt;
     return dto;

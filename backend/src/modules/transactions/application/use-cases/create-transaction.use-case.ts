@@ -46,13 +46,8 @@ export class CreateTransactionUseCase {
   async execute(
     dto: CreateTransactionDto,
   ): Promise<Result<TransactionResponseDto>> {
-    // Step 1: Resolve items list.
-    // If `items` array is provided (multi-product cart), use it.
-    // Otherwise fall back to the classic single-product fields.
-    const cartItems: Array<{ productId: string; quantity: number }> =
-      dto.items && dto.items.length > 0
-        ? dto.items
-        : [{ productId: dto.productId, quantity: dto.quantity }];
+    // Step 1: Resolve items list — always use the items array
+    const cartItems = dto.items;
 
     // Step 1.5: Idempotency check.
     // If we have a sessionId, look for existing PENDING or APPROVED transactions.
@@ -122,18 +117,19 @@ export class CreateTransactionUseCase {
     const reference = `TXN-${crypto.randomUUID()}`;
     const transaction = await this.transactionsRepo.create({
       reference,
-      amountInCents: totalAmountInCents,
-      productAmountInCents,
-      baseFeeInCents,
-      deliveryFeeInCents,
-      // Primary product (for Delivery FK and single-product backward-compat)
-      productId: primaryProductId,
-      quantity: primaryQuantity,
+      totalAmountInCents,
       customerId: customer.id,
-      cardBrand: dto.cardData.brand,
-      cardLastFour: dto.cardData.lastFour,
-      // Full item list for multi-product support
-      items: resolvedItems.length > 1 ? resolvedItems : undefined,
+      breakdown: [
+        { concept: 'SUBTOTAL', amountInCents: productAmountInCents },
+        { concept: 'SHIPPING', amountInCents: deliveryFeeInCents },
+        { concept: 'PLATFORM_COMMISSION', amountInCents: baseFeeInCents },
+      ],
+      paymentDetails: {
+        cardBrand: dto.cardData.brand,
+        cardLastFour: dto.cardData.lastFour,
+      },
+      items: resolvedItems,
+      sessionId: dto.sessionId,
     });
 
     const normalize = (str?: string) => str?.trim().toUpperCase();
@@ -192,8 +188,10 @@ export class CreateTransactionUseCase {
     const updatedTransaction = await this.transactionsRepo.updateStatus(
       transaction.id,
       finalStatus,
-      wompiResult.wompiId,
-      wompiResult.rawResponse,
+      {
+        gatewayId: wompiResult.wompiId,
+        gatewayResponse: wompiResult.rawResponse,
+      },
     );
 
     // Step 8: Release Redis reservation once stock is committed or confirmed

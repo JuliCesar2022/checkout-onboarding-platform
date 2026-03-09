@@ -1,0 +1,7 @@
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  ERROR
+  VOIDED
+}

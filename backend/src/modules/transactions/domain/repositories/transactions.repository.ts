@@ -11,18 +11,20 @@ export interface CartItemData {
 
 export interface CreateTransactionData {
   reference: string;
-  amountInCents: number;
-  productAmountInCents: number;
-  baseFeeInCents: number;
-  deliveryFeeInCents: number;
-  /** Primary product (used for Delivery relation and single-product flow) */
-  productId: string;
-  quantity: number;
+  totalAmountInCents: number;
   customerId: string;
-  cardBrand?: string;
-  cardLastFour?: string;
-  /** Line items — populated when cart has >1 distinct product type */
-  items?: CartItemData[];
+  /** Financial breakdown (Subtotal, Shipping, etc.) */
+  breakdown: {
+    concept: string;
+    amountInCents: number;
+  }[];
+  /** Initial payment details (e.g. card brand/last four) */
+  paymentDetails?: {
+    cardBrand?: string;
+    cardLastFour?: string;
+  };
+  /** Line items — always required */
+  items: CartItemData[];
   sessionId?: string;
 }
 
@@ -37,7 +39,9 @@ export abstract class ITransactionsRepository {
   abstract updateStatus(
     id: string,
     status: TransactionStatus,
-    wompiId?: string,
-    wompiResponse?: Record<string, unknown>,
+    paymentDetails?: {
+      gatewayId?: string;
+      gatewayResponse?: Record<string, unknown>;
+    },
   ): Promise<TransactionEntity>;
 }

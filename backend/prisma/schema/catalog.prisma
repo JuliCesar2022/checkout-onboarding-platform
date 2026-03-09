@@ -1,0 +1,39 @@
+model Product {
+  id          String @id @default(uuid())
+  sku         String @unique // Internal tracking code
+  name        String
+  description String
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  imageUrl     String?
+  images       String[] // Additional product images for carousel
+  priceInCents Int // Price in COP cents
+  stock        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactionItems TransactionItem[]
+  
+
+  @@map("products")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+
+  products Product[]
+
+  @@map("categories")
+}

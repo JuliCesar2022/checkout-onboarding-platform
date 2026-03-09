@@ -88,25 +88,14 @@ export class CustomerDataDto {
 }
 
 export class CreateTransactionDto {
-  @ApiProperty()
-  @IsString()
-  productId: string;
-
-  @ApiProperty({ example: 1, minimum: 1 })
-  @IsInt()
-  @Min(1)
-  quantity: number;
-
   /**
-   * Optional list of cart items for multi-product checkouts.
-   * When present, stock is decremented for each item individually.
+   * List of cart items — always required, even for single-product checkouts.
    */
-  @ApiPropertyOptional({ type: [CartItemDto] })
-  @IsOptional()
+  @ApiProperty({ type: [CartItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
-  items?: CartItemDto[];
+  items: CartItemDto[];
 
   @ApiProperty({ type: CardDataDto })
   @ValidateNested()

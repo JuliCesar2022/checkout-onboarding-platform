@@ -23,7 +23,7 @@ export class SyncTransactionStatusUseCase {
       return Result.fail(TRANSACTIONS_ERRORS.NOT_FOUND(transactionId));
     }
 
-    if (!transaction.wompiId) {
+    if (!transaction.payment?.gatewayId) {
       return Result.fail(TRANSACTIONS_ERRORS.NO_WOMPI_ID);
     }
 
@@ -33,7 +33,7 @@ export class SyncTransactionStatusUseCase {
     }
 
     const wompiResult = await this.paymentPort.getTransactionStatus(
-      transaction.wompiId,
+      transaction.payment.gatewayId,
     );
 
     if (wompiResult.isFailure) {
@@ -58,23 +58,17 @@ export class SyncTransactionStatusUseCase {
     const updatedTransaction = await this.transactionsRepo.updateStatus(
       transaction.id,
       newStatus,
-      transaction.wompiId, // still the same
-      rawResponse, // latest Wompi response
+      {
+        gatewayId: transaction.payment.gatewayId, // still the same
+        gatewayResponse: rawResponse, // latest Wompi response
+      },
     );
 
     // IF APPROVED: Nothing to do, stock was already reserved at creation.
     // IF DECLINED or ERROR: Rollback (increment) stock so others can buy it.
     if (newStatus === 'DECLINED' || newStatus === 'ERROR') {
-      if (updatedTransaction.items && updatedTransaction.items.length > 0) {
-        for (const item of updatedTransaction.items) {
-          await this.productsRepo.incrementStock(item.productId, item.quantity);
-        }
-      } else {
-        // Fallback for older transactions without recorded items
-        await this.productsRepo.incrementStock(
-          updatedTransaction.productId,
-          updatedTransaction.quantity,
-        );
+      for (const item of updatedTransaction.items ?? []) {
+        await this.productsRepo.incrementStock(item.productId, item.quantity);
       }
     }
 

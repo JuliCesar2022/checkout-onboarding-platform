@@ -8,20 +8,13 @@ export type TransactionStatus =
 export class TransactionEntity {
   id: string;
   reference: string;
-  wompiId: string | null;
   status: TransactionStatus;
-  amountInCents: number;
+  totalAmountInCents: number;
   currency: string;
-  cardBrand: string | null;
-  cardLastFour: string | null;
-  productAmountInCents: number;
-  baseFeeInCents: number;
-  deliveryFeeInCents: number;
-  productId: string;
-  quantity: number;
   customerId: string;
   sessionId: string | null;
-  wompiResponse: Record<string, unknown> | null;
+  payment?: import('./payment.entity').PaymentEntity;
+  breakdown?: import('./financial-breakdown.entity').FinancialBreakdownEntity[];
   items?: { productId: string; quantity: number }[];
   createdAt: Date;
   updatedAt: Date;
