@@ -30,7 +30,7 @@ export class SendTransactionReceiptUseCase {
           Transaction Details:
           - ID: ${transaction.id}
           - Reference: ${transaction.reference}
-          - Amount: $${(transaction.amountInCents / 100).toFixed(2)}
+          - Amount: $${(transaction.totalAmountInCents / 100).toFixed(2)}
           - Status: ${transaction.status}
 
           Thank you!

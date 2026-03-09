@@ -6,10 +6,8 @@ describe('TransactionEntity', () => {
       id: 'txn-123',
       reference: 'TXN-REF-123',
       status: 'PENDING' as const,
-      amountInCents: 10000,
+      totalAmountInCents: 10000,
       currency: 'COP',
-      productId: 'prod-123',
-      quantity: 1,
       customerId: 'cust-123',
     };
 
@@ -18,7 +16,7 @@ describe('TransactionEntity', () => {
     expect(transaction.id).toBe(transactionData.id);
     expect(transaction.reference).toBe(transactionData.reference);
     expect(transaction.status).toBe('PENDING');
-    expect(transaction.amountInCents).toBe(10000);
+    expect(transaction.totalAmountInCents).toBe(10000);
   });
 
   it('should identify as approved correctly', () => {

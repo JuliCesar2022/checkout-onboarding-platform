@@ -6,17 +6,22 @@ describe('TransactionResponseDto', () => {
     const entity = new TransactionEntity({
       id: 'txn-123',
       reference: 'REF-123',
-      wompiId: 'wompi-123',
       status: 'APPROVED',
-      amountInCents: 50000,
+      totalAmountInCents: 50000,
       currency: 'COP',
-      cardBrand: 'VISA',
-      cardLastFour: '4242',
-      productAmountInCents: 40000,
-      baseFeeInCents: 5000,
-      deliveryFeeInCents: 5000,
-      productId: 'prod-123',
-      quantity: 1,
+      payment: {
+        id: 'pay-123',
+        gatewayId: 'wompi-123',
+        cardBrand: 'VISA',
+        cardLastFour: '4242',
+        transactionId: 'txn-123',
+        amountInCents: 50000,
+        currency: 'COP',
+        rawResponse: {},
+        status: 'SUCCESS',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any,
       customerId: 'cust-123',
       createdAt: new Date(),
     });
@@ -26,9 +31,8 @@ describe('TransactionResponseDto', () => {
     expect(dto.id).toBe(entity.id);
     expect(dto.reference).toBe(entity.reference);
     expect(dto.status).toBe(entity.status);
-    expect(dto.amountInCents).toBe(entity.amountInCents);
-    expect(dto.cardBrand).toBe(entity.cardBrand);
-    expect(dto.cardLastFour).toBe(entity.cardLastFour);
-    expect(dto.productId).toBe(entity.productId);
+    expect(dto.totalAmountInCents).toBe(entity.totalAmountInCents);
+    expect(dto.cardBrand).toBe(entity.payment?.cardBrand);
+    expect(dto.cardLastFour).toBe(entity.payment?.cardLastFour);
   });
 });

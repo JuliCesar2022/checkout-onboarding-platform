@@ -7,7 +7,6 @@ export class DeliveryEntity {
   postalCode?: string;
   country: string;
   transactionId: string;
-  productId: string;
   customerId: string;
   createdAt: Date;
   updatedAt: Date;

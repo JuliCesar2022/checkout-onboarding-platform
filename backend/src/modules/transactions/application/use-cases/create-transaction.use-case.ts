@@ -87,12 +87,7 @@ export class CreateTransactionUseCase {
       },
     });
 
-    await this.createDeliveryRecord(
-      transaction.id,
-      customer.id,
-      resolvedItems[0].productId,
-      deliveryData,
-    );
+    await this.createDeliveryRecord(transaction.id, customer.id, deliveryData);
 
     // Step 6: Process Payment (Wompi)
     const paymentResult = await this.processPayment(
@@ -219,14 +214,12 @@ export class CreateTransactionUseCase {
   private async createDeliveryRecord(
     transactionId: string,
     customerId: string,
-    productId: string,
     deliveryData: CreateTransactionDto['deliveryData'],
   ) {
     const normalize = (str?: string) => str?.trim().toUpperCase();
 
     return this.deliveriesRepo.create({
       transactionId,
-      productId,
       customerId,
       address: normalize(deliveryData.address)!,
       addressDetail: normalize(deliveryData.addressDetail),

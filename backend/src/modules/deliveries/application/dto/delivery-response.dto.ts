@@ -10,7 +10,6 @@ export class DeliveryResponseDto {
   @ApiProperty({ nullable: true }) postalCode: string | null;
   @ApiProperty() country: string;
   @ApiProperty() transactionId: string;
-  @ApiProperty() productId: string;
   @ApiProperty() customerId: string;
   @ApiProperty() createdAt: Date;
 
@@ -24,7 +23,6 @@ export class DeliveryResponseDto {
     dto.postalCode = entity.postalCode ?? null;
     dto.country = entity.country;
     dto.transactionId = entity.transactionId;
-    dto.productId = entity.productId;
     dto.customerId = entity.customerId;
     dto.createdAt = entity.createdAt;
     return dto;

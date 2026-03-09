@@ -2,7 +2,6 @@ import type { DeliveryEntity } from '../entities/delivery.entity';
 
 export interface CreateDeliveryData {
   transactionId: string;
-  productId: string;
   customerId: string;
   address: string;
   addressDetail?: string;

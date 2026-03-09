@@ -15,7 +15,6 @@ export class PrismaDeliveriesRepository implements IDeliveriesRepository {
     const delivery = await this.prisma.delivery.create({
       data: {
         transactionId: data.transactionId,
-        productId: data.productId,
         customerId: data.customerId,
         address: data.address,
         addressDetail: data.addressDetail,

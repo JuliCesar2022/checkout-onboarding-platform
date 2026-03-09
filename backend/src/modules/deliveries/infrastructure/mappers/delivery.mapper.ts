@@ -12,7 +12,6 @@ export class DeliveryMapper {
       postalCode: prisma.postalCode ?? undefined,
       country: prisma.country,
       transactionId: prisma.transactionId,
-      productId: prisma.productId,
       customerId: prisma.customerId,
       createdAt: prisma.createdAt,
       updatedAt: prisma.updatedAt,
