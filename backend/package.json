@@ -94,7 +94,11 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
-      "<rootDir>/main.ts"
+      "<rootDir>/main.ts",
+      "<rootDir>/test-setup.ts"
+    ],
+    "setupFiles": [
+      "<rootDir>/test-setup.ts"
     ]
   }
 }
