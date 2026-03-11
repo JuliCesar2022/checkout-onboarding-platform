@@ -5,6 +5,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
+  UnauthorizedException,
   InternalServerErrorException,
 } from '@nestjs/common';
 
@@ -35,6 +37,21 @@ describe('result-to-http helper (unwrap)', () => {
       const result = Result.fail(ErrorCode.INTERNAL_ERROR);
       expect(() => unwrap(result)).toThrow(InternalServerErrorException);
     });
+
+    it('should throw ForbiddenException for ErrorCode.FORBIDDEN', () => {
+      const result = Result.fail(ErrorCode.FORBIDDEN);
+      expect(() => unwrap(result)).toThrow(ForbiddenException);
+    });
+
+    it('should throw UnauthorizedException for ErrorCode.UNAUTHORIZED', () => {
+      const result = Result.fail(ErrorCode.UNAUTHORIZED);
+      expect(() => unwrap(result)).toThrow(UnauthorizedException);
+    });
+
+    it('should throw InternalServerErrorException for ErrorCode.DATABASE_ERROR', () => {
+      const result = Result.fail(ErrorCode.DATABASE_ERROR);
+      expect(() => unwrap(result)).toThrow(InternalServerErrorException);
+    });
   });
 
   describe('manual mapping with errorType parameter', () => {
@@ -42,6 +59,8 @@ describe('result-to-http helper (unwrap)', () => {
       const result = Result.fail('Something failed');
       expect(() => unwrap(result, 'not_found')).toThrow(NotFoundException);
       expect(() => unwrap(result, 'conflict')).toThrow(ConflictException);
+      expect(() => unwrap(result, 'forbidden')).toThrow(ForbiddenException);
+      expect(() => unwrap(result, 'unauthorized')).toThrow(UnauthorizedException);
       expect(() => unwrap(result, 'server_error')).toThrow(
         InternalServerErrorException,
       );

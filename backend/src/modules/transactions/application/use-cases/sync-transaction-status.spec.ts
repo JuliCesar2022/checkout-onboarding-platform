@@ -21,7 +21,7 @@ describe('SyncTransactionStatusUseCase', () => {
       getTransactionStatus: jest.fn(),
     } as any;
     productsRepo = {
-      decrementStock: jest.fn(),
+      incrementStock: jest.fn(),
     } as any;
 
     useCase = new SyncTransactionStatusUseCase(repo, paymentPort, productsRepo);
@@ -31,7 +31,15 @@ describe('SyncTransactionStatusUseCase', () => {
     const tx = new TransactionEntity({
       id: '1',
       status: 'APPROVED',
-      wompiId: 'w-1',
+      totalAmountInCents: 1000,
+      currency: 'COP',
+      customerId: 'c1',
+      payment: {
+        id: 'p-1',
+        gatewayId: 'w-1',
+        cardBrand: 'VISA',
+        status: 'APPROVED',
+      } as any,
     });
     repo.findById.mockResolvedValue(tx);
 
@@ -41,13 +49,20 @@ describe('SyncTransactionStatusUseCase', () => {
     expect(paymentPort.getTransactionStatus).not.toHaveBeenCalled();
   });
 
-  it('should update status and decrement stock using fallback on transition from PENDING to APPROVED', async () => {
+  it('should update status and decrement stock using items on transition from PENDING to APPROVED', async () => {
     const tx = new TransactionEntity({
       id: '1',
       status: 'PENDING',
-      wompiId: 'w-1',
-      productId: 'p-1',
-      quantity: 2,
+      totalAmountInCents: 1000,
+      currency: 'COP',
+      customerId: 'c1',
+      payment: {
+        id: 'p-1',
+        gatewayId: 'w-1',
+        cardBrand: 'VISA',
+        status: 'PENDING',
+      } as any,
+      items: [{ productId: 'p-1', quantity: 2 }],
     });
     repo.findById.mockResolvedValue(tx);
     paymentPort.getTransactionStatus.mockResolvedValue(
@@ -64,17 +79,64 @@ describe('SyncTransactionStatusUseCase', () => {
     const result = await useCase.execute('1');
 
     expect(result.isSuccess).toBe(true);
-    expect(repo.updateStatus).toHaveBeenCalledWith('1', 'APPROVED', 'w-1', {});
-    expect(productsRepo.decrementStock).toHaveBeenCalledWith('p-1', 2);
+    expect(repo.updateStatus).toHaveBeenCalledWith('1', 'APPROVED', {
+      gatewayId: 'w-1',
+      gatewayResponse: {},
+    });
+    // Stock should NOT be touched on Approval (already reserved at creation)
+    expect(productsRepo.incrementStock).not.toHaveBeenCalled();
+  });
+
+  it('should update status and increment stock (rollback) on transition to DECLINED', async () => {
+    const tx = new TransactionEntity({
+      id: '1',
+      status: 'PENDING',
+      totalAmountInCents: 1000,
+      currency: 'COP',
+      customerId: 'c1',
+      payment: {
+        id: 'p-1',
+        gatewayId: 'w-1',
+        cardBrand: 'VISA',
+        status: 'PENDING',
+      } as any,
+      items: [{ productId: 'p-1', quantity: 2 }],
+    });
+    repo.findById.mockResolvedValue(tx);
+    paymentPort.getTransactionStatus.mockResolvedValue(
+      Result.ok({
+        wompiId: 'w-1',
+        status: PaymentStatus.DECLINED,
+        rawResponse: { reason: 'insufficient_funds' },
+      }),
+    );
+    repo.updateStatus.mockResolvedValue(
+      new TransactionEntity({ ...tx, status: 'DECLINED' }),
+    );
+
+    const result = await useCase.execute('1');
+
+    expect(result.isSuccess).toBe(true);
+    expect(repo.updateStatus).toHaveBeenCalledWith('1', 'DECLINED', {
+      gatewayId: 'w-1',
+      gatewayResponse: { reason: 'insufficient_funds' },
+    });
+    expect(productsRepo.incrementStock).toHaveBeenCalledWith('p-1', 2);
   });
 
   it('should decrement stock for ALL items on transition from PENDING to APPROVED', async () => {
     const tx = new TransactionEntity({
       id: '2',
       status: 'PENDING',
-      wompiId: 'w-2',
-      productId: 'p-1', // main product for reference
-      quantity: 1,
+      totalAmountInCents: 3000,
+      currency: 'COP',
+      customerId: 'c1',
+      payment: {
+        id: 'p-2',
+        gatewayId: 'w-2',
+        cardBrand: 'VISA',
+        status: 'PENDING',
+      } as any,
       items: [
         { productId: 'p-1', quantity: 2 },
         { productId: 'p-2', quantity: 3 },
@@ -95,9 +157,7 @@ describe('SyncTransactionStatusUseCase', () => {
     const result = await useCase.execute('2');
 
     expect(result.isSuccess).toBe(true);
-    // Both items must have had their stock decremented
-    expect(productsRepo.decrementStock).toHaveBeenCalledWith('p-1', 2);
-    expect(productsRepo.decrementStock).toHaveBeenCalledWith('p-2', 3);
-    expect(productsRepo.decrementStock).toHaveBeenCalledTimes(2);
+    // On Approved, stock is not touched
+    expect(productsRepo.incrementStock).not.toHaveBeenCalled();
   });
 });

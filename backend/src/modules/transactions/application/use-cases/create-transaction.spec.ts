@@ -5,10 +5,12 @@ import { ICustomersRepository } from '../../../customers/domain/repositories/cus
 import { IDeliveriesRepository } from '../../../deliveries/domain/repositories/deliveries.repository';
 import { IPaymentPort } from '../../../payment/domain/ports/payment.port';
 import { PaymentStatus } from '../../../payment/domain/enums/payment-status.enum';
-import { ConfigService } from '@nestjs/config';
 import { Result } from '../../../../common/result/result';
 import { TransactionEntity } from '../../domain/entities/transaction.entity';
 import { TRANSACTIONS_ERRORS } from '../../domain/constants/transactions.constants';
+import { IFinancialConfig } from '../../domain/ports/financial-config.port';
+import { IUuidGenerator } from '../../../../common/interfaces/uuid-generator.interface';
+import { IReservationsRepository } from '../../../reservations/domain/repositories/reservations.repository';
 
 describe('CreateTransactionUseCase', () => {
   let useCase: CreateTransactionUseCase;
@@ -17,15 +19,26 @@ describe('CreateTransactionUseCase', () => {
   let customersRepo: jest.Mocked<ICustomersRepository>;
   let deliveriesRepo: jest.Mocked<IDeliveriesRepository>;
   let paymentPort: jest.Mocked<IPaymentPort>;
-  let config: jest.Mocked<ConfigService>;
+  let config: jest.Mocked<IFinancialConfig>;
+  let reservationsRepo: jest.Mocked<IReservationsRepository>;
+  let uuidGenerator: jest.Mocked<IUuidGenerator>;
 
   beforeEach(() => {
-    transactionsRepo = { create: jest.fn(), updateStatus: jest.fn() } as any;
+    transactionsRepo = {
+      create: jest.fn(),
+      updateStatus: jest.fn(),
+      findBySessionId: jest.fn().mockResolvedValue([]),
+    } as any;
     productsRepo = { findById: jest.fn(), decrementStock: jest.fn() } as any;
     customersRepo = { upsertByEmail: jest.fn() } as any;
     deliveriesRepo = { create: jest.fn() } as any;
     paymentPort = { charge: jest.fn() } as any;
-    config = { get: jest.fn() } as any;
+    config = {
+      getTransactionFeeInCents: jest.fn(),
+      getDeliveryFeeInCents: jest.fn(),
+    } as any;
+    reservationsRepo = { deleteBySessionId: jest.fn() } as any;
+    uuidGenerator = { generate: jest.fn() } as any;
 
     useCase = new CreateTransactionUseCase(
       transactionsRepo,
@@ -34,6 +47,8 @@ describe('CreateTransactionUseCase', () => {
       deliveriesRepo,
       paymentPort,
       config,
+      reservationsRepo,
+      uuidGenerator,
     );
   });
 
@@ -42,7 +57,10 @@ describe('CreateTransactionUseCase', () => {
   it('should fail if product not found', async () => {
     productsRepo.findById.mockResolvedValue(null);
 
-    const result = await useCase.execute({ productId: '1' } as any);
+    const result = await useCase.execute({
+      items: [{ productId: '1', quantity: 1 }],
+      sessionId: 's1',
+    } as any);
 
     expect(result.isFailure).toBe(true);
     expect(result.getError()).toBe(TRANSACTIONS_ERRORS.PRODUCT_NOT_FOUND);
@@ -52,8 +70,8 @@ describe('CreateTransactionUseCase', () => {
     productsRepo.findById.mockResolvedValue({ stock: 5 } as any);
 
     const result = await useCase.execute({
-      productId: '1',
-      quantity: 10,
+      items: [{ productId: '1', quantity: 10 }],
+      sessionId: 's1',
     } as any);
 
     expect(result.isFailure).toBe(true);
@@ -66,7 +84,9 @@ describe('CreateTransactionUseCase', () => {
     const product = { id: 'p1', stock: 10, priceInCents: 1000 };
     productsRepo.findById.mockResolvedValue(product as any);
     customersRepo.upsertByEmail.mockResolvedValue({ id: 'c1' } as any);
-    config.get.mockReturnValue(100);
+    config.getTransactionFeeInCents.mockReturnValue(100);
+    config.getDeliveryFeeInCents.mockReturnValue(500);
+    uuidGenerator.generate.mockReturnValue('uuid-123');
 
     const tx = new TransactionEntity({ id: 't1', reference: 'REF-1' });
     transactionsRepo.create.mockResolvedValue(tx);
@@ -84,8 +104,8 @@ describe('CreateTransactionUseCase', () => {
     );
 
     const dto = {
-      productId: 'p1',
-      quantity: 1,
+      items: [{ productId: 'p1', quantity: 1 }],
+      sessionId: 's1',
       customerData: { email: 'test@test.com', name: 'Test' },
       cardData: { brand: 'VISA', lastFour: '4242' },
       deliveryData: { address: 'Calle 1' },
@@ -112,8 +132,7 @@ describe('CreateTransactionUseCase', () => {
       .mockResolvedValueOnce(product2 as any);
 
     const result = await useCase.execute({
-      productId: 'p1',
-      quantity: 1,
+      sessionId: 's1',
       items: [
         { productId: 'p1', quantity: 2 },
         { productId: 'p2', quantity: 5 }, // <-- exceeds stock of 1
@@ -140,7 +159,9 @@ describe('CreateTransactionUseCase', () => {
       .mockResolvedValueOnce(product2 as any);
 
     customersRepo.upsertByEmail.mockResolvedValue({ id: 'c1' } as any);
-    config.get.mockReturnValue(100);
+    config.getTransactionFeeInCents.mockReturnValue(100);
+    config.getDeliveryFeeInCents.mockReturnValue(500);
+    uuidGenerator.generate.mockReturnValue('uuid-multi');
 
     const tx = new TransactionEntity({ id: 't1', reference: 'REF-MULTI' });
     transactionsRepo.create.mockResolvedValue(tx);
@@ -158,8 +179,7 @@ describe('CreateTransactionUseCase', () => {
     );
 
     const result = await useCase.execute({
-      productId: 'p1',
-      quantity: 1,
+      sessionId: 's1',
       items: [
         { productId: 'p1', quantity: 2 },
         { productId: 'p2', quantity: 3 },
@@ -177,4 +197,6 @@ describe('CreateTransactionUseCase', () => {
     expect(productsRepo.decrementStock).toHaveBeenCalledWith('p2', 3);
     expect(productsRepo.decrementStock).toHaveBeenCalledTimes(2);
   });
+
+
 });

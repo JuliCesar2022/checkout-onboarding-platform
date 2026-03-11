@@ -52,7 +52,7 @@ describe('ProductsService', () => {
 
       expect(result.isSuccess).toBe(true);
       expect(result.getValue().id).toBe('1');
-      expect(repository.findById).toHaveBeenCalledWith('1');
+      expect(repository.findById).toHaveBeenCalledWith('1', undefined);
     });
 
     it('should return ErrorCode.NOT_FOUND if not found', async () => {

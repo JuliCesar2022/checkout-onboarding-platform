@@ -32,7 +32,10 @@ describe('TransactionsService', () => {
 
   describe('findById', () => {
     it('should return transaction if found', async () => {
-      const entity = new TransactionEntity({ id: '123', wompiId: 'w1' });
+      const entity = new TransactionEntity({
+        id: '123',
+        payment: { id: 'p1', gatewayId: 'w1' } as any,
+      });
       repo.findById.mockResolvedValue(entity);
 
       const result = await service.findById('123');
@@ -55,7 +58,7 @@ describe('TransactionsService', () => {
     it('should return transaction if found', async () => {
       const entity = new TransactionEntity({
         reference: 'REF-1',
-        wompiId: 'w1',
+        payment: { id: 'p1', gatewayId: 'w1' } as any,
       });
       repo.findByReference.mockResolvedValue(entity);
 
