@@ -96,9 +96,22 @@ export const checkoutApi = {
   submitTransaction: async (
     payload: SubmitTransactionPayload,
   ): Promise<TransactionResult> => {
+    // Backend CreateTransactionDto strictly expects 'items' and has no root productId/quantity
+    const normalizedItems = payload.items && payload.items.length > 0
+      ? payload.items
+      : [{ productId: payload.productId, quantity: payload.quantity }];
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { productId, quantity, items, ...rest } = payload;
+
+    const finalPayload = {
+      ...rest,
+      items: normalizedItems,
+    };
+
     const response = await client.post<TransactionResult>(
       "/transactions",
-      payload,
+      finalPayload,
     );
 
     return response.data;
